@@ -15,7 +15,7 @@ function App() {
   return (
     <Provider store={store}> {/* Wrap the app with Redux provider */}
     <PersistGate loading={null} persistor={persistor}>
-      <ThemeProvider defaultTheme="system" storageKey="dashboard-theme">
+      <ThemeProvider defaultTheme="light" storageKey="dashboard-theme">
         <Routes>
           <Route path="/login" element={<LoginForm />} />
           <Route
