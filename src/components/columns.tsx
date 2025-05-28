@@ -58,10 +58,6 @@ export type ApplicationData = {
 
 export const columns: ColumnDef<ApplicationData>[] = [
   {
-    accessorKey: "previousOsceAttempts",
-    header: "S/No",
-  },
-  {
     accessorKey: "candidateId",
     header: "Candidate ID#",
   },
@@ -89,22 +85,6 @@ export const columns: ColumnDef<ApplicationData>[] = [
   {
     accessorKey: "emergencyContact",
     header: "Emergency Contact",
-  },
-  {
-    accessorKey: "examName",
-    header: "Exam",
-    cell: ({ row }) => {
-      const examName = row.getValue("examName") as string
-
-      return (
-        <Badge
-          variant="outline"
-          className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800"
-        >
-           {examName}
-        </Badge>
-      )
-    },
   },
   {
     accessorKey: "status",
