@@ -319,8 +319,8 @@ export function Exam() {
   return (
     <div className="space-y-6">
       <Card className="shadow-lg border-0 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
-        <CardHeader className="bg-slate-100 dark:bg-slate-800 border-b dark:border-slate-700">
-          <CardTitle className="text-xl font-bold dark:text-slate-200 flex items-center">
+        <CardHeader className="bg-[#5c347d] dark:bg-[#3b1f52] border-b dark:border-slate-700">
+          <CardTitle className="text-xl font-bold text-white flex items-center">
             {editMode ? (
               <>
                 <Edit className="h-5 w-5 mr-2" />
@@ -468,7 +468,7 @@ export function Exam() {
             <div className="flex space-x-2">
               <Button
                 type="submit"
-                className="bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600 transition-all duration-200 transform hover:scale-105"
+                className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
               >
                 {editMode ? "Update Exam" : "Submit"}
               </Button>
@@ -488,9 +488,9 @@ export function Exam() {
       </Card>
 
       <Card className="shadow-lg border-0 dark:bg-slate-900/80 dark:border-slate-800 overflow-hidden gradient-border">
-        <CardHeader className="bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border-b dark:border-slate-700">
-          <CardTitle className="text-xl font-bold dark:text-slate-200 flex items-center">
-            <FileText className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
+        <CardHeader className="bg-[#5c347d] dark:bg-[#3b1f52] from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border-b dark:border-slate-700">
+          <CardTitle className="text-xl font-bold text-white flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
             Exam List
           </CardTitle>
         </CardHeader>
@@ -508,7 +508,7 @@ export function Exam() {
                       <Switch
                         checked={exam.isBlocked}
                         onCheckedChange={() => toggleBlock(exam.id)}
-                        className="data-[state=checked]:bg-slate-700"
+                        className="data-[state=checked]:bg-[#5c347d]"
                       />
                     </div>
                   </div>
