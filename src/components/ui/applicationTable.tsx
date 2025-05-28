@@ -56,6 +56,14 @@ export default function ApplicationTable() {
       const [searchQuery, setSearchQuery] = useState<string>("");
       const applications = useSelector(selectApplications);
 
+      useEffect(() => {
+       const CurrentExam: any = initialExams[initialExams.length - 1];
+       setSelectedExam(CurrentExam.id.toString());
+      }, [initialExams]);
+      
+      console.log("Selected Exam:", selectedExam);
+      
+
     const actionColumn = {
         id: "actions",
         header: "Action",
@@ -1010,12 +1018,12 @@ export default function ApplicationTable() {
                               </div>
                             </SelectTrigger>
                             <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
-                              <SelectItem
+                              {/* <SelectItem
                                 value="all"
                                 className="dark:text-slate-200 dark:focus:bg-slate-800"
                               >
                                 All Exams
-                              </SelectItem>
+                              </SelectItem> */}
                               {initialExams.map((exam) => (
                                 <SelectItem
                                   key={exam.id}
