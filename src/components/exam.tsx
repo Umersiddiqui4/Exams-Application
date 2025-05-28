@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { format } from "date-fns"
+import { format, addDays, parseISO } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -69,11 +69,15 @@ function DateRangePickerWithRange({
   value,
   onChange,
   isError = false,
+  disabled = false,
+  minDate,
 }: {
   className?: string
   value: { from: string; to: string }
   onChange: (value: { from: string; to: string }) => void
   isError?: boolean
+  disabled?: boolean
+  minDate?: Date
 }) {
   const [date, setDate] = useState<DateRange>({
     from: value.from ? new Date(value.from) : undefined,
@@ -102,6 +106,11 @@ function DateRangePickerWithRange({
 
   // Handle user interactions with the date picker
   const handleDateChange = (newDate: DateRange | undefined) => {
+    // If there's a minimum date and the selected from date is before it, adjust it
+    if (newDate?.from && minDate && newDate.from < minDate) {
+      newDate.from = minDate
+    }
+
     setDate(newDate || { from: undefined, to: undefined })
 
     if (newDate?.from || newDate?.to) {
@@ -115,8 +124,11 @@ function DateRangePickerWithRange({
   return (
     <div className={cn("grid gap-2", className)}>
       <div className={isError ? "border border-red-500 rounded-md" : ""}>
-        <DatePickerWithRange date={date} setDate={handleDateChange} />
+        <DatePickerWithRange date={date} setDate={handleDateChange}  />
       </div>
+      {disabled && (
+        <p className="text-xs text-muted-foreground">This slot will auto-start after the previous slot ends</p>
+      )}
     </div>
   )
 }
@@ -148,12 +160,65 @@ export function Exam() {
   const { formState } = form
   const { errors } = formState
 
+  // Watch slot dates to calculate minimum dates for subsequent slots
+  const slot1DateRange = form.watch("slot1DateRange")
+  const slot2DateRange = form.watch("slot2DateRange")
+
+  // Calculate minimum dates for slots based on previous slot end dates
+  const getSlot2MinDate = () => {
+    if (slot1DateRange?.to) {
+      return addDays(parseISO(slot1DateRange.to), 1)
+    }
+    return undefined
+  }
+
+  const getSlot3MinDate = () => {
+    if (slot2DateRange?.to) {
+      return addDays(parseISO(slot2DateRange.to), 1)
+    } else if (slot1DateRange?.to) {
+      return addDays(parseISO(slot1DateRange.to), 1)
+    }
+    return undefined
+  }
+
+  // Auto-update slot start dates when previous slot ends
+  useEffect(() => {
+    if (slot1DateRange?.to && !slot2DateRange?.from) {
+      const nextDay = addDays(parseISO(slot1DateRange.to), 1)
+      form.setValue("slot2DateRange.from", format(nextDay, "yyyy-MM-dd"))
+    }
+  }, [slot1DateRange?.to, slot2DateRange?.from, form])
+
+  useEffect(() => {
+    if (slot2DateRange?.to && !form.watch("slot3DateRange")?.from) {
+      const nextDay = addDays(parseISO(slot2DateRange.to), 1)
+      form.setValue("slot3DateRange.from", format(nextDay, "yyyy-MM-dd"))
+    }
+  }, [slot2DateRange?.to, form])
+
   // Handle date range changes
   const handleDateRangeChange = (
     field: "applicationsDateRange" | "slot1DateRange" | "slot2DateRange" | "slot3DateRange",
     value: { from: string; to: string },
   ) => {
     form.setValue(field, value, { shouldValidate: false })
+
+    // Auto-update subsequent slots when a slot's end date changes
+    if (field === "slot1DateRange" && value.to) {
+      const nextDay = addDays(parseISO(value.to), 1)
+      const currentSlot2 = form.watch("slot2DateRange")
+      if (!currentSlot2?.from || parseISO(currentSlot2.from) <= parseISO(value.to)) {
+        form.setValue("slot2DateRange.from", format(nextDay, "yyyy-MM-dd"))
+      }
+    }
+
+    if (field === "slot2DateRange" && value.to) {
+      const nextDay = addDays(parseISO(value.to), 1)
+      const currentSlot3 = form.watch("slot3DateRange")
+      if (!currentSlot3?.from || parseISO(currentSlot3.from) <= parseISO(value.to)) {
+        form.setValue("slot3DateRange.from", format(nextDay, "yyyy-MM-dd"))
+      }
+    }
   }
 
   const onSubmit = (data: FormValues) => {
@@ -354,45 +419,49 @@ export function Exam() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="dark:text-slate-200 flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                  Exam Slot One <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <DateRangePickerWithRange
-                  value={form.watch("slot1DateRange")}
-                  onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
-                  isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
-                />
-              </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="dark:text-slate-200 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Exam Slot One <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <DateRangePickerWithRange
+                    value={form.watch("slot1DateRange")}
+                    onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
+                    isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="dark:text-slate-200 flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                  Exam Slot Two (if applicable)
-                </Label>
-                <DateRangePickerWithRange
-                  value={{
-                    from: form.watch("slot2DateRange")?.from || "",
-                    to: form.watch("slot2DateRange")?.to || "",
-                  }}
-                  onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="dark:text-slate-200 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Exam Slot Two (optional)
+                  </Label>
+                  <DateRangePickerWithRange
+                    value={{
+                      from: form.watch("slot2DateRange")?.from || "",
+                      to: form.watch("slot2DateRange")?.to || "",
+                    }}
+                    onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
+                    minDate={getSlot2MinDate()}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="dark:text-slate-200 flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                  Exam Slot Three (if applicable)
-                </Label>
-                <DateRangePickerWithRange
-                  value={{
-                    from: form.watch("slot3DateRange")?.from || "",
-                    to: form.watch("slot3DateRange")?.to || "",
-                  }}
-                  onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
-                />
+                <div className="space-y-2">
+                  <Label className="dark:text-slate-200 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Exam Slot Three (optional)
+                  </Label>
+                  <DateRangePickerWithRange
+                    value={{
+                      from: form.watch("slot3DateRange")?.from || "",
+                      to: form.watch("slot3DateRange")?.to || "",
+                    }}
+                    onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
+                    minDate={getSlot3MinDate()}
+                  />
+                </div>
               </div>
             </div>
 
@@ -426,94 +495,97 @@ export function Exam() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/80">
-            <div className="p-4">
-              <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[...exams].reverse().map((exam) => (
-                 <div className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]">
-                 <div className="absolute top-0 right-0 p-2">
-                   <div className="flex items-center space-x-2">
-                     <span className="text-xs dark:text-slate-400">{exam.isBlocked ? "Blocked" : "Active"}</span>
-                     <Switch
-                       checked={exam.isBlocked}
-                       onCheckedChange={() => toggleBlock(exam.id)}
-                       className="data-[state=checked]:bg-slate-700"
-                     />
-                   </div>
-                 </div>
-           
-                 <div className="mb-4 flex items-center">
-                   <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
-                     <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                   </div>
-                   <h3 className="font-bold text-lg dark:text-white">{exam.name}</h3>
-                 </div>
-           
-                 <div className="space-y-2 mb-4">
-                   <div className="flex items-center text-sm">
-                     <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                     <span className="dark:text-slate-300">{exam.location}</span>
-                   </div>
-           
-                   <div className="flex items-center text-sm">
-                     <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                     <span className="dark:text-slate-300">
-                       {exam.openingDate} - {exam.closingDate}
-                     </span>
-                   </div>
-           
-                   <div className="flex items-center text-sm">
-                     <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                     <span className="dark:text-slate-300">
-                       Limit: {exam.applicationsLimit} (Waiting: {exam.waitingLimit})
-                     </span>
-                   </div>
-                 </div>
-           
-                 <div className="space-y-1 flex-grow">
-                   <h4 className="text-sm font-semibold dark:text-slate-200">Exam Slots:</h4>
-                   {exam.slot1 && (
-                     <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                       Slot 1: {exam.slot1}
-                     </div>
-                   )}
-                   {exam.slot2 && (
-                     <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                       Slot 2: {exam.slot2}
-                     </div>
-                   )}
-                   {exam.slot3 && (
-                     <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                       Slot 3: {exam.slot3}
-                     </div>
-                   )}
-                 </div>
-           
-                 <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
-                   <Badge
-                     variant="outline"
-                     className="bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 border-blue-200 dark:border-blue-800 cursor-pointer transition-colors"
-                   >
-                     <a href={exam.formLink} target="_blank" rel="noopener noreferrer">
-                       Form Link
-                     </a>
-                   </Badge>
-           
-                   <Button
-                     variant="outline"
-                     size="sm"
-                     className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 transition-all duration-200 transform hover:scale-105 btn-glow"
-                     onClick={() => handleEdit(exam)}
-                   >
-                     <Edit className="h-4 w-4 mr-1" />
-                     Edit
-                   </Button>
-                 </div>
-           
-                 <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-               </div>
-                ))}
-              </div>
+          <div className="p-4">
+            <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {[...exams].reverse().map((exam) => (
+                <div
+                  key={exam.id}
+                  className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]"
+                >
+                  <div className="absolute top-0 right-0 p-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs dark:text-slate-400">{exam.isBlocked ? "Blocked" : "Active"}</span>
+                      <Switch
+                        checked={exam.isBlocked}
+                        onCheckedChange={() => toggleBlock(exam.id)}
+                        className="data-[state=checked]:bg-slate-700"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4 flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
+                      <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h3 className="font-bold text-lg dark:text-white">{exam.name}</h3>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm">
+                      <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                      <span className="dark:text-slate-300">{exam.location}</span>
+                    </div>
+
+                    <div className="flex items-center text-sm">
+                      <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                      <span className="dark:text-slate-300">
+                        {exam.openingDate} - {exam.closingDate}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-sm">
+                      <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                      <span className="dark:text-slate-300">
+                        Limit: {exam.applicationsLimit} (Waiting: {exam.waitingLimit})
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 flex-grow">
+                    <h4 className="text-sm font-semibold dark:text-slate-200">Exam Slots:</h4>
+                    {exam.slot1 && (
+                      <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
+                        Slot 1: {exam.slot1}
+                      </div>
+                    )}
+                    {exam.slot2 && (
+                      <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
+                        Slot 2: {exam.slot2}
+                      </div>
+                    )}
+                    {exam.slot3 && (
+                      <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
+                        Slot 3: {exam.slot3}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
+                    <Badge
+                      variant="outline"
+                      className="bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 border-blue-200 dark:border-blue-800 cursor-pointer transition-colors"
+                    >
+                      <a href={exam.formLink} target="_blank" rel="noopener noreferrer">
+                        Form Link
+                      </a>
+                    </Badge>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 transition-all duration-200 transform hover:scale-105 btn-glow"
+                      onClick={() => handleEdit(exam)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                </div>
+              ))}
             </div>
+          </div>
         </CardContent>
       </Card>
     </div>
