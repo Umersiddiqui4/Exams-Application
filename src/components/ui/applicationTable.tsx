@@ -58,10 +58,13 @@ export default function ApplicationTable() {
 
       useEffect(() => {
        const CurrentExam: any = initialExams[initialExams.length - 1];
+       if(CurrentExam && CurrentExam.id) {
        setSelectedExam(CurrentExam.id.toString());
+       }
       }, [initialExams]);
       
       console.log("Selected Exam:", selectedExam);
+      console.log("initial Exam:", initialExams);
       
 
     const actionColumn = {
