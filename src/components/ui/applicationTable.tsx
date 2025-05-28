@@ -56,6 +56,14 @@ export default function ApplicationTable() {
       const [searchQuery, setSearchQuery] = useState<string>("");
       const applications = useSelector(selectApplications);
 
+      useEffect(() => {
+       const CurrentExam: any = initialExams[initialExams.length - 1];
+       setSelectedExam(CurrentExam.id.toString());
+      }, [initialExams]);
+      
+      console.log("Selected Exam:", selectedExam);
+      
+
     const actionColumn = {
         id: "actions",
         header: "Action",
@@ -868,204 +876,195 @@ export default function ApplicationTable() {
     setFilteredData(statusFiltered);
   }, [activeFilter, selectedExam, applications, searchQuery]);
 
-  return (
+ return (
     <div>
       <Card className="shadow-lg border-0 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-                <CardHeader className="bg-slate-100 dark:bg-slate-800 flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xl font-bold">
-                    Applications
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                        >
-                          <Filter className="h-4 w-4 mr-2" />
-                          Filter
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="dark:bg-slate-900 dark:border-slate-700"
-                      >
-                        <DropdownMenuItem
-                          onClick={() => setActiveFilter("all")}
-                          className="dark:text-slate-200 dark:focus:bg-slate-800"
-                        >
-                          All
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setActiveFilter("pending")}
-                          className="dark:text-slate-200 dark:focus:bg-slate-800"
-                        >
-                          Pending
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setActiveFilter("approved")}
-                          className="dark:text-slate-200 dark:focus:bg-slate-800"
-                        >
-                          Approved
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setActiveFilter("rejected")}
-                          className="dark:text-slate-200 dark:focus:bg-slate-800"
-                        >
-                          Rejected
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setActiveFilter("waiting")}
-                          className="dark:text-slate-200 dark:focus:bg-slate-800"
-                        >
-                          Waiting
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+        <CardHeader className="bg-[#5c347d] dark:bg-[#3b1f52] flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xl font-bold text-white">Applications</CardTitle>
+          <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("all")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  All
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("pending")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Pending
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("approved")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Approved
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("rejected")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Rejected
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("waiting")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Waiting
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleExport}
-                      disabled={isExporting}
-                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    >
-                      {isExporting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Exporting...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Export
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0 ">
-                  <div className="p-4 dark:bg-slate-900">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-                      <div className="flex items-center space-x-2 flex-wrap gap-2">
-                        <Badge
-                          variant={
-                            activeFilter === "all" ? "default" : "outline"
-                          }
-                          className="cursor-pointer dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:border-slate-600"
-                          onClick={() => setActiveFilter("all")}
-                        >
-                          All
-                        </Badge>
-                        <Badge
-                          variant={
-                            activeFilter === "pending" ? "default" : "outline"
-                          }
-                          className="cursor-pointer dark:bg-amber-700 dark:text-amber-100 dark:hover:bg-amber-600 dark:border-amber-600"
-                          onClick={() => setActiveFilter("pending")}
-                        >
-                          Pending
-                        </Badge>
-                        <Badge
-                          variant={
-                            activeFilter === "approved" ? "default" : "outline"
-                          }
-                          className="cursor-pointer dark:bg-green-700 dark:text-green-100 dark:hover:bg-green-600 dark:border-green-600"
-                          onClick={() => setActiveFilter("approved")}
-                        >
-                          Approved
-                        </Badge>
-                        <Badge
-                          variant={
-                            activeFilter === "rejected" ? "default" : "outline"
-                          }
-                          className="cursor-pointer dark:bg-red-700 dark:text-red-100 dark:hover:bg-red-600 dark:border-red-600"
-                          onClick={() => setActiveFilter("rejected")}
-                        >
-                          Rejected
-                        </Badge>
-                        <Badge
-                          variant={
-                            activeFilter === "waiting" ? "default" : "outline"
-                          }
-                          className="cursor-pointer dark:bg-blue-700 dark:text-blue-100 dark:hover:bg-blue-600 dark:border-blue-600"
-                          onClick={() => setActiveFilter("waiting")}
-                        >
-                          Waiting
-                        </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={isExporting}
+              className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30 disabled:opacity-50"
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </>
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="p-4 dark:bg-slate-900">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+              <div className="flex items-center space-x-2 flex-wrap gap-2">
+                <Badge
+                  variant={activeFilter === "all" ? "default" : "outline"}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    activeFilter === "all"
+                      ? "bg-[#5c347d] hover:bg-[#4a2a68] text-white dark:bg-[#3b1f52] dark:hover:bg-[#2d1840]"
+                      : "border-[#5c347d] text-[#5c347d] hover:bg-[#5c347d] hover:text-white dark:border-[#3b1f52] dark:text-[#8b5fbf] dark:hover:bg-[#3b1f52] dark:hover:text-white"
+                  }`}
+                  onClick={() => setActiveFilter("all")}
+                >
+                  All
+                </Badge>
+                <Badge
+                  variant={activeFilter === "pending" ? "default" : "outline"}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    activeFilter === "pending"
+                      ? "bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-700 dark:hover:bg-amber-600"
+                      : "border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-600 dark:hover:text-white"
+                  }`}
+                  onClick={() => setActiveFilter("pending")}
+                >
+                  Pending
+                </Badge>
+                <Badge
+                  variant={activeFilter === "approved" ? "default" : "outline"}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    activeFilter === "approved"
+                      ? "bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600"
+                      : "border-green-600 text-green-600 hover:bg-green-600 hover:text-white dark:border-green-600 dark:text-green-400 dark:hover:bg-green-600 dark:hover:text-white"
+                  }`}
+                  onClick={() => setActiveFilter("approved")}
+                >
+                  Approved
+                </Badge>
+                <Badge
+                  variant={activeFilter === "rejected" ? "default" : "outline"}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    activeFilter === "rejected"
+                      ? "bg-red-600 hover:bg-red-700 text-white dark:bg-red-700 dark:hover:bg-red-600"
+                      : "border-red-600 text-red-600 hover:bg-red-600 hover:text-white dark:border-red-600 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+                  }`}
+                  onClick={() => setActiveFilter("rejected")}
+                >
+                  Rejected
+                </Badge>
+                <Badge
+                  variant={activeFilter === "waiting" ? "default" : "outline"}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    activeFilter === "waiting"
+                      ? "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600"
+                      : "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white"
+                  }`}
+                  onClick={() => setActiveFilter("waiting")}
+                >
+                  Waiting
+                </Badge>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4 items-center">
+                {/* Exam Dropdown */}
+                <div className="w-full md:w-64">
+                  <Select value={selectedExam} onValueChange={handleExamChange}>
+                    <SelectTrigger className="w-full dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-[#5c347d] dark:text-[#8b5fbf]" />
+                        <SelectValue placeholder="Select Exam" />
                       </div>
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      {initialExams.map((exam: any) => (
+                        <SelectItem
+                          key={exam.id}
+                          value={exam.id.toString()}
+                          className="dark:text-slate-200 dark:focus:bg-slate-800 focus:bg-[#5c347d]/10 focus:text-[#5c347d]"
+                        >
+                          {exam.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                      <div className="flex flex-col md:flex-row gap-4 items-center">
-                        {/* Exam Dropdown */}
-                        <div className="w-full md:w-64">
-                          <Select
-                            value={selectedExam}
-                            onValueChange={handleExamChange}
-                          >
-                            <SelectTrigger className="w-full dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-2 text-indigo-500 dark:text-indigo-400" />
-                                <SelectValue placeholder="Select Exam" />
-                              </div>
-                            </SelectTrigger>
-                            <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
-                              <SelectItem
-                                value="all"
-                                className="dark:text-slate-200 dark:focus:bg-slate-800"
-                              >
-                                All Exams
-                              </SelectItem>
-                              {initialExams.map((exam) => (
-                                <SelectItem
-                                  key={exam.id}
-                                  value={exam.id.toString()}
-                                  className="dark:text-slate-200 dark:focus:bg-slate-800"
-                                >
-                                  {exam.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Search */}
-                        <div className="relative w-full md:w-64">
-                          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-slate-400" />
-                          <Input
-                            placeholder="Search by SNO, name, email, candidate ID..."
-                            className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Selected Exam Info */}
-                    {selectedExam !== "all" && (
-                      <div className="mb-4 p-3  bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
-                        <div className="flex items-center">
-                          <Calendar className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
-                          <span className="font-medium dark:text-slate-200">
-                            Showing applications for:{" "}
-                            <span className="text-indigo-600 dark:text-indigo-400">
-                              {applications.find(
-                                (exam) => exam.examId === selectedExam
-                              )?.examName || "N/A"}
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <DataTable
-                    columns={columnsWithActions}
-                    data={filteredData || []}
+                {/* Search */}
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-slate-400" />
+                  <Input
+                    placeholder="Search by SNO, name, email, candidate ID..."
+                    className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            </div>
+
+            {/* Selected Exam Info */}
+            {selectedExam !== "all" && (
+              <div className="mb-4 p-3 bg-[#5c347d]/10 dark:bg-[#3b1f52]/20 rounded-md border border-[#5c347d]/20 dark:border-[#3b1f52]/30">
+                <div className="flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-[#5c347d] dark:text-[#8b5fbf]" />
+                  <span className="font-medium dark:text-slate-200 text-slate-700">
+                    Showing applications for:{" "}
+                    <span className="text-[#5c347d] dark:text-[#8b5fbf] font-semibold">
+                      {applications.find((exam: any) => exam.examId === selectedExam)?.examName || "N/A"}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DataTable columns={columnsWithActions} data={filteredData || []} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

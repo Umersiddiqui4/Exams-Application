@@ -43,7 +43,7 @@ export default function Applications() {
       {sidebarOpen && (
         <div
           className={`${isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"
-            } bg-slate-800 text-slate-100 shadow-lg transition-all duration-300 dark:bg-slate-900`}
+            } bg-[#5c347d] text-slate-100 shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}
         >
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -109,7 +109,7 @@ export default function Applications() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top navbar */}
-        <header className="bg-slate-800 text-slate-100 h-16 flex items-center px-4 shadow-md dark:bg-slate-900">
+        <header className="bg-[#5c347d] text-slate-100 h-16 flex items-center px-4 shadow-md dark:bg-[#3b1f52]">
           {!sidebarOpen && (
             <Button
               variant="ghost"

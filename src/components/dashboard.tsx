@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useTheme } from "../components/theme-provider";
+import { useState, useEffect } from "react"
+import { useTheme } from "../components/theme-provider"
 import {
   LayoutDashboard,
   FileText,
@@ -11,64 +11,66 @@ import {
   Menu,
   X,
   UserSquare,
-} from "lucide-react";
+  ClipboardList,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react"
 
-import { Button } from "../components/ui/button";
-import { StatusCard } from "../components/status-card";
-import { useMobile } from "../hooks/use-mobile";
-import { Tabs, TabsContent } from "../components/ui/tabs";
+import { Button } from "../components/ui/button"
+import { useMobile } from "../hooks/use-mobile"
+import { Tabs, TabsContent } from "../components/ui/tabs"
 
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "@/redux/Slice";
-import { selectApplications } from "@/redux/applicationsSlice";
-import { selectExams } from "@/redux/examDataSlice";
+import { useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
+import { logout } from "@/redux/Slice"
+import { selectApplications } from "@/redux/applicationsSlice"
+import { selectExams } from "@/redux/examDataSlice"
+import { StatusCard } from "./ui/status-card"
 
 export function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<string>("all");
-  const { theme, setTheme } = useTheme();
-  const navigate = useNavigate();
-  const isMobile = useMobile();
-  const [open, setOpen] = useState(false);
-  const dispatch = useDispatch();
-  const applications = useSelector(selectApplications);
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeFilter, setActiveFilter] = useState<string>("all")
+  const { theme, setTheme } = useTheme()
+  const navigate = useNavigate()
+  const isMobile = useMobile()
+  const [open, setOpen] = useState(false)
+  const dispatch = useDispatch()
+  const applications = useSelector(selectApplications)
   const exams = useSelector(selectExams)
-  const CurrentExam: any = exams[exams.length - 1];
+  const CurrentExam: any = exams[exams.length - 1]
   const handleLogout = () => {
-    dispatch(logout());
-    window.location.href = "/login";
-  };
-console.log(exams,"exams");
-console.log(CurrentExam,"CurrentExam");
+    dispatch(logout())
+    window.location.href = "/login"
+  }
+  console.log(exams, "exams")
+  console.log(CurrentExam, "CurrentExam")
 
-const currentExamApplications = applications.filter(
-  (app) => app.examId === CurrentExam.id
-);
-  console.log(currentExamApplications, "currentExamApplications");
+  const currentExamApplications = applications.filter((app) => app.examId === CurrentExam.id)
+  console.log(currentExamApplications, "currentExamApplications")
   useEffect(() => {
     if (isMobile) {
-      setSidebarOpen(false);
+      setSidebarOpen(false)
     } else {
-      setSidebarOpen(true);
+      setSidebarOpen(true)
     }
-  }, [isMobile]);
+  }, [isMobile])
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+    setSidebarOpen(!sidebarOpen)
+  }
 
   const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
+    const newTheme = theme === "dark" ? "light" : "dark"
+    setTheme(newTheme)
     // Force theme update by setting a data attribute on document.documentElement
     if (typeof window !== "undefined") {
-      document.documentElement.setAttribute("data-theme", newTheme);
+      document.documentElement.setAttribute("data-theme", newTheme)
     }
-  };
+  }
 
   function nav(props: string) {
-    navigate(props);
+    navigate(props)
   }
 
   return (
@@ -78,7 +80,7 @@ const currentExamApplications = applications.filter(
         <div
           className={`${
             isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"
-          } bg-slate-800 text-slate-100 shadow-lg transition-all duration-300 dark:bg-slate-900`}
+          } bg-[#5c347d] text-white shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}
         >
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -143,7 +145,7 @@ const currentExamApplications = applications.filter(
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top navbar */}
-        <header className="bg-slate-800 text-slate-100 h-16 flex items-center px-4 shadow-md dark:bg-slate-900">
+        <header className="bg-[#5c347d] text-slate-100 h-16 flex items-center px-4 shadow-md dark:bg-[#3b1f52]">
           {!sidebarOpen && (
             <Button
               variant="ghost"
@@ -166,11 +168,7 @@ const currentExamApplications = applications.filter(
                   className="bg-transparent rounded-full p-2 border-slate-600 text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
                   onClick={toggleTheme}
                 >
-                  {theme === "dark" ? (
-                    <Sun className="h-4 w-4" />
-                  ) : (
-                    <Moon className="h-4 w-4" />
-                  )}
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </Button>
               )}
 
@@ -182,11 +180,7 @@ const currentExamApplications = applications.filter(
                   onMouseEnter={() => setOpen(true)} // open on hover
                   onMouseLeave={() => setOpen(false)} // close on leave
                 >
-                  <img
-                    src="/profile.png"
-                    alt="profile"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/profile.png" alt="profile" className="w-full h-full object-cover" />
                 </div>
 
                 {/* Dropdown menu */}
@@ -213,45 +207,39 @@ const currentExamApplications = applications.filter(
         <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
           <Tabs defaultValue="applications" className="w-full">
             <TabsContent value="applications">
-                
               <div className="text-3xl p-3">All Batch Status</div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
                 <StatusCard
                   title="Total Requests"
                   value={applications.length}
-                  color="bg-slate-600 dark:bg-slate-700"
+                  color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("totalAll")}
                   active={activeFilter === "totalAll"}
+                  icon={ClipboardList}
                 />
                 <StatusCard
                   title="Pending Requests"
-                  value={
-                    applications.filter((app) => app.status === "pending")
-                      .length
-                  }
+                  value={applications.filter((app) => app.status === "pending").length}
                   color="bg-amber-600 dark:bg-amber-700"
                   onClick={() => setActiveFilter("totalPending")}
                   active={activeFilter === "totalPending"}
+                  icon={Clock}
                 />
                 <StatusCard
                   title="Approved Requests"
-                  value={
-                    applications.filter((app) => app.status === "approved")
-                      .length
-                  }
+                  value={applications.filter((app) => app.status === "approved").length}
                   color="bg-green-600 dark:bg-green-700"
                   onClick={() => setActiveFilter("totalApproved")}
                   active={activeFilter === "totalApproved"}
+                  icon={CheckCircle}
                 />
                 <StatusCard
                   title="Rejected Requests"
-                  value={
-                    applications.filter((app) => app.status === "rejected")
-                      .length
-                  }
+                  value={applications.filter((app) => app.status === "rejected").length}
                   color="bg-red-600 dark:bg-red-700"
                   onClick={() => setActiveFilter("totalRejected")}
                   active={activeFilter === "totalRejected"}
+                  icon={XCircle}
                 />
               </div>
               <div className="text-3xl p-3">Current Batch Status</div>
@@ -259,39 +247,34 @@ const currentExamApplications = applications.filter(
                 <StatusCard
                   title="Total Requests"
                   value={currentExamApplications.length}
-                  color="bg-slate-600 dark:bg-slate-700"
+                  color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("all")}
                   active={activeFilter === "all"}
+                  icon={ClipboardList}
                 />
                 <StatusCard
                   title="Pending Requests"
-                  value={
-                    currentExamApplications.filter((app: any) => app.status === "pending")
-                      .length
-                  }
+                  value={currentExamApplications.filter((app: any) => app.status === "pending").length}
                   color="bg-amber-600 dark:bg-amber-700"
                   onClick={() => setActiveFilter("pending")}
                   active={activeFilter === "pending"}
+                  icon={Clock}
                 />
                 <StatusCard
                   title="Approved Requests"
-                  value={
-                    currentExamApplications.filter((app: any) => app.status === "approved")
-                      .length
-                  }
+                  value={currentExamApplications.filter((app: any) => app.status === "approved").length}
                   color="bg-green-600 dark:bg-green-700"
                   onClick={() => setActiveFilter("approved")}
                   active={activeFilter === "approved"}
+                  icon={CheckCircle}
                 />
                 <StatusCard
                   title="Rejected Requests"
-                  value={
-                    currentExamApplications.filter((app: any) => app.status === "rejected")
-                      .length
-                  }
+                  value={currentExamApplications.filter((app: any) => app.status === "rejected").length}
                   color="bg-red-600 dark:bg-red-700"
                   onClick={() => setActiveFilter("rejected")}
                   active={activeFilter === "rejected"}
+                  icon={XCircle}
                 />
               </div>
             </TabsContent>
@@ -299,5 +282,5 @@ const currentExamApplications = applications.filter(
         </main>
       </div>
     </div>
-  );
+  )
 }
