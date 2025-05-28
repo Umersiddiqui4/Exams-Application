@@ -3,7 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 interface ExamData {
   id: string
   name: string
-  location: string
+  location: string | string[]
+  examType: "OSCE" | "AKTs"
   openingDate: string
   closingDate: string
   slot1: string
