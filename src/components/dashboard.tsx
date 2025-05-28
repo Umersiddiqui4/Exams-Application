@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/redux/Slice";
 import { selectApplications } from "@/redux/applicationsSlice";
+import { selectExams } from "@/redux/examDataSlice";
 
 export function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -32,12 +33,19 @@ export function Dashboard() {
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
   const applications = useSelector(selectApplications);
-
+  const exams = useSelector(selectExams)
+  const CurrentExam: any = exams[exams.length - 1];
   const handleLogout = () => {
     dispatch(logout());
     window.location.href = "/login";
   };
+console.log(exams,"exams");
+console.log(CurrentExam,"CurrentExam");
 
+const currentExamApplications = applications.filter(
+  (app) => app.examId === CurrentExam.id
+);
+  console.log(currentExamApplications, "currentExamApplications");
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
@@ -250,7 +258,7 @@ export function Dashboard() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
                 <StatusCard
                   title="Total Requests"
-                  value={applications.length}
+                  value={currentExamApplications.length}
                   color="bg-slate-600 dark:bg-slate-700"
                   onClick={() => setActiveFilter("all")}
                   active={activeFilter === "all"}
@@ -258,7 +266,7 @@ export function Dashboard() {
                 <StatusCard
                   title="Pending Requests"
                   value={
-                    applications.filter((app) => app.status === "pending")
+                    currentExamApplications.filter((app: any) => app.status === "pending")
                       .length
                   }
                   color="bg-amber-600 dark:bg-amber-700"
@@ -268,7 +276,7 @@ export function Dashboard() {
                 <StatusCard
                   title="Approved Requests"
                   value={
-                    applications.filter((app) => app.status === "approved")
+                    currentExamApplications.filter((app: any) => app.status === "approved")
                       .length
                   }
                   color="bg-green-600 dark:bg-green-700"
@@ -278,7 +286,7 @@ export function Dashboard() {
                 <StatusCard
                   title="Rejected Requests"
                   value={
-                    applications.filter((app) => app.status === "rejected")
+                    currentExamApplications.filter((app: any) => app.status === "rejected")
                       .length
                   }
                   color="bg-red-600 dark:bg-red-700"
