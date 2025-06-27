@@ -42,8 +42,9 @@ export default function Applications() {
       {/* Sidebar - transforms to top navbar on mobile */}
       {sidebarOpen && (
         <div
-          className={`${isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"
-            } bg-[#5c347d] text-slate-100 shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}
+          className={`${
+            isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"
+          } bg-[#5c347d] text-slate-100 shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}
         >
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -88,7 +89,6 @@ export default function Applications() {
                   onClick={() => nav("/exam")}
                 >
                   <UserSquare className="mr-2 h-5 w-5" />
-                  
                   Exams
                 </Button>
               </li>
@@ -124,7 +124,7 @@ export default function Applications() {
           <div className="flex-1 flex items-center justify-between">
             <h1 className="text-xl font-bold">Applications</h1>
 
-            <div className="flex items-center space-x-4 " >
+            <div className="flex items-center space-x-4 ">
               {!isMobile && (
                 <Button
                   variant="outline"

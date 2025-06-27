@@ -31,6 +31,8 @@ import "../App.css";
 
 import {
   ApplicationPDFComplete,
+  ApplicationPDFCompleteAkt,
+  ApplicationPDFCompleteAktPreview,
   ApplicationPDFCompletePreview,
 } from "./ui/pdf-generator";
 import {
@@ -43,7 +45,6 @@ import {
 } from "./schema/applicationSchema";
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
-
 
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -561,10 +562,18 @@ export function ApplicationForm() {
                 <PDFDownloadLink
                   id="pdf-download-link"
                   document={
-                    <ApplicationPDFComplete
-                      data={currentForm.getValues()}
-                      images={pdfImages}
-                    />
+                    !selectedExamType ? (
+                      <ApplicationPDFComplete
+                        data={currentForm.getValues()}
+                        images={pdfImages}
+                      />
+                    ) : (
+                      <ApplicationPDFCompleteAkt
+                        data={currentForm.getValues()}
+                        image={attachments}
+                        images={pdfImages}
+                      />
+                    )
                   }
                   fileName="MRCGP_Application_Form.pdf"
                   className="hidden"
@@ -588,10 +597,18 @@ export function ApplicationForm() {
                 <PDFDownloadLink
                   id="pdf-download-preview-link"
                   document={
-                    <ApplicationPDFCompletePreview
-                      data={currentForm.getValues()}
-                      images={pdfImages}
-                    />
+                    !selectedExamType ? (
+                      <ApplicationPDFCompletePreview
+                        data={currentForm.getValues()}
+                        images={pdfImages}
+                      />
+                    ) : (
+                      <ApplicationPDFCompleteAktPreview
+                        data={currentForm.getValues()}
+                        image={attachments}
+                        images={pdfImages}
+                      />
+                    )
                   }
                   fileName="MRCGP_Application_Form.pdf"
                   className="hidden"
