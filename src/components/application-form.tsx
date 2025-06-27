@@ -44,12 +44,13 @@ import {
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
 
-// Part 1 exam dates
 
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<any>([]);
   const [medicalLicensePreview, setMedicalLicensePreview] = useState<
     string | null
   >(null);
@@ -280,6 +281,11 @@ export function ApplicationForm() {
                 (data as AktsFormValues).candidateStatementC || false,
               examinationCenter:
                 (data as AktsFormValues).examinationCenter || "",
+              attachments: attachments.map((att: any) => ({
+                id: att.id,
+                attachmentUrl: att.attachmentUrl || "",
+                title: att.title || "",
+              })),
             }
           : {
               medicalLicenseUrl: medicalLicensePreview || "",
@@ -423,6 +429,10 @@ export function ApplicationForm() {
       case "signature":
         setSignaturePreview(publicUrl);
         break;
+      case "attachment":
+        setAttachmentUrl(publicUrl);
+        return publicUrl; // Return URL for attachments
+        break;
     }
 
     return true;
@@ -541,6 +551,9 @@ export function ApplicationForm() {
                   fileError={fileError}
                   validateFile={validateFile}
                   selectedExam={selectedExam}
+                  attachmentUrl={attachmentUrl}
+                  attachments={attachments}
+                  setAttachments={setAttachments}
                 />
               )}
 

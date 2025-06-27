@@ -68,7 +68,7 @@ const aktsFormSchema = z.object({
   agreementDate: z.date({
     required_error: "Date is required",
   }),
-  
+  attachments: z.array(z.any()).optional()
 })
 
 
@@ -207,4 +207,5 @@ export const aktsFormDefaultValues: AktsFormValues = {
   candidateStatementA: false,
   candidateStatementB: false,
   candidateStatementC: false,
+  attachments: [],
 };

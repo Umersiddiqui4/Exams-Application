@@ -55,6 +55,7 @@ export default function ApplicationTable() {
       const dispatch = useDispatch();
       const [searchQuery, setSearchQuery] = useState<string>("");
       const applications = useSelector(selectApplications);
+console.log("Applications:", applications);
 
       useEffect(() => {
        const CurrentExam: any = initialExams[initialExams.length - 1];
