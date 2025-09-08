@@ -153,7 +153,7 @@ export function Dashboard() {
             <h1 className="text-xl font-bold">Dashboard</h1>
 
             <div className="flex items-center space-x-4">
-            <GooeyMenu onLogout={handleLogout} />
+            <GooeyMenu />
 
               <SimpleAnimatedThemeToggle 
                 variant="circle"

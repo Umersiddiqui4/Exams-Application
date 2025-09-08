@@ -8,11 +8,10 @@ import { useDispatch } from "react-redux";
 import { Close } from "@radix-ui/react-toast";
 
 interface GooeyMenuProps {
-  onLogout: () => void
   className?: string
 }
 
-export function GooeyMenu({ onLogout, className }: GooeyMenuProps) {
+export function GooeyMenu({ className }: GooeyMenuProps) {
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch();
 

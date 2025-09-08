@@ -124,7 +124,7 @@ export default function ExamComponent() {
             <h1 className="text-xl font-bold">Exams</h1>
 
             <div className="flex items-center space-x-4 " >
-            <GooeyMenu onLogout={handleLogout} />
+            <GooeyMenu />
 
               <SimpleAnimatedThemeToggle 
                 variant="circle"
