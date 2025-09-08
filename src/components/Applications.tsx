@@ -10,13 +10,17 @@ import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useMobile } from "../hooks/use-mobile";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/Slice";
 import ApplicationTable from "./ui/applicationTable";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
+import { GooeyMenu } from "./GooeyMenu";
 
 export default function Applications() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const isMobile = useMobile();
+  const dispatch = useDispatch();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -26,6 +30,11 @@ export default function Applications() {
   function nav(props: string) {
     navigate(props);
   }
+
+  const handleLogout = () => {
+    dispatch(logout());
+    window.location.href = "/login";
+  };
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
@@ -115,15 +124,13 @@ export default function Applications() {
             <h1 className="text-xl font-bold">Applications</h1>
 
             <div className="flex items-center space-x-4 " >
+            <GooeyMenu onLogout={handleLogout} />
               <SimpleAnimatedThemeToggle 
                 variant="circle"
                 start="top-right"
                 className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
               />
 
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
-                <img src="/profile.png" alt="404" />
-              </div>
             </div>
           </div>
         </header>

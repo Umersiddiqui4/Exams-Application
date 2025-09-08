@@ -25,6 +25,7 @@ import { logout } from "@/redux/Slice"
 import { selectApplications } from "@/redux/applicationsSlice"
 import { selectExams } from "@/redux/examDataSlice"
 import { StatusCard } from "./ui/status-card"
+import { GooeyMenu } from "./GooeyMenu"
 
 export function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -32,7 +33,7 @@ export function Dashboard() {
   // Theme is now handled by SimpleAnimatedThemeToggle component
   const navigate = useNavigate()
   const isMobile = useMobile()
-  const [open, setOpen] = useState(false)
+  // Local dropdown state handled inside GooeyMenu
   const dispatch = useDispatch()
   const applications = useSelector(selectApplications)
   const exams = useSelector(selectExams)
@@ -152,39 +153,14 @@ export function Dashboard() {
             <h1 className="text-xl font-bold">Dashboard</h1>
 
             <div className="flex items-center space-x-4">
+            <GooeyMenu onLogout={handleLogout} />
+
               <SimpleAnimatedThemeToggle 
                 variant="circle"
                 start="top-right"
                 className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
               />
 
-              <div className="relative">
-                {/* Profile Picture */}
-                <div
-                  className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer"
-                  onClick={() => setOpen(!open)} // toggle on click
-                  onMouseEnter={() => setOpen(true)} // open on hover
-                  onMouseLeave={() => setOpen(false)} // close on leave
-                >
-                  <img src="/profile.png" alt="profile" className="w-full h-full object-cover" />
-                </div>
-
-                {/* Dropdown menu */}
-                {open && (
-                  <div
-                    className="absolute right-0 w-32 bg-white border rounded shadow-md z-50"
-                    onMouseEnter={() => setOpen(true)}
-                    onMouseLeave={() => setOpen(false)}
-                  >
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full px-4 py-2 text-sm text-gray-700 dark:bg-slate-800 dark:text-white hover:bg-gray-100 text-left"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </header>
