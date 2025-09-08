@@ -115,13 +115,11 @@ export default function Applications() {
             <h1 className="text-xl font-bold">Applications</h1>
 
             <div className="flex items-center space-x-4 " >
-              {!isMobile && (
-                <SimpleAnimatedThemeToggle 
-                  variant="circle"
-                  start="top-right"
-                  className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                />
-              )}
+              <SimpleAnimatedThemeToggle 
+                variant="circle"
+                start="top-right"
+                className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
+              />
 
               <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
                 <img src="/profile.png" alt="404" />

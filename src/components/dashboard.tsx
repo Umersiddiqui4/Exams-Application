@@ -152,13 +152,11 @@ export function Dashboard() {
             <h1 className="text-xl font-bold">Dashboard</h1>
 
             <div className="flex items-center space-x-4">
-              {!isMobile && (
-                <SimpleAnimatedThemeToggle 
-                  variant="circle"
-                  start="top-right"
-                  className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                />
-              )}
+              <SimpleAnimatedThemeToggle 
+                variant="circle"
+                start="top-right"
+                className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
+              />
 
               <div className="relative">
                 {/* Profile Picture */}
