@@ -11,6 +11,7 @@ import ExamComponent from './components/examComponent';
 import { LoginForm } from './components/LoginForm';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Applications from './components/Applications';
+import { ThemeToggleDemo } from './components/ThemeToggleDemo';
 
 function App() {
   return (
@@ -48,6 +49,10 @@ function App() {
                 <ExamComponent />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/theme-demo"
+            element={<ThemeToggleDemo />}
           />
         </Routes>
         <Toaster />

@@ -1,13 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useTheme } from "../components/theme-provider"
 import {
   LayoutDashboard,
   FileText,
   Settings,
-  Moon,
-  Sun,
   Menu,
   X,
   UserSquare,
@@ -20,6 +17,7 @@ import {
 import { Button } from "../components/ui/button"
 import { useMobile } from "../hooks/use-mobile"
 import { Tabs, TabsContent } from "../components/ui/tabs"
+import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle"
 
 import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
@@ -31,7 +29,7 @@ import { StatusCard } from "./ui/status-card"
 export function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeFilter, setActiveFilter] = useState<string>("all")
-  const { theme, setTheme } = useTheme()
+  // Theme is now handled by SimpleAnimatedThemeToggle component
   const navigate = useNavigate()
   const isMobile = useMobile()
   const [open, setOpen] = useState(false)
@@ -60,14 +58,7 @@ export function Dashboard() {
     setSidebarOpen(!sidebarOpen)
   }
 
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark"
-    setTheme(newTheme)
-    // Force theme update by setting a data attribute on document.documentElement
-    if (typeof window !== "undefined") {
-      document.documentElement.setAttribute("data-theme", newTheme)
-    }
-  }
+  // Theme toggle is now handled by SimpleAnimatedThemeToggle component
 
   function nav(props: string) {
     navigate(props)
@@ -162,14 +153,11 @@ export function Dashboard() {
 
             <div className="flex items-center space-x-4">
               {!isMobile && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-transparent rounded-full p-2 border-slate-600 text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                  onClick={toggleTheme}
-                >
-                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </Button>
+                <SimpleAnimatedThemeToggle 
+                  variant="circle"
+                  start="top-right"
+                  className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
+                />
               )}
 
               <div className="relative">
