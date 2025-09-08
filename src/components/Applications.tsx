@@ -10,8 +10,6 @@ import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useMobile } from "../hooks/use-mobile";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { logout } from "@/redux/Slice";
 import ApplicationTable from "./ui/applicationTable";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
@@ -20,7 +18,6 @@ export default function Applications() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const isMobile = useMobile();
-  const dispatch = useDispatch();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -31,10 +28,7 @@ export default function Applications() {
     navigate(props);
   }
 
-  const handleLogout = () => {
-    dispatch(logout());
-    window.location.href = "/login";
-  };
+  
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">

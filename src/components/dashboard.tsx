@@ -20,8 +20,7 @@ import { Tabs, TabsContent } from "../components/ui/tabs"
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle"
 
 import { useNavigate } from "react-router-dom"
-import { useDispatch, useSelector } from "react-redux"
-import { logout } from "@/redux/Slice"
+import { useSelector } from "react-redux"
 import { selectApplications } from "@/redux/applicationsSlice"
 import { selectExams } from "@/redux/examDataSlice"
 import { StatusCard } from "./ui/status-card"
@@ -34,14 +33,9 @@ export function Dashboard() {
   const navigate = useNavigate()
   const isMobile = useMobile()
   // Local dropdown state handled inside GooeyMenu
-  const dispatch = useDispatch()
   const applications = useSelector(selectApplications)
   const exams = useSelector(selectExams)
   const CurrentExam: any = exams[exams.length - 1]
-  const handleLogout = () => {
-    dispatch(logout())
-    window.location.href = "/login"
-  }
   console.log(exams, "exams")
   console.log(CurrentExam, "CurrentExam")
 

@@ -10,8 +10,6 @@ import { Exam } from "./exam";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useMobile } from "../hooks/use-mobile";
-import { useDispatch } from "react-redux";
-import { logout } from "@/redux/Slice";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
 import { useState } from "react";
@@ -21,7 +19,6 @@ export default function ExamComponent() {
   // Theme is now handled by SimpleAnimatedThemeToggle component
   const navigate = useNavigate();
   const isMobile = useMobile();
-  const dispatch = useDispatch();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -32,10 +29,7 @@ export default function ExamComponent() {
     navigate(props);
   }
 
-  const handleLogout = () => {
-    dispatch(logout());
-    window.location.href = "/login";
-  };
+
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">

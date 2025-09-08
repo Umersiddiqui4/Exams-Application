@@ -5,7 +5,6 @@ import { LogOut, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout } from "@/redux/Slice";
 import { useDispatch } from "react-redux";
-import { Close } from "@radix-ui/react-toast";
 
 interface GooeyMenuProps {
   className?: string
