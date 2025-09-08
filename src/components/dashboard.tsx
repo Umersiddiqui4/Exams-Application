@@ -118,6 +118,7 @@ export function Dashboard() {
                 <Button
                   variant="ghost"
                   className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
+                  onClick={() => nav("/settings")}
                 >
                   <Settings className="mr-2 h-5 w-5" />
                   Settings
