@@ -12,7 +12,6 @@ import { LoginForm } from './components/LoginForm';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Applications from './components/Applications';
 import { ThemeToggleDemo } from './components/ThemeToggleDemo';
-import Settings from './components/Settings';
 
 function App() {
   return (
@@ -26,14 +25,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
               </ProtectedRoute>
             }
           />
