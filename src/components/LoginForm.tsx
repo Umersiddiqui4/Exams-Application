@@ -5,24 +5,60 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { AlertCircle } from 'lucide-react';
-import { login } from '../redux/Slice'; // Import the login action
+import { User, Lock } from 'lucide-react';
+import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/Slice';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from './ui/use-toast';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   // Access the authentication state
-  const { isAuthenticated, error, loading } = useSelector((state: any) => state.auth);
+  const { isAuthenticated, error, loading, errorType } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/"); // Redirect if already authenticated
     }
   }, [isAuthenticated, navigate]);
+
+  // Show toast notification when there's an authentication error
+  useEffect(() => {
+    if (error && errorType) {
+      let toastTitle = 'Login Failed';
+      let toastDescription = error;
+      let toastVariant: 'default' | 'destructive' = 'destructive';
+
+      switch (errorType) {
+        case 'invalid_username':
+          toastTitle = 'Invalid Username';
+          toastDescription = 'The username you entered is incorrect. Please check and try again.';
+          break;
+        case 'invalid_password':
+          toastTitle = 'Invalid Password';
+          toastDescription = 'The password you entered is incorrect. Please check and try again.';
+          break;
+        case 'general':
+        default:
+          toastTitle = 'Login Failed';
+          toastDescription = error;
+          break;
+      }
+
+      toast({
+        title: toastTitle,
+        description: toastDescription,
+        variant: toastVariant,
+      });
+
+      // Clear the error after showing the toast
+      dispatch(clearError());
+    }
+  }, [error, errorType, toast, dispatch]);
 
   if (isAuthenticated) {
     return null; // Ab yahan return null karoge render ke level par
@@ -32,17 +68,44 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    dispatch({ type: 'auth/loginRequest' }); // You can create a loginRequest action if needed
+    // Clear any previous errors
+    dispatch(clearError());
+    
+    // Start loading
+    dispatch(loginRequest());
 
     // Simulate a login (replace with real login logic)
     await new Promise(resolve => setTimeout(resolve, 1000));
 
+    // Check credentials with specific error handling
     if (email === 'admin' && password === 'admin') {
-      // Dispatch login action with user info on successful login
-      dispatch(login({ name: 'Admin', email: 'admin@example.com' }));
+      // Successful login
+      dispatch(loginSuccess({ name: 'Admin', email: 'admin@example.com' }));
+      
+      // Show success toast
+      toast({
+        title: 'Login Successful',
+        description: 'Welcome back, Admin!',
+        variant: 'default',
+      });
+    } else if (email !== 'admin' && password === 'admin') {
+      // Wrong username, correct password
+      dispatch(loginFailure({ 
+        message: 'Invalid username', 
+        type: 'invalid_username' 
+      }));
+    } else if (email === 'admin' && password !== 'admin') {
+      // Correct username, wrong password
+      dispatch(loginFailure({ 
+        message: 'Invalid password', 
+        type: 'invalid_password' 
+      }));
     } else {
-      // Dispatch failure action or set an error
-      dispatch({ type: 'auth/loginFailure', payload: 'Invalid email or password' });
+      // Both username and password are wrong
+      dispatch(loginFailure({ 
+        message: 'Invalid username and password', 
+        type: 'general' 
+      }));
     }
   };
 
@@ -58,7 +121,10 @@ export function LoginForm() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Username</Label>
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Username
+              </Label>
               <Input
                 id="username"
                 name="username"
@@ -67,10 +133,14 @@ export function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your username"
+                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Password
+              </Label>
               <Input
                 id="password"
                 name="password"
@@ -79,18 +149,24 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
+                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {error && (
-              <div className="flex items-center space-x-2 text-red-500">
-                <AlertCircle size={16} />
-                <span className="text-sm">{error}</span>
-              </div>
-            )}
           </CardContent>
           <CardFooter>
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
+            <Button 
+              className="w-full transition-all duration-200 hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
+              type="submit" 
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Logging in...
+                </div>
+              ) : (
+                'Log in'
+              )}
             </Button>
           </CardFooter>
         </form>

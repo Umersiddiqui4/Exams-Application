@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react'
 import { store, persistor  } from './redux/store';  // Import the Redux store
 import { ThemeProvider } from './components/theme-provider';
+import { Toaster } from './components/ui/toaster';
 import {Dashboard} from './components/dashboard';
 import {ApplicationForm} from './components/application-form';
 import ExamComponent from './components/examComponent';
@@ -49,6 +50,7 @@ function App() {
             }
           />
         </Routes>
+        <Toaster />
       </ThemeProvider>
       </PersistGate>
     </Provider>
