@@ -1,36 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  LayoutDashboard,
-  FileText,
-  Settings,
-  Menu,
-  X,
-  UserSquare,
-  ClipboardList,
-  Clock,
-  CheckCircle,
-  XCircle,
-} from "lucide-react"
+import { Menu, ClipboardList, Clock, CheckCircle, XCircle } from "lucide-react"
 
 import { Button } from "../components/ui/button"
 import { useMobile } from "../hooks/use-mobile"
 import { Tabs, TabsContent } from "../components/ui/tabs"
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle"
 
-import { useNavigate } from "react-router-dom"
+import {  } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { selectApplications } from "@/redux/applicationsSlice"
 import { selectExams } from "@/redux/examDataSlice"
 import { StatusCard } from "./ui/status-card"
 import { GooeyMenu } from "./GooeyMenu"
+import { SidebarNav } from "./SidebarNav"
 
 export function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeFilter, setActiveFilter] = useState<string>("all")
   // Theme is now handled by SimpleAnimatedThemeToggle component
-  const navigate = useNavigate()
   const isMobile = useMobile()
   // Local dropdown state handled inside GooeyMenu
   const applications = useSelector(selectApplications)
@@ -55,79 +44,12 @@ export function Dashboard() {
 
   // Theme toggle is now handled by SimpleAnimatedThemeToggle component
 
-  function nav(props: string) {
-    navigate(props)
-  }
+  
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
       {/* Sidebar - transforms to top navbar on mobile */}
-      {sidebarOpen && (
-        <div
-          className={`${
-            isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"
-          } bg-[#5c347d] text-white shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}
-        >
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                <img src="/icon.png" alt="404" />
-              </div>
-              <span className="font-bold text-lg">MRCGP INT. </span>
-            </div>
-            {isMobile && (
-              <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                <X className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-
-          <nav className="mt-6 px-4">
-            <ul className="space-y-2">
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 bg-slate-500/50 dark:bg-slate-600/50"
-                  onClick={() => nav("/")}
-                >
-                  <LayoutDashboard className="mr-2 h-5 w-5" />
-                  Dashboard
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                  onClick={() => nav("/applications")}
-                >
-                  <UserSquare className="mr-2 h-5 w-5" />
-                  Applications
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                  onClick={() => nav("/exam")}
-                >
-                  <FileText className="mr-2 h-5 w-5" />
-                  Exams
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                  onClick={() => nav("/settings")}
-                >
-                  <Settings className="mr-2 h-5 w-5" />
-                  Settings
-                </Button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <SidebarNav sidebarOpen={sidebarOpen} onClose={toggleSidebar} />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">

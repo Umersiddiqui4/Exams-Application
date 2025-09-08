@@ -1,103 +1,26 @@
-import {
-  FileText,
-  LayoutDashboard,
-  Menu,
-  Settings,
-  UserSquare,
-  X,
-} from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import {  } from "react-router-dom";
 import { useMobile } from "../hooks/use-mobile";
 import { useState } from "react";
 import ApplicationTable from "./ui/applicationTable";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
+import { SidebarNav } from "./SidebarNav";
 
 export default function Applications() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const navigate = useNavigate();
-  const isMobile = useMobile();
+  useMobile();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
   
 
-  function nav(props: string) {
-    navigate(props);
-  }
-
-  
-
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
       {/* Sidebar - transforms to top navbar on mobile */}
-      {sidebarOpen && (
-        <div
-          className={`${isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"
-            } bg-[#5c347d] text-slate-100 shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}
-        >
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                <img src="/icon.png" alt="404" />
-              </div>
-              <span className="font-bold text-lg">MRCGP INT. </span>
-            </div>
-            {isMobile && (
-              <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                <X className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-
-          <nav className="mt-6 px-4">
-            <ul className="space-y-2">
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                  onClick={() => nav("/")}
-                >
-                  <LayoutDashboard className="mr-2 h-5 w-5" />
-                  Dashboard
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 bg-slate-500/50 dark:bg-slate-600/50"
-                  onClick={() => nav("/applications")}
-                >
-                  <FileText className="mr-2 h-5 w-5" />
-                  Applications
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                  onClick={() => nav("/exam")}
-                >
-                  <UserSquare className="mr-2 h-5 w-5" />
-                  
-                  Exams
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                >
-                  <Settings className="mr-2 h-5 w-5" />
-                  Settings
-                </Button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
+      <SidebarNav sidebarOpen={sidebarOpen} onClose={toggleSidebar} />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
