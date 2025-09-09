@@ -10,7 +10,7 @@ export const SimpleAnimatedThemeToggle = ({
   className = "",
   variant = "circle",
   start = "top-right",
-  blur = false,
+  blur = true,
 }: {
   className?: string;
   variant?: "circle" | "rectangle";
