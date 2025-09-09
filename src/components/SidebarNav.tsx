@@ -69,17 +69,14 @@ export function SidebarNav({ sidebarOpen, onClose }: SidebarNavProps) {
             </Button>
           </li>
           <li>
-            {/* Settings route currently removed; keeping UI commented to avoid 404 */}
-            {false && (
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
-                onClick={() => nav("/settings")}
-              >
-                <Settings className="mr-2 h-5 w-5" />
-                Settings
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              className={`w-full justify-start text-slate-100 ${location.pathname === "/settings" ? "bg-slate-500/50 dark:bg-slate-600/50" : "hover:bg-slate-700/50 dark:hover:bg-slate-800/50"}`}
+              onClick={() => nav("/settings")}
+            >
+              <Settings className="mr-2 h-5 w-5" />
+              Settings
+            </Button>
           </li>
         </ul>
       </nav>

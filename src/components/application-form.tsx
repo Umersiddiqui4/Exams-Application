@@ -91,6 +91,7 @@ import ExamClosedApp from "./ui/examClosedApplication";
 import ExamClosed from "./ui/examClosed";
 import "../App.css";
 import { isValidPhoneNumber } from "libphonenumber-js";
+import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 
 const formSchema = z.object({
   candidateId: z
@@ -1711,6 +1712,18 @@ export function ApplicationForm() {
       }
     }, 200);
   }
+  const [isAtTop, setIsAtTop] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsAtTop(window.scrollY <= 10);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   if (isExamClosed) {
     return <ExamClosed />;
@@ -1721,6 +1734,9 @@ export function ApplicationForm() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
+       <div className={`fixed top-3 right-3 z-50 transition-all duration-300 ${isAtTop ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none -translate-y-2'}`}>
+          <SimpleAnimatedThemeToggle />
+        </div>
       <Card className="border-0 shadow-xl overflow-hidden bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
         <div className="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
         <CardHeader className="space-y-1 bg-slate-50 dark:bg-slate-800 border-b dark:border-slate-700 relative">
