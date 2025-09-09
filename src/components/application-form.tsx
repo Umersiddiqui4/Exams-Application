@@ -1723,7 +1723,7 @@ export function ApplicationForm() {
     <div className="container mx-auto py-8 px-4 max-w-5xl">
       <Card className="border-0 shadow-xl overflow-hidden bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
         <div className="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-        <CardHeader className="space-y-1 bg-slate-50 dark:bg-slate-800 border-b dark:border-slate-700">
+        <CardHeader className="space-y-1 bg-slate-50 dark:bg-slate-800 border-b dark:border-slate-700 relative">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
               <div className="flex justify-start items-center gap-2">
