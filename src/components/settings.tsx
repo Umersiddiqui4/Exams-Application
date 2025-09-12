@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +26,37 @@ import { GooeyMenu } from "./GooeyMenu";
 import { useExamDates } from "../lib/useExamDates";
 import { useExams } from "../lib/useExams";
 
-const defaultWaitingTemplate = `Dear tester,\n\nThis is an automated message to confirm that we have received your application for the upcoming OSCE examination scheduled in test at London, England.\n\nAs published on the website at the time of registration opening, we have limited slots for the OSCE, and the slots are allotted on a first come first serve basis.\n\nPlease note that your application will be on the WAITING LIST and will be accommodated only in case there is a dropout.\n\nYou will be notified in 4 to 6 weeks on your registered email ID in case of any drop out, otherwise you will have to apply again for the next subsequent OSCE.\n\nWe wish you the best of luck.\n\nSincerely,\n\nOwais Iqbal\nAdministrative Officer\nMRCGP INT South Asia\n\nNote: This is an auto generated email please do not reply.`;
+type CandidateTemplate = {
+  type: string;
+  subject: string;
+  content: string;
+  isActive: boolean;
+  description: string;
+};
 
-const defaultCandidateTemplate = `Dear tester,\n\nThis is an automated message to confirm that we have received your application for the upcoming OSCE examination scheduled in test at london, england.\n\nWe will review your submission and let you know on your registered email ID in case of any deficiency in the documents.\n\nYou will receive an OSCE slot confirmation email in two weeks after the registration closing date. Fee submission details will also be mentioned in the same email.\n\nWe wish you the best of luck in the exam.\n\nSincerely,\n\nOwais Iqbal\nAdministrative Officer\nMRCGP [INT] South Asia\n\nNote: This is an auto generated email please do not reply.`;
+const defaultWaitingTemplate: CandidateTemplate = {
+  type: "WAITING_LIST_ACKNOWLEDGMENT",
+  subject: "Waiting List - {examName}",
+  content:
+    "<h2>Dear tester,</h2>\n<p>This is an automated message to confirm that we have received your application for the upcoming <strong>OSCE examination</strong> scheduled in <em>test at London, England</em>.</p>\n\n\n<p>As published on the website at the time of registration opening, we have limited slots for the OSCE, and the slots are allotted on a <strong>first come, first serve</strong> basis.</p>\n\n\n<p><strong>Please note:</strong> your application will be on the <strong>WAITING LIST</strong> and will be accommodated only in case there is a dropout.</p>\n\n\n<p>You will be notified in <strong>4 to 6 weeks</strong> on your registered email ID in case of any drop out; otherwise you will have to apply again for the next subsequent OSCE.</p>\n\n\n<p>We wish you the best of luck.</p>\n\n\n<p>Sincerely,<br>\n<strong>Owais Iqbal</strong><br>\nAdministrative Officer<br>\nMRCGP [INT] South Asia</p>\n\n\n<p style=\"color:#d00;font-size:0.9em\"><strong>Note:</strong> This is an auto generated email — please do not reply.</p>",
+  isActive: true,
+  description: "Template sent when candidate is placed on the waiting list",
+};
+
+const defaultCandidateTemplate: CandidateTemplate = {
+  type: "APPLICATION_ACKNOWLEDGMENT",
+  subject: "Application Received - {examName}",
+  content:
+    "<h1>Application Received</h1><p>Dear {userName}, your application for {examName} has been received.</p>",
+  isActive: true,
+  description: "Template sent when an application is received",
+};
 
 export function Settings() {
   const { toast } = useToast();
 
-  const [candidateTemplate, setCandidateTemplate] = useState("");
-  const [waitingTemplate, setWaitingTemplate] = useState("");
+  const [candidateTemplate, setCandidateTemplate] = useState<CandidateTemplate>(defaultCandidateTemplate);
+  const [waitingTemplate, setWaitingTemplate] = useState<CandidateTemplate>(defaultWaitingTemplate);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useMobile();
   const { items: examDates, loadState, error, create, remove } = useExamDates();
@@ -68,20 +92,36 @@ export function Settings() {
   };
 
   useEffect(() => {
-    setCandidateTemplate(
-      localStorage.getItem("settings-candidate-template") || defaultCandidateTemplate,
-    );
-    setWaitingTemplate(
-      localStorage.getItem("settings-waiting-template") || defaultWaitingTemplate,
-    );
+    try {
+      const raw = localStorage.getItem("settings-candidate-template");
+      if (raw) {
+        const parsed = JSON.parse(raw) as CandidateTemplate;
+        setCandidateTemplate({ ...defaultCandidateTemplate, ...parsed });
+      } else {
+        setCandidateTemplate(defaultCandidateTemplate);
+      }
+    } catch {
+      setCandidateTemplate(defaultCandidateTemplate);
+    }
+    try {
+      const rawWaiting = localStorage.getItem("settings-waiting-template");
+      if (rawWaiting) {
+        const parsedW = JSON.parse(rawWaiting) as CandidateTemplate;
+        setWaitingTemplate({ ...defaultWaitingTemplate, ...parsedW });
+      } else {
+        setWaitingTemplate(defaultWaitingTemplate);
+      }
+    } catch {
+      setWaitingTemplate(defaultWaitingTemplate);
+    }
   }, []);
 
   const saveTemplates = (type: "candidates" | "waiting") => {
     if (type === "candidates") {
-      localStorage.setItem("settings-candidate-template", candidateTemplate);
+      localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
       toast({ title: "Saved", description: "Candidate template updated." });
     } else {
-      localStorage.setItem("settings-waiting-template", waitingTemplate);
+      localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
       toast({ title: "Saved", description: "Waiting candidate template updated." });
     }
   };
@@ -135,36 +175,104 @@ export function Settings() {
               <CardContent>
                 <Tabs defaultValue="candidates">
                   <TabsList>
-                    <TabsTrigger value="candidates">Candidates</TabsTrigger>
-                    <TabsTrigger value="waiting">Waiting Candidates</TabsTrigger>
+                    <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
+                    <TabsTrigger value="waiting" id="waiting">Waiting Candidates</TabsTrigger>
                   </TabsList>
                   <TabsContent value="candidates" className="mt-4">
-                    <div className="space-y-3">
-                      <textarea
-                        value={candidateTemplate}
-                        onChange={(e) => setCandidateTemplate(e.target.value)}
-                        className="w-full h-80 p-3 rounded-md border bg-white dark:bg-slate-900"
-                      />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Type</label>
+                          <Input
+                            value={candidateTemplate.type}
+                            onChange={(e) => setCandidateTemplate({ ...candidateTemplate, type: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Subject</label>
+                          <Input
+                            value={candidateTemplate.subject}
+                            onChange={(e) => setCandidateTemplate({ ...candidateTemplate, subject: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Content</label>
+                        <RichTextEditor
+                          value={candidateTemplate.content}
+                          onChange={(html) => setCandidateTemplate({ ...candidateTemplate, content: html })}
+                          className="bg-white dark:bg-slate-900 rounded-md"
+                          placeholder="Write email content..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Description</label>
+                        <Textarea
+                          value={candidateTemplate.description}
+                          onChange={(e) => setCandidateTemplate({ ...candidateTemplate, description: e.target.value })}
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={candidateTemplate.isActive}
+                          onCheckedChange={(v) => setCandidateTemplate({ ...candidateTemplate, isActive: Boolean(v) })}
+                        />
+                        <span className="text-sm">Active</span>
+                      </div>
                       <div className="flex justify-end">
-                        <Button onClick={() => saveTemplates("candidates")}>Submit</Button>
+                        <Button onClick={() => saveTemplates("candidates")}>Save</Button>
                       </div>
                     </div>
                   </TabsContent>
                   <TabsContent value="waiting" className="mt-4">
-                    <div className="space-y-3">
-                      <textarea
-                        value={waitingTemplate}
-                        onChange={(e) => setWaitingTemplate(e.target.value)}
-                        className="w-full h-80 p-3 rounded-md border bg-white dark:bg-slate-900"
-                      />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Type</label>
+                          <Input
+                            value={waitingTemplate.type}
+                            onChange={(e) => setWaitingTemplate({ ...waitingTemplate, type: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Subject</label>
+                          <Input
+                            value={waitingTemplate.subject}
+                            onChange={(e) => setWaitingTemplate({ ...waitingTemplate, subject: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Content</label>
+                        <RichTextEditor
+                          value={waitingTemplate.content}
+                          onChange={(html) => setWaitingTemplate({ ...waitingTemplate, content: html })}
+                          className="bg-white dark:bg-slate-900 rounded-md"
+                          placeholder="Write email content..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Description</label>
+                        <Textarea
+                          value={waitingTemplate.description}
+                          onChange={(e) => setWaitingTemplate({ ...waitingTemplate, description: e.target.value })}
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={waitingTemplate.isActive}
+                          onCheckedChange={(v) => setWaitingTemplate({ ...waitingTemplate, isActive: Boolean(v) })}
+                        />
+                        <span className="text-sm">Active</span>
+                      </div>
                       <div className="flex justify-end">
-                        <Button onClick={() => saveTemplates("waiting")}>Submit</Button>
+                        <Button onClick={() => saveTemplates("waiting")}>Save</Button>
                       </div>
                     </div>
                   </TabsContent>
                 </Tabs>
 
-                <div className="mt-8 space-y-4">
+                <div className="mt-8 space-y-4" id="exam-dates">
                   <h3 className="text-xl md:text-2xl font-semibold">Exam Dates</h3>
                   <div className="flex gap-2 items-center">
                     <Input
@@ -262,7 +370,7 @@ export function Settings() {
                   </AlertDialogContent>
                 </AlertDialog>
 
-                <div className="mt-10 space-y-4">
+                <div className="mt-10 space-y-4" id="exams">
                   <h3 className="text-xl md:text-2xl font-semibold">Exams</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
                     <Input
