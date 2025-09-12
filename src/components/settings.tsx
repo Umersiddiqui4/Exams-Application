@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   AlertDialog,
@@ -21,6 +22,7 @@ import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
 import { useExamDates } from "../lib/useExamDates";
+import { useExams } from "../lib/useExams";
 
 const defaultWaitingTemplate = `Dear tester,\n\nThis is an automated message to confirm that we have received your application for the upcoming OSCE examination scheduled in test at London, England.\n\nAs published on the website at the time of registration opening, we have limited slots for the OSCE, and the slots are allotted on a first come first serve basis.\n\nPlease note that your application will be on the WAITING LIST and will be accommodated only in case there is a dropout.\n\nYou will be notified in 4 to 6 weeks on your registered email ID in case of any drop out, otherwise you will have to apply again for the next subsequent OSCE.\n\nWe wish you the best of luck.\n\nSincerely,\n\nOwais Iqbal\nAdministrative Officer\nMRCGP INT South Asia\n\nNote: This is an auto generated email please do not reply.`;
 
@@ -38,6 +40,17 @@ export function Settings() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingDeleteLabel, setPendingDeleteLabel] = useState<string>("");
+
+  // Exams state
+  const { items: exams, loadState: examsLoad, error: examsError, create: createExam, update: updateExam, remove: removeExam } = useExams();
+  const [newExamName, setNewExamName] = useState("");
+  const [newExamDescription, setNewExamDescription] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [examConfirmOpen, setExamConfirmOpen] = useState(false);
+  const [pendingExamDeleteId, setPendingExamDeleteId] = useState<string | null>(null);
+  const [pendingExamDeleteName, setPendingExamDeleteName] = useState<string>("");
 
   const handleAddExamDate = async () => {
     if (!newExamDate.trim()) return;
@@ -241,6 +254,196 @@ export function Settings() {
                           setConfirmOpen(false);
                           setPendingDeleteId(null);
                           setPendingDeleteLabel("");
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <div className="mt-10 space-y-4">
+                  <h3 className="text-lg font-semibold">Exams</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
+                    <Input
+                      placeholder="Name (e.g., OSCE)"
+                      value={newExamName}
+                      onChange={(e) => setNewExamName(e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (!newExamName.trim()) return;
+                          try {
+                            const created = await createExam(newExamName, newExamDescription);
+                            toast({ title: "Exam added", description: created.name });
+                            setNewExamName("");
+                            setNewExamDescription("");
+                          } catch (err: unknown) {
+                            toast({
+                              title: "Unable to add exam",
+                              description: err instanceof Error ? err.message : "Unknown error",
+                              variant: "destructive",
+                            });
+                          }
+                        }
+                      }}
+                    />
+                    <Textarea
+                      placeholder="Description"
+                      value={newExamDescription}
+                      onChange={(e) => setNewExamDescription(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Button
+                      onClick={async () => {
+                        if (!newExamName.trim()) return;
+                        try {
+                          const created = await createExam(newExamName, newExamDescription);
+                          toast({ title: "Exam added", description: created.name });
+                          setNewExamName("");
+                          setNewExamDescription("");
+                        } catch (err: unknown) {
+                          toast({
+                            title: "Unable to add exam",
+                            description: err instanceof Error ? err.message : "Unknown error",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      disabled={!newExamName.trim()}
+                    >
+                      Add Exam
+                    </Button>
+                  </div>
+
+                  {examsLoad === "loading" && (
+                    <div className="text-sm text-muted-foreground">Loading exams…</div>
+                  )}
+                  {examsError && (
+                    <div className="text-sm text-red-600">{examsError}</div>
+                  )}
+
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[20%]">Name</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {exams.map((exam) => (
+                          <TableRow key={exam.id}>
+                            <TableCell className="align-top">
+                              {editingId === exam.id ? (
+                                <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                              ) : (
+                                exam.name
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {editingId === exam.id ? (
+                                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                              ) : (
+                                <div className="whitespace-pre-wrap">{exam.description}</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right space-x-2">
+                              {editingId === exam.id ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        const updated = await updateExam(exam.id, { name: editName, description: editDescription });
+                                        toast({ title: "Exam updated", description: updated.name });
+                                        setEditingId(null);
+                                      } catch (err: unknown) {
+                                        toast({
+                                          title: "Unable to update",
+                                          description: err instanceof Error ? err.message : "Unknown error",
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingId(null);
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => {
+                                      setEditingId(exam.id);
+                                      setEditName(exam.name);
+                                      setEditDescription(exam.description);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      setPendingExamDeleteId(exam.id);
+                                      setPendingExamDeleteName(exam.name);
+                                      setExamConfirmOpen(true);
+                                    }}
+                                  >
+                                    Delete
+                                  </Button>
+                                </>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {exams.length === 0 && examsLoad === "success" && (
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
+                              No exams yet. Add one above.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <AlertDialog open={examConfirmOpen} onOpenChange={setExamConfirmOpen}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete exam?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove "{pendingExamDeleteName}".
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => {
+                        setExamConfirmOpen(false);
+                        setPendingExamDeleteId(null);
+                      }}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={async () => {
+                          if (!pendingExamDeleteId) return;
+                          await removeExam(pendingExamDeleteId);
+                          toast({ title: "Deleted", description: pendingExamDeleteName });
+                          setExamConfirmOpen(false);
+                          setPendingExamDeleteId(null);
+                          setPendingExamDeleteName("");
                         }}
                       >
                         Delete
