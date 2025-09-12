@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
 import { useExamDates } from "../lib/useExamDates";
 import { useExams } from "../lib/useExams";
+import { useLocation } from "react-router-dom";
 
 type CandidateTemplate = {
   type: string;
@@ -54,6 +55,7 @@ const defaultCandidateTemplate: CandidateTemplate = {
 
 export function Settings() {
   const { toast } = useToast();
+  const location = useLocation();
 
   const [candidateTemplate, setCandidateTemplate] = useState<CandidateTemplate>(defaultCandidateTemplate);
   const [waitingTemplate, setWaitingTemplate] = useState<CandidateTemplate>(defaultWaitingTemplate);
@@ -75,6 +77,15 @@ export function Settings() {
   const [examConfirmOpen, setExamConfirmOpen] = useState(false);
   const [pendingExamDeleteId, setPendingExamDeleteId] = useState<string | null>(null);
   const [pendingExamDeleteName, setPendingExamDeleteName] = useState<string>("");
+
+  // Determine which section to show based on URL hash
+  const activeSection = useMemo(() => {
+    const raw = (location.hash || "#candidates").replace("#", "");
+    if (["candidates", "waiting", "exam-dates", "exams"].includes(raw)) {
+      return raw as "candidates" | "waiting" | "exam-dates" | "exams";
+    }
+    return "candidates";
+  }, [location.hash]);
 
   const handleAddExamDate = async () => {
     if (!newExamDate.trim()) return;
@@ -173,12 +184,13 @@ export function Settings() {
                 <CardTitle className="text-2xl md:text-3xl">Settings</CardTitle>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="candidates">
-                  <TabsList>
-                    <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
-                    <TabsTrigger value="waiting" id="waiting">Waiting Candidates</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="candidates" className="mt-4">
+                {(activeSection === "candidates" || activeSection === "waiting") && (
+                  <Tabs defaultValue={activeSection}>
+                    <TabsList>
+                      <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
+                      <TabsTrigger value="waiting" id="waiting">Waiting Candidates</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="candidates" className="mt-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -270,8 +282,10 @@ export function Settings() {
                       </div>
                     </div>
                   </TabsContent>
-                </Tabs>
+                  </Tabs>
+                )}
 
+                {activeSection === "exam-dates" && (
                 <div className="mt-8 space-y-4" id="exam-dates">
                   <h3 className="text-xl md:text-2xl font-semibold">Exam Dates</h3>
                   <div className="flex gap-2 items-center">
@@ -339,6 +353,7 @@ export function Settings() {
                     </Table>
                   </div>
                 </div>
+                )}
 
                 <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                   <AlertDialogContent>
@@ -370,6 +385,7 @@ export function Settings() {
                   </AlertDialogContent>
                 </AlertDialog>
 
+                {activeSection === "exams" && (
                 <div className="mt-10 space-y-4" id="exams">
                   <h3 className="text-xl md:text-2xl font-semibold">Exams</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
@@ -529,6 +545,7 @@ export function Settings() {
                     </Table>
                   </div>
                 </div>
+                )}
 
                 <AlertDialog open={examConfirmOpen} onOpenChange={setExamConfirmOpen}>
                   <AlertDialogContent>
