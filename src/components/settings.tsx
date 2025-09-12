@@ -130,7 +130,7 @@ export function Settings() {
           <div className="container mx-auto px-0 py-0 max-w-5xl">
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-xl">Settings</CardTitle>
+                <CardTitle className="text-2xl md:text-3xl">Settings</CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="candidates">
@@ -165,7 +165,7 @@ export function Settings() {
                 </Tabs>
 
                 <div className="mt-8 space-y-4">
-                  <h3 className="text-lg font-semibold">Exam Dates</h3>
+                  <h3 className="text-xl md:text-2xl font-semibold">Exam Dates</h3>
                   <div className="flex gap-2 items-center">
                     <Input
                       placeholder="e.g., AKT - November 2019"
@@ -263,7 +263,7 @@ export function Settings() {
                 </AlertDialog>
 
                 <div className="mt-10 space-y-4">
-                  <h3 className="text-lg font-semibold">Exams</h3>
+                  <h3 className="text-xl md:text-2xl font-semibold">Exams</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
                     <Input
                       placeholder="Name (e.g., OSCE)"
