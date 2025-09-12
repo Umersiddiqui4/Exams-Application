@@ -2,12 +2,25 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { SidebarNav } from "./SidebarNav";
 import { Menu } from "lucide-react";
 import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
+import { useExamDates } from "../lib/useExamDates";
 
 const defaultWaitingTemplate = `Dear tester,\n\nThis is an automated message to confirm that we have received your application for the upcoming OSCE examination scheduled in test at London, England.\n\nAs published on the website at the time of registration opening, we have limited slots for the OSCE, and the slots are allotted on a first come first serve basis.\n\nPlease note that your application will be on the WAITING LIST and will be accommodated only in case there is a dropout.\n\nYou will be notified in 4 to 6 weeks on your registered email ID in case of any drop out, otherwise you will have to apply again for the next subsequent OSCE.\n\nWe wish you the best of luck.\n\nSincerely,\n\nOwais Iqbal\nAdministrative Officer\nMRCGP INT South Asia\n\nNote: This is an auto generated email please do not reply.`;
 
@@ -20,6 +33,26 @@ export function Settings() {
   const [waitingTemplate, setWaitingTemplate] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useMobile();
+  const { items: examDates, loadState, error, create, remove } = useExamDates();
+  const [newExamDate, setNewExamDate] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingDeleteLabel, setPendingDeleteLabel] = useState<string>("");
+
+  const handleAddExamDate = async () => {
+    if (!newExamDate.trim()) return;
+    try {
+      const created = await create(newExamDate);
+      setNewExamDate("");
+      toast({ title: "Added", description: created.label });
+    } catch (err: unknown) {
+      toast({
+        title: "Unable to add",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     setCandidateTemplate(
@@ -84,7 +117,7 @@ export function Settings() {
           <div className="container mx-auto px-0 py-0 max-w-5xl">
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-xl">Email Templates</CardTitle>
+                <CardTitle className="text-xl">Settings</CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="candidates">
@@ -117,6 +150,104 @@ export function Settings() {
                     </div>
                   </TabsContent>
                 </Tabs>
+
+                <div className="mt-8 space-y-4">
+                  <h3 className="text-lg font-semibold">Exam Dates</h3>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      placeholder="e.g., AKT - November 2019"
+                      value={newExamDate}
+                      onChange={(e) => setNewExamDate(e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          await handleAddExamDate();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={handleAddExamDate}
+                      disabled={!newExamDate.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+
+                  {loadState === "loading" && (
+                    <div className="text-sm text-muted-foreground">Loading exam dates…</div>
+                  )}
+                  {error && (
+                    <div className="text-sm text-red-600">{error}</div>
+                  )}
+
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[60%]">Label</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {examDates.map((opt) => (
+                          <TableRow key={opt.id}>
+                            <TableCell>{opt.label}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setPendingDeleteId(opt.id);
+                                  setPendingDeleteLabel(opt.label);
+                                  setConfirmOpen(true);
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {examDates.length === 0 && loadState === "success" && (
+                          <TableRow>
+                            <TableCell colSpan={2} className="text-center text-sm text-muted-foreground">
+                              No exam dates yet. Add one above.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete exam date?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. We will remove "{pendingDeleteLabel}" from the list.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => {
+                        setConfirmOpen(false);
+                        setPendingDeleteId(null);
+                      }}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={async () => {
+                          if (!pendingDeleteId) return;
+                          await remove(pendingDeleteId);
+                          toast({ title: "Deleted", description: pendingDeleteLabel });
+                          setConfirmOpen(false);
+                          setPendingDeleteId(null);
+                          setPendingDeleteLabel("");
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
           </div>
