@@ -9,31 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { FileText, Edit, Calendar, MapPin, Users, Clock } from "lucide-react"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { cn } from "@/lib/utils"
-import { addExam, selectExams, toggleBlockExam, updateExam } from "@/redux/examDataSlice"
 import { useToast } from "./ui/use-toast"
 import { createExamOccurrence } from "@/lib/examOccurrencesApi"
-import { useDispatch, useSelector } from "react-redux"
-
-interface ExamData {
-  id: string
-  name: string
-  location: string
-  openingDate: string
-  closingDate: string
-  slot1: string
-  slot2: string
-  slot3: string
-  applicationsLimit: number
-  waitingLimit: number
-  formLink: string
-  isBlocked: boolean
-  receivingApplicationsCount: number
-}
+import { useExamOccurrences } from "@/lib/useExamOccurrences"
 
 interface DateRange {
   from: Date | undefined
@@ -149,9 +131,8 @@ const defaultFormState = {
 export function Exam() {
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
-  const dispatch = useDispatch()
-  const exams = useSelector(selectExams)
   const { toast } = useToast()
+  const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence } = useExamOccurrences()
 
   // Initialize form with React Hook Form
   const form = useForm<FormValues>({
@@ -226,28 +207,24 @@ export function Exam() {
 
   const onSubmit = async (data: FormValues) => {
     if (editMode && editId !== null) {
-      // Update existing exam
-      const examToUpdate = exams.find((exam) => exam.id === editId)
-      if (examToUpdate) {
-        dispatch(
-          updateExam({
-            ...examToUpdate,
-            name: data.name,
+      try {
+        await updateOccurrence(editId, {
+          title: data.name,
             location: data.location,
-            openingDate: data.applicationsDateRange.from,
-            closingDate: data.applicationsDateRange.to,
-            slot1: `${data.slot1DateRange.from} | ${data.slot1DateRange.to}`,
-            slot2: data.slot2DateRange.from ? `${data.slot2DateRange.from} | ${data.slot2DateRange.to}` : "",
-            slot3: data.slot3DateRange.from ? `${data.slot3DateRange.from} | ${data.slot3DateRange.to}` : "",
-            applicationsLimit: Number.parseInt(data.applicationsLimit) || 0,
-            waitingLimit: Number.parseInt(data.waitingLimit) || 0,
-          }),
-        )
+          registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
+          registrationEndDate: `${data.applicationsDateRange.to}T23:59:59Z`,
+          examDate: `${data.slot1DateRange.from}T09:00:00Z`,
+          applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
+          waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
+        })
+        await reloadOccurrences()
+        toast({ title: "Exam updated", description: data.name })
         setEditMode(false)
         setEditId(null)
+      } catch (err: unknown) {
+        toast({ title: "Update failed", description: err instanceof Error ? err.message : "Unable to update exam", variant: "destructive" })
       }
     } else {
-      // Create to backend occurrence
       try {
         await createExamOccurrence({
           examId: crypto.randomUUID(),
@@ -259,70 +236,53 @@ export function Exam() {
           applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
           waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
           isActive: true,
-          location: "Colombo, Jakarta, Delhi, Islamabad",
+        location: data.location,
           instructions: "Please bring a valid ID and arrive 30 minutes early",
         })
+        await reloadOccurrences()
         toast({ title: "Exam created", description: `${data.name} saved to server` })
       } catch (err: unknown) {
         toast({ title: "Create failed", description: err instanceof Error ? err.message : "Unable to create exam", variant: "destructive" })
       }
-
-      // Add new exam locally (existing behavior)
-      const ID = crypto.randomUUID()
-      const newExamData: ExamData = {
-        id: ID,
-        name: data.name,
-        location: data.location,
-        openingDate: data.applicationsDateRange.from,
-        closingDate: data.applicationsDateRange.to,
-        slot1: `${data.slot1DateRange.from} | ${data.slot1DateRange.to}`,
-        slot2: data.slot2DateRange.from ? `${data.slot2DateRange.from} | ${data.slot2DateRange.to}` : "",
-        slot3: data.slot3DateRange.from ? `${data.slot3DateRange.from} | ${data.slot3DateRange.to}` : "",
-        applicationsLimit: Number.parseInt(data.applicationsLimit) || 0,
-        waitingLimit: Number.parseInt(data.waitingLimit) || 0,
-        formLink: `${window.location.origin}/application/${ID}`,
-        isBlocked: false,
-        receivingApplicationsCount: 0,
-      }
-
-      dispatch(addExam(newExamData))
     }
 
-    // Reset form
     form.reset(defaultFormState)
   }
 
-  const toggleBlock = (id: string) => {
-    dispatch(toggleBlockExam(id))
+  const toggleBlock = async (id: string, current: boolean) => {
+    try {
+      await updateOccurrence(id, { isActive: !current })
+      await reloadOccurrences()
+    } catch (err) {
+      toast({ title: "Toggle failed", description: err instanceof Error ? err.message : "Unable to toggle", variant: "destructive" })
+    }
   }
 
-  const handleEdit = (exam: ExamData) => {
+  const handleEdit = (exam: any) => {
     // Parse slot dates
-    const [slot1Start, slot1End] = exam.slot1.split(" | ")
-    const slot2Parts = exam.slot2 ? exam.slot2.split(" | ") : ["", ""]
-    const slot3Parts = exam.slot3 ? exam.slot3.split(" | ") : ["", ""]
+    const examDateOnly = exam.examDate ? exam.examDate.substring(0, 10) : ""
 
     // Set form data with parsed dates
     form.reset({
-      name: exam.name,
+      name: exam.title,
       location: exam.location,
       applicationsDateRange: {
-        from: exam.openingDate,
-        to: exam.closingDate,
+        from: exam.registrationStartDate?.substring(0, 10),
+        to: exam.registrationEndDate?.substring(0, 10),
       },
-      applicationsLimit: exam.applicationsLimit.toString(),
-      waitingLimit: exam.waitingLimit.toString(),
+      applicationsLimit: String(exam.applicationLimit ?? ""),
+      waitingLimit: String(exam.waitingListLimit ?? ""),
       slot1DateRange: {
-        from: slot1Start.trim(),
-        to: slot1End.trim(),
+        from: examDateOnly,
+        to: examDateOnly,
       },
       slot2DateRange: {
-        from: slot2Parts[0].trim(),
-        to: slot2Parts[1].trim(),
+        from: "",
+        to: "",
       },
       slot3DateRange: {
-        from: slot3Parts[0].trim(),
-        to: slot3Parts[1].trim(),
+        from: "",
+        to: "",
       },
     })
 
@@ -520,17 +480,17 @@ export function Exam() {
         <CardContent className="p-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/80">
           <div className="p-4">
             <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {[...exams].reverse().map((exam) => (
+              {[...occurrences].reverse().map((exam: any) => (
                 <div
                   key={exam.id}
                   className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]"
                 >
                   <div className="absolute top-0 right-0 p-2">
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs dark:text-slate-400">{exam.isBlocked ? "Blocked" : "Active"}</span>
+                      <span className="text-xs dark:text-slate-400">{exam.isActive ? "Active" : "Inactive"}</span>
                       <Switch
-                        checked={exam.isBlocked}
-                        onCheckedChange={() => toggleBlock(exam.id)}
+                        checked={!!exam.isActive}
+                        onCheckedChange={() => toggleBlock(exam.id, !!exam.isActive)}
                         className="data-[state=checked]:bg-[#5c347d]"
                       />
                     </div>
@@ -540,7 +500,7 @@ export function Exam() {
                     <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
                       <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
-                    <h3 className="font-bold text-lg dark:text-white">{exam.name}</h3>
+                    <h3 className="font-bold text-lg dark:text-white">{exam.title}</h3>
                   </div>
 
                   <div className="space-y-2 mb-4">
@@ -551,48 +511,24 @@ export function Exam() {
 
                     <div className="flex items-center text-sm">
                       <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      <span className="dark:text-slate-300">
-                        {exam.openingDate} - {exam.closingDate}
-                      </span>
+                      <span className="dark:text-slate-300">{exam.registrationStartDate?.substring(0,10)} - {exam.registrationEndDate?.substring(0,10)}</span>
                     </div>
 
                     <div className="flex items-center text-sm">
                       <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      <span className="dark:text-slate-300">
-                        Limit: {exam.applicationsLimit} (Waiting: {exam.waitingLimit})
+                      <span className="dark:text-slate-300">Limit: {exam.applicationLimit} (Waiting: {exam.waitingListLimit})
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-1 flex-grow">
-                    <h4 className="text-sm font-semibold dark:text-slate-200">Exam Slots:</h4>
-                    {exam.slot1 && (
+                    <h4 className="text-sm font-semibold dark:text-slate-200">Exam Date:</h4>
                       <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                        Slot 1: {exam.slot1}
+                      {exam.examDate?.substring(0,10)}
                       </div>
-                    )}
-                    {exam.slot2 && (
-                      <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                        Slot 2: {exam.slot2}
-                      </div>
-                    )}
-                    {exam.slot3 && (
-                      <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                        Slot 3: {exam.slot3}
-                      </div>
-                    )}
                   </div>
 
                   <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 border-blue-200 dark:border-blue-800 cursor-pointer transition-colors"
-                    >
-                      <a href={exam.formLink} target="_blank" rel="noopener noreferrer">
-                        Form Link
-                      </a>
-                    </Badge>
-
                     <Button
                       variant="outline"
                       size="sm"
