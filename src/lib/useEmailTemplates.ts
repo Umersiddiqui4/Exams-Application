@@ -34,11 +34,7 @@ export function useEmailTemplates() {
 	}, []);
 
 	useEffect(() => {
-		let mounted = true;
 		reload();
-		return () => {
-			mounted = false;
-		};
 	}, [reload]);
 
 	const create = useCallback(async (payload: CreateEmailTemplateDto) => {

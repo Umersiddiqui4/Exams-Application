@@ -89,7 +89,7 @@ export function Settings() {
   }, [location.hash]);
 
   // Email templates (API-backed)
-  const { items: emailTemplates, create: createEmailTemplate, update: updateEmailTemplate, reload: reloadEmailTemplates } = useEmailTemplates();
+  const { items: emailTemplates, update: updateEmailTemplate, reload: reloadEmailTemplates } = useEmailTemplates();
   const [candidateTemplateId, setCandidateTemplateId] = useState<string | null>(null);
   const [waitingTemplateId, setWaitingTemplateId] = useState<string | null>(null);
 
