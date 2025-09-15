@@ -222,7 +222,6 @@ export function ApplicationForm() {
     preferenceDate2: null,
     preferenceDate3: null,
   });
-  const exams = useSelector(selectExams);
   const params = useParams();
   const dispatch = useDispatch();
 
@@ -1749,12 +1748,16 @@ export function ApplicationForm() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+console.log(selectedExam, "selectedExam");
 
   if (isExamClosed) {
     return <ExamClosed />;
   }
   if (isClosed) {
     return <ExamClosedApp />;
+  }
+  if(selectedExam === null) {
+    return <NotFound />;
   }
 
   return (
