@@ -19,9 +19,14 @@ export function useEmailTemplates() {
 		let mounted = true;
 		setLoadState("loading");
 		listEmailTemplates()
-			.then((data) => {
+			.then((data: any) => {
 				if (!mounted) return;
-				setItems(data);
+				const normalized: EmailTemplate[] = Array.isArray(data)
+					? data
+					: Array.isArray(data?.data)
+						? (data.data as EmailTemplate[])
+						: [];
+				setItems(normalized);
 				setLoadState("success");
 			})
 			.catch((err: unknown) => {

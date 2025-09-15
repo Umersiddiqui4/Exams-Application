@@ -94,6 +94,7 @@ export function Settings() {
   const [waitingTemplateId, setWaitingTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!Array.isArray(emailTemplates)) return;
     const cand = emailTemplates.find((t) => t.type === defaultCandidateTemplate.type);
     const wait = emailTemplates.find((t) => t.type === defaultWaitingTemplate.type);
     if (cand) {
