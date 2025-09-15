@@ -243,10 +243,7 @@ export function ApplicationForm() {
     );
   }, [params.examId]);
 
-  if (!params.examId) return null;
-  if (loadingExam) return null;
-  if (selectedExam === undefined) return <NotFound />;
-
+  // Initialize form before any conditional returns to keep Hooks order stable
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -268,6 +265,12 @@ export function ApplicationForm() {
       termsAgreed: false,
     },
   });
+
+  if (!params.examId) return null;
+  if (loadingExam) return null;
+  if (selectedExam === undefined) return <NotFound />;
+
+  
   // PDF Document Component with multi-page support
 
   const Watermark = () => (
