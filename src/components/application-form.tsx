@@ -266,9 +266,7 @@ export function ApplicationForm() {
     },
   });
 
-  if (!params.examId) return null;
-  if (loadingExam) return null;
-  if (selectedExam === undefined) return <NotFound />;
+  // Do not early-return here to keep Hooks order stable across renders
 
   
   // PDF Document Component with multi-page support
@@ -1772,9 +1770,14 @@ export function ApplicationForm() {
               </CardDescription>
             </CardTitle>
             <div className="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-md text-indigo-700 dark:text-indigo-300 font-medium text-sm">
-              {selectedExam
-                ? selectedExam.name + " - " + selectedExam.location
-                : ""}
+              {(() => {
+                if (!selectedExam) return "";
+                const title = selectedExam.title || selectedExam.name || "";
+                const loc = Array.isArray(selectedExam.location)
+                  ? selectedExam.location.join(", ")
+                  : (selectedExam.location || "");
+                return `${title}${loc ? " - " + loc : ""}`;
+              })()}
             </div>
           </div>
         </CardHeader>
