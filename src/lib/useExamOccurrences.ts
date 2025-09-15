@@ -20,13 +20,8 @@ export function useExamOccurrences() {
 		setLoadState("loading");
 		setError(null);
 		try {
-			const data: any = await listExamOccurrences();
-			const normalized: ExamOccurrence[] = Array.isArray(data?.data)
-				? (data.data as ExamOccurrence[])
-				: Array.isArray(data)
-					? (data as ExamOccurrence[])
-					: [];
-			setItems(normalized);
+			const data = await listExamOccurrences();
+			setItems(Array.isArray(data) ? data : []);
 			setLoadState("success");
 		} catch (err: unknown) {
 			setError(err instanceof Error ? err.message : "Failed to load occurrences");
