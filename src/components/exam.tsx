@@ -147,6 +147,7 @@ export function Exam() {
   // Watch slot dates to calculate minimum dates for subsequent slots
   const slot1DateRange = form.watch("slot1DateRange")
   const slot2DateRange = form.watch("slot2DateRange")
+  const applicationsDateRange = form.watch("applicationsDateRange")
 
   // Calculate minimum dates for slots based on previous slot end dates
   const getSlot2MinDate = () => {
@@ -161,6 +162,13 @@ export function Exam() {
       return addDays(parseISO(slot2DateRange.to), 1)
     } else if (slot1DateRange?.to) {
       return addDays(parseISO(slot1DateRange.to), 1)
+    }
+    return undefined
+  }
+
+  const getSlot1MinDate = () => {
+    if (applicationsDateRange?.to) {
+      return addDays(parseISO(applicationsDateRange.to), 1)
     }
     return undefined
   }
@@ -226,17 +234,24 @@ export function Exam() {
       }
     } else {
       try {
+        const regEnd = `${data.applicationsDateRange.to}T23:59:59Z`
+        const examStart = `${data.slot1DateRange.from}T09:00:00Z`
+        if (new Date(regEnd) >= new Date(examStart)) {
+          toast({ title: "Invalid dates", description: "Exam date must be after applications end date", variant: "destructive" })
+          return
+        }
+
         await createExamOccurrence({
           examId: crypto.randomUUID(),
           title: `${data.name}`,
           type: "AKT",
-          examDate: `${data.slot1DateRange.from}T09:00:00Z`,
+          examDate: examStart,
           registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
-          registrationEndDate: `${data.applicationsDateRange.to}T23:59:59Z`,
+          registrationEndDate: regEnd,
           applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
           waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
           isActive: true,
-        location: data.location,
+          location: data.location,
           instructions: "Please bring a valid ID and arrive 30 minutes early",
         })
         await reloadOccurrences()
@@ -413,6 +428,7 @@ export function Exam() {
                     value={form.watch("slot1DateRange")}
                     onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
                     isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
+                    minDate={getSlot1MinDate()}
                   />
                 </div>
 
