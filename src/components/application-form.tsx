@@ -266,7 +266,15 @@ export function ApplicationForm() {
     },
   });
 
-  // Do not early-return here to keep Hooks order stable across renders
+  // Validate route/loaded exam relationship
+  const paramId = params.examId as string | undefined;
+  if (!paramId) return <NotFound />;
+  if (!loadingExam) {
+    if (selectedExam === undefined) return <NotFound />;
+    if (selectedExam && typeof selectedExam.id === "string" && selectedExam.id !== paramId) {
+      return <NotFound />;
+    }
+  }
 
   
   // PDF Document Component with multi-page support
