@@ -13,15 +13,17 @@ export function useAktPastExams() {
 	const [items, setItems] = useState<AktPastExam[]>([]);
 	const [loadState, setLoadState] = useState<LoadState>("idle");
 	const [error, setError] = useState<string | null>(null);
+	const [created1, setCreated1] = useState<boolean>(true);
 
 	useEffect(() => {
 		let mounted = true;
 		setLoadState("loading");
 		listAktPastExams()
-			.then((data) => {
+			.then((data: any) => {
 				if (!mounted) return;
-				setItems(data);
+				setItems(data.data);
 				setLoadState("success");
+				setCreated1(true);
 			})
 			.catch((err: unknown) => {
 				if (!mounted) return;
@@ -31,11 +33,12 @@ export function useAktPastExams() {
 		return () => {
 			mounted = false;
 		};
-	}, []);
+	}, [created1]);
 
 	const create = useCallback(async (name: string, description?: string) => {
 		const created = await createAktPastExam({ name, description });
 		setItems((prev) => [created, ...prev]);
+		setCreated1(false);
 		return created;
 	}, []);
 
@@ -50,8 +53,14 @@ export function useAktPastExams() {
 		setItems((prev) => prev.filter((e) => e.id !== id));
 	}, []);
 
+
+
+
+
 	return useMemo(() => ({ items, loadState, error, create, update, remove }), [items, loadState, error, create, update, remove]);
 }
+
+
 
 export type { AktPastExam } from "./aktPastExamsApi";
 

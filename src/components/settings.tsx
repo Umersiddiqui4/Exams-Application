@@ -23,7 +23,7 @@ import { Menu } from "lucide-react";
 import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
-import { useExamDates } from "../lib/useExamDates";
+import { useAktPastExams } from "../lib/useAktPastExams";
 import { useExams } from "../lib/useExams";
 import { useLocation } from "react-router-dom";
 import { useEmailTemplates } from "../lib/useEmailTemplates";
@@ -62,11 +62,12 @@ export function Settings() {
   const [waitingTemplate, setWaitingTemplate] = useState<CandidateTemplate>(defaultWaitingTemplate);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useMobile();
-  const { items: examDates, loadState, error, create, remove } = useExamDates();
+  const { items: examDates, loadState, error, create, remove } = useAktPastExams();
   const [newExamDate, setNewExamDate] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingDeleteLabel, setPendingDeleteLabel] = useState<string>("");
+console.log("examDates", examDates);
 
   // Exams state
   const { items: exams, loadState: examsLoad, error: examsError, create: createExam, update: updateExam, remove: removeExam } = useExams();
@@ -121,9 +122,10 @@ export function Settings() {
   const handleAddExamDate = async () => {
     if (!newExamDate.trim()) return;
     try {
-      const created = await create(newExamDate);
+      const created: any = await create(newExamDate);
+      console.log("created", created);
       setNewExamDate("");
-      toast({ title: "Added", description: created.label });
+      toast({ title: "Added", description: created.message });
     } catch (err: unknown) {
       toast({
         title: "Unable to add",
@@ -375,14 +377,14 @@ export function Settings() {
                       <TableBody>
                         {examDates.map((opt) => (
                           <TableRow key={opt.id}>
-                            <TableCell>{opt.label}</TableCell>
+                            <TableCell>{opt.name}</TableCell>
                             <TableCell className="text-right">
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => {
                                   setPendingDeleteId(opt.id);
-                                  setPendingDeleteLabel(opt.label);
+                                  setPendingDeleteLabel(opt.name);
                                   setConfirmOpen(true);
                                 }}
                               >
