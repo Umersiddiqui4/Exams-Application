@@ -226,9 +226,24 @@ export function ApplicationForm() {
   const params = useParams();
   const dispatch = useDispatch();
 
-  if (!params.examId) return null;
+  const [selectedExam, setSelectedExam] = useState<any | null>(null);
+  const [loadingExam, setLoadingExam] = useState<boolean>(true);
+  useEffect(() => {
+    const id = params.examId as string | undefined;
+    if (!id) return;
+    setLoadingExam(true);
+    import("@/lib/examOccurrencesApi").then(({ getExamOccurrence }) =>
+      getExamOccurrence(id)
+        .then((occ) => {
+          setSelectedExam(occ);
+        })
+        .catch(() => setSelectedExam(undefined))
+        .finally(() => setLoadingExam(false)),
+    );
+  }, [params.examId]);
 
-  const selectedExam = exams.find((exam) => exam.id === params.examId);
+  if (!params.examId) return null;
+  if (loadingExam) return null;
   if (selectedExam === undefined) return <NotFound />;
 
   const form = useForm<FormValues>({
