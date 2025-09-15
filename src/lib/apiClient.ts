@@ -43,6 +43,13 @@ export async function apiRequest<T>(
 		}
 	}
 	if (!res.ok) {
+		if (res.status === 401) {
+			try {
+				localStorage.removeItem("auth_token");
+				localStorage.removeItem("refresh_token");
+			} catch {}
+			redirectToLoginIfUnauthenticated();
+		}
 		const text = await res.text().catch(() => "");
 		throw new Error(`API ${method} ${url} failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
 	}
@@ -73,6 +80,7 @@ async function refreshAccessToken(baseUrl: string): Promise<string | null> {
 					localStorage.removeItem("auth_token");
 					localStorage.removeItem("refresh_token");
 				} catch {}
+				redirectToLoginIfUnauthenticated();
 				return null;
 			}
 			const data = await res.json().catch(() => ({}));
@@ -93,6 +101,7 @@ async function refreshAccessToken(baseUrl: string): Promise<string | null> {
 				localStorage.removeItem("auth_token");
 				localStorage.removeItem("refresh_token");
 			} catch {}
+			redirectToLoginIfUnauthenticated();
 			return null;
 		} finally {
 			const t = refreshingPromise;
