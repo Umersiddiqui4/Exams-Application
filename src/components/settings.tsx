@@ -163,23 +163,21 @@ export function Settings() {
   const saveTemplates = async (type: "candidates" | "waiting") => {
     try {
       if (type === "candidates") {
-        if (candidateTemplateId) {
-          const updated = await updateEmailTemplate(candidateTemplateId, candidateTemplate);
-          setCandidateTemplateId(updated.id);
-        } else {
-          const created = await createEmailTemplate(candidateTemplate);
-          setCandidateTemplateId(created.id);
+        if (!candidateTemplateId) {
+          toast({ title: "Not found", description: "Candidate template does not exist on server. Please create it in the backend first.", variant: "destructive" });
+          return;
         }
+        const updated = await updateEmailTemplate(candidateTemplateId, candidateTemplate);
+        setCandidateTemplateId(updated.id);
         localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
         toast({ title: "Saved", description: "Candidate template updated." });
       } else {
-        if (waitingTemplateId) {
-          const updated = await updateEmailTemplate(waitingTemplateId, waitingTemplate);
-          setWaitingTemplateId(updated.id);
-        } else {
-          const created = await createEmailTemplate(waitingTemplate);
-          setWaitingTemplateId(created.id);
+        if (!waitingTemplateId) {
+          toast({ title: "Not found", description: "Waiting template does not exist on server. Please create it in the backend first.", variant: "destructive" });
+          return;
         }
+        const updated = await updateEmailTemplate(waitingTemplateId, waitingTemplate);
+        setWaitingTemplateId(updated.id);
         localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
         toast({ title: "Saved", description: "Waiting candidate template updated." });
       }
