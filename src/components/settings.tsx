@@ -163,20 +163,37 @@ export function Settings() {
   const saveTemplates = async (type: "candidates" | "waiting") => {
     try {
       if (type === "candidates") {
-        if (!candidateTemplateId) {
-          toast({ title: "Not found", description: "Candidate template does not exist on server. Please create it in the backend first.", variant: "destructive" });
+        // Attempt to recover ID from fetched list if missing
+        let id = candidateTemplateId;
+        if (!id && Array.isArray(emailTemplates)) {
+          const found = emailTemplates.find((t) => t.type === candidateTemplate.type);
+          if (found) {
+            id = found.id;
+            setCandidateTemplateId(found.id);
+          }
+        }
+        if (!id) {
+          toast({ title: "Not found", description: "Candidate template does not exist on server.", variant: "destructive" });
           return;
         }
-        const updated = await updateEmailTemplate(candidateTemplateId, candidateTemplate);
+        const updated = await updateEmailTemplate(id, candidateTemplate);
         setCandidateTemplateId(updated.id);
         localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
         toast({ title: "Saved", description: "Candidate template updated." });
       } else {
-        if (!waitingTemplateId) {
-          toast({ title: "Not found", description: "Waiting template does not exist on server. Please create it in the backend first.", variant: "destructive" });
+        let id = waitingTemplateId;
+        if (!id && Array.isArray(emailTemplates)) {
+          const found = emailTemplates.find((t) => t.type === waitingTemplate.type);
+          if (found) {
+            id = found.id;
+            setWaitingTemplateId(found.id);
+          }
+        }
+        if (!id) {
+          toast({ title: "Not found", description: "Waiting template does not exist on server.", variant: "destructive" });
           return;
         }
-        const updated = await updateEmailTemplate(waitingTemplateId, waitingTemplate);
+        const updated = await updateEmailTemplate(id, waitingTemplate);
         setWaitingTemplateId(updated.id);
         localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
         toast({ title: "Saved", description: "Waiting candidate template updated." });
