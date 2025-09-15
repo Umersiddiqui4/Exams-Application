@@ -15,6 +15,8 @@ import { FileText, Edit, Calendar, MapPin, Users, Clock } from "lucide-react"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { cn } from "@/lib/utils"
 import { addExam, selectExams, toggleBlockExam, updateExam } from "@/redux/examDataSlice"
+import { useToast } from "./ui/use-toast"
+import { createExamOccurrence } from "@/lib/examOccurrencesApi"
 import { useDispatch, useSelector } from "react-redux"
 
 interface ExamData {
@@ -149,6 +151,7 @@ export function Exam() {
   const [editId, setEditId] = useState<string | null>(null)
   const dispatch = useDispatch()
   const exams = useSelector(selectExams)
+  const { toast } = useToast()
 
   // Initialize form with React Hook Form
   const form = useForm<FormValues>({
@@ -221,7 +224,7 @@ export function Exam() {
     }
   }
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     if (editMode && editId !== null) {
       // Update existing exam
       const examToUpdate = exams.find((exam) => exam.id === editId)
@@ -244,7 +247,27 @@ export function Exam() {
         setEditId(null)
       }
     } else {
-      // Add new exam
+      // Create to backend occurrence
+      try {
+        await createExamOccurrence({
+          examId: crypto.randomUUID(),
+          title: `${data.name}`,
+          type: "AKT",
+          examDate: `${data.slot1DateRange.from}T09:00:00Z`,
+          registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
+          registrationEndDate: `${data.applicationsDateRange.to}T23:59:59Z`,
+          applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
+          waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
+          isActive: true,
+          location: "Colombo, Jakarta, Delhi, Islamabad",
+          instructions: "Please bring a valid ID and arrive 30 minutes early",
+        })
+        toast({ title: "Exam created", description: `${data.name} saved to server` })
+      } catch (err: unknown) {
+        toast({ title: "Create failed", description: err instanceof Error ? err.message : "Unable to create exam", variant: "destructive" })
+      }
+
+      // Add new exam locally (existing behavior)
       const ID = crypto.randomUUID()
       const newExamData: ExamData = {
         id: ID,
