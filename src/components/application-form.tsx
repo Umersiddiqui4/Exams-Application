@@ -235,7 +235,8 @@ export function ApplicationForm() {
     import("@/lib/examOccurrencesApi").then(({ getExamOccurrence }) =>
       getExamOccurrence(id)
         .then((occ) => {
-          setSelectedExam(occ);
+          const normalized = (occ as any)?.data ?? occ;
+          setSelectedExam(normalized);
         })
         .catch(() => setSelectedExam(undefined))
         .finally(() => setLoadingExam(false)),
