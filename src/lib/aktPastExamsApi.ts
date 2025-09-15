@@ -2,7 +2,6 @@ import { apiRequest } from "./apiClient";
 
 export type AktPastExam = {
 	id: string;
-	// add real fields if known; include name/description as placeholders
 	name: string;
 	description?: string;
 	createdAt?: string;
@@ -23,7 +22,7 @@ export async function createAktPastExam(payload: CreateAktPastExamDto): Promise<
 }
 
 export async function listAktPastExams(): Promise<AktPastExam[]> {
-	return apiRequest<AktPastExam[]>(BASE, "GET");
+	return apiRequest<AktPastExam[]>("/api/v1/akt-past-exams?page=1&take=20", "GET");
 }
 
 export async function getAktPastExam(id: string): Promise<AktPastExam> {
