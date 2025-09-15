@@ -43,7 +43,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
 				placeholder,
 			});
 			quillRef.current = quill;
-			quill.clipboard.dangerouslyPasteHTML(value || "");
+			if (value) quill.clipboard.dangerouslyPasteHTML(value);
 			quill.on("text-change", () => {
 				if (!quillRef.current) return;
 				onChangeRef.current(quillRef.current.root.innerHTML);
@@ -61,7 +61,8 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
 		const current = quill.root.innerHTML;
 		if (value !== current) {
 			const sel = quill.getSelection();
-			quill.clipboard.dangerouslyPasteHTML(value || "");
+			quill.setContents([]);
+			if (value) quill.clipboard.dangerouslyPasteHTML(value);
 			if (sel) quill.setSelection(sel);
 		}
 	}, [value]);

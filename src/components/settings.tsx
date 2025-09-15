@@ -277,6 +277,7 @@ export function Settings() {
                       <div>
                         <label className="block text-sm font-medium mb-1">Content</label>
                         <RichTextEditor
+                          key={candidateTemplateId || candidateTemplate.type}
                           value={candidateTemplate.content}
                           onChange={(html) => setCandidateTemplate({ ...candidateTemplate, content: html })}
                           className="bg-white dark:bg-slate-900 rounded-md"
@@ -323,6 +324,7 @@ export function Settings() {
                       <div>
                         <label className="block text-sm font-medium mb-1">Content</label>
                         <RichTextEditor
+                          key={waitingTemplateId || waitingTemplate.type}
                           value={waitingTemplate.content}
                           onChange={(html) => setWaitingTemplate({ ...waitingTemplate, content: html })}
                           className="bg-white dark:bg-slate-900 rounded-md"
