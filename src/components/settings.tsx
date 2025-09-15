@@ -37,7 +37,7 @@ type CandidateTemplate = {
 };
 
 const defaultWaitingTemplate: CandidateTemplate = {
-  type: "WAITING_LIST_ACKNOWLEDGMENT",
+  type: "APPLICATION_WAITING_LIST",
   subject: "Waiting List - {examName}",
   content:
     "<h2>Dear tester,</h2>\n<p>This is an automated message to confirm that we have received your application for the upcoming <strong>OSCE examination</strong> scheduled in <em>test at London, England</em>.</p>\n\n\n<p>As published on the website at the time of registration opening, we have limited slots for the OSCE, and the slots are allotted on a <strong>first come, first serve</strong> basis.</p>\n\n\n<p><strong>Please note:</strong> your application will be on the <strong>WAITING LIST</strong> and will be accommodated only in case there is a dropout.</p>\n\n\n<p>You will be notified in <strong>4 to 6 weeks</strong> on your registered email ID in case of any drop out; otherwise you will have to apply again for the next subsequent OSCE.</p>\n\n\n<p>We wish you the best of luck.</p>\n\n\n<p>Sincerely,<br>\n<strong>Owais Iqbal</strong><br>\nAdministrative Officer<br>\nMRCGP [INT] South Asia</p>\n\n\n<p style=\"color:#d00;font-size:0.9em\"><strong>Note:</strong> This is an auto generated email — please do not reply.</p>",

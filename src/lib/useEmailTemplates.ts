@@ -21,10 +21,10 @@ export function useEmailTemplates() {
 		listEmailTemplates()
 			.then((data: any) => {
 				if (!mounted) return;
-				const normalized: EmailTemplate[] = Array.isArray(data)
-					? data
-					: Array.isArray(data?.data)
-						? (data.data as EmailTemplate[])
+				const normalized: EmailTemplate[] = Array.isArray(data?.data)
+					? (data.data as EmailTemplate[])
+					: Array.isArray(data)
+						? (data as EmailTemplate[])
 						: [];
 				setItems(normalized);
 				setLoadState("success");
