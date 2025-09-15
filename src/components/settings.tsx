@@ -24,7 +24,7 @@ import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
 import { useAktPastExams } from "../lib/useAktPastExams";
-import { useExams } from "../lib/useExams";
+import { useExams } from "../lib/useExam";
 import { useLocation } from "react-router-dom";
 import { useEmailTemplates } from "../lib/useEmailTemplates";
 
@@ -67,7 +67,6 @@ export function Settings() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingDeleteLabel, setPendingDeleteLabel] = useState<string>("");
-console.log("examDates", examDates);
 
   // Exams state
   const { items: exams, loadState: examsLoad, error: examsError, create: createExam, update: updateExam, remove: removeExam } = useExams();
@@ -424,7 +423,7 @@ console.log("examDates", examDates);
                         onClick={async () => {
                           if (!pendingDeleteId) return;
                           await remove(pendingDeleteId);
-                          toast({ title: "Deleted", description: pendingDeleteLabel });
+                          toast({ title: "Deleted", description: pendingDeleteLabel, variant: "destructive"  });
                           setConfirmOpen(false);
                           setPendingDeleteId(null);
                           setPendingDeleteLabel("");
@@ -465,6 +464,7 @@ console.log("examDates", examDates);
                     />
                     <Textarea
                       placeholder="Description"
+                      className="max-h-[150px] "
                       value={newExamDescription}
                       onChange={(e) => setNewExamDescription(e.target.value)}
                     />
@@ -520,7 +520,7 @@ console.log("examDates", examDates);
                             </TableCell>
                             <TableCell>
                               {editingId === exam.id ? (
-                                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                                <Textarea className="max-h-[100px]" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
                               ) : (
                                 <div className="whitespace-pre-wrap">{exam.description}</div>
                               )}
@@ -530,6 +530,7 @@ console.log("examDates", examDates);
                                 <>
                                   <Button
                                     size="sm"
+                                    className="mb-2"
                                     onClick={async () => {
                                       try {
                                         const updated = await updateExam(exam.id, { name: editName, description: editDescription });
@@ -561,10 +562,11 @@ console.log("examDates", examDates);
                                   <Button
                                     size="sm"
                                     variant="secondary"
+                                    className="mb-2"
                                     onClick={() => {
                                       setEditingId(exam.id);
                                       setEditName(exam.name);
-                                      setEditDescription(exam.description);
+                                      setEditDescription(exam.description || "");
                                     }}
                                   >
                                     Edit
@@ -574,7 +576,7 @@ console.log("examDates", examDates);
                                     size="sm"
                                     onClick={() => {
                                       setPendingExamDeleteId(exam.id);
-                                      setPendingExamDeleteName(exam.name);
+                                      setPendingExamDeleteName(exam.name || "");
                                       setExamConfirmOpen(true);
                                     }}
                                   >
@@ -616,7 +618,7 @@ console.log("examDates", examDates);
                         onClick={async () => {
                           if (!pendingExamDeleteId) return;
                           await removeExam(pendingExamDeleteId);
-                          toast({ title: "Deleted", description: pendingExamDeleteName });
+                          toast({ title: "Deleted", description: pendingExamDeleteName, variant: "destructive" });
                           setExamConfirmOpen(false);
                           setPendingExamDeleteId(null);
                           setPendingExamDeleteName("");
