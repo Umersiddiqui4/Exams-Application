@@ -68,10 +68,9 @@ import {
 import { PhoneInput } from "./ui/phone-input";
 import "react-phone-number-input/style.css";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   incrementApplicationsCount,
-  selectExams,
   toggleBlockExam,
 } from "@/redux/examDataSlice";
 import { supabase } from "@/lib/supabaseClient";
