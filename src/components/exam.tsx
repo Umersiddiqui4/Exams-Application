@@ -545,6 +545,15 @@ export function Exam() {
                   </div>
 
                   <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
+                    <a
+                      href={`/application/${exam.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm underline text-indigo-700 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      Form Link
+                    </a>
+
                     <Button
                       variant="outline"
                       size="sm"
