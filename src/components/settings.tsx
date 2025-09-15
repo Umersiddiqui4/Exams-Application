@@ -89,7 +89,7 @@ export function Settings() {
   }, [location.hash]);
 
   // Email templates (API-backed)
-  const { items: emailTemplates, create: createEmailTemplate, update: updateEmailTemplate } = useEmailTemplates();
+  const { items: emailTemplates, create: createEmailTemplate, update: updateEmailTemplate, reload: reloadEmailTemplates } = useEmailTemplates();
   const [candidateTemplateId, setCandidateTemplateId] = useState<string | null>(null);
   const [waitingTemplateId, setWaitingTemplateId] = useState<string | null>(null);
 
@@ -162,7 +162,7 @@ export function Settings() {
 
   const saveTemplates = async (type: "candidates" | "waiting") => {
     try {
-      if (type === "candidates") {
+    if (type === "candidates") {
         // Attempt to recover ID from fetched list if missing
         let id = candidateTemplateId;
         if (!id && Array.isArray(emailTemplates)) {
@@ -179,8 +179,9 @@ export function Settings() {
         const updated = await updateEmailTemplate(id, candidateTemplate);
         setCandidateTemplateId(updated.id);
         localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
-        toast({ title: "Saved", description: "Candidate template updated." });
-      } else {
+        await reloadEmailTemplates();
+      toast({ title: "Saved", description: "Candidate template updated." });
+    } else {
         let id = waitingTemplateId;
         if (!id && Array.isArray(emailTemplates)) {
           const found = emailTemplates.find((t) => t.type === waitingTemplate.type);
@@ -196,7 +197,8 @@ export function Settings() {
         const updated = await updateEmailTemplate(id, waitingTemplate);
         setWaitingTemplateId(updated.id);
         localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
-        toast({ title: "Saved", description: "Waiting candidate template updated." });
+        await reloadEmailTemplates();
+      toast({ title: "Saved", description: "Waiting candidate template updated." });
       }
     } catch (err: unknown) {
       toast({ title: "Failed", description: err instanceof Error ? err.message : "Unable to save template", variant: "destructive" });
@@ -252,11 +254,11 @@ export function Settings() {
               <CardContent>
                 {(activeSection === "candidates" || activeSection === "waiting") && (
                   <Tabs defaultValue={activeSection}>
-                    <TabsList>
+                  <TabsList>
                       <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
                       <TabsTrigger value="waiting" id="waiting">Waiting Candidates</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="candidates" className="mt-4">
+                  </TabsList>
+                  <TabsContent value="candidates" className="mt-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -350,7 +352,7 @@ export function Settings() {
                       </div>
                     </div>
                   </TabsContent>
-                  </Tabs>
+                </Tabs>
                 )}
 
                 {activeSection === "exam-dates" && (

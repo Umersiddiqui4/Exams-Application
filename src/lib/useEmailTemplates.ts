@@ -15,29 +15,31 @@ export function useEmailTemplates() {
 	const [loadState, setLoadState] = useState<LoadState>("idle");
 	const [error, setError] = useState<string | null>(null);
 
+	const reload = useCallback(async () => {
+		setLoadState("loading");
+		setError(null);
+		try {
+			const data: any = await listEmailTemplates();
+			const normalized: EmailTemplate[] = Array.isArray(data?.data)
+				? (data.data as EmailTemplate[])
+				: Array.isArray(data)
+					? (data as EmailTemplate[])
+					: [];
+			setItems(normalized);
+			setLoadState("success");
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : "Failed to load templates");
+			setLoadState("error");
+		}
+	}, []);
+
 	useEffect(() => {
 		let mounted = true;
-		setLoadState("loading");
-		listEmailTemplates()
-			.then((data: any) => {
-				if (!mounted) return;
-				const normalized: EmailTemplate[] = Array.isArray(data?.data)
-					? (data.data as EmailTemplate[])
-					: Array.isArray(data)
-						? (data as EmailTemplate[])
-						: [];
-				setItems(normalized);
-				setLoadState("success");
-			})
-			.catch((err: unknown) => {
-				if (!mounted) return;
-				setError(err instanceof Error ? err.message : "Failed to load templates");
-				setLoadState("error");
-			});
+		reload();
 		return () => {
 			mounted = false;
 		};
-	}, []);
+	}, [reload]);
 
 	const create = useCallback(async (payload: CreateEmailTemplateDto) => {
 		const created = await createEmailTemplate(payload);
@@ -56,7 +58,7 @@ export function useEmailTemplates() {
 		setItems((prev) => prev.filter((t) => t.id !== id));
 	}, []);
 
-	return useMemo(() => ({ items, loadState, error, create, update, remove }), [items, loadState, error, create, update, remove]);
+	return useMemo(() => ({ items, loadState, error, create, update, remove, reload }), [items, loadState, error, create, update, remove, reload]);
 }
 
 export type { EmailTemplate } from "./emailTemplatesApi";
