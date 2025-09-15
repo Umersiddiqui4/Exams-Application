@@ -1320,16 +1320,16 @@ export function ApplicationForm() {
   ]);
 
   useEffect(() => {
-    if (selectedExam && new Date(selectedExam.closingDate) < new Date()) {
-      setIsExamClosed(true);
-    } else {
-      setIsExamClosed(false);
-    }
-    if (selectedExam && selectedExam.isBlocked === true) {
-      setIsClosed(true);
-    } else {
-      setIsClosed(false);
-    }
+    const now = new Date();
+    // Closed if registration end date has passed
+    const ended = selectedExam?.registrationEndDate
+      ? new Date(selectedExam.registrationEndDate) < now
+      : false;
+    setIsExamClosed(Boolean(ended));
+
+    // Closed if occurrence is not active
+    const inactive = selectedExam?.isActive === false;
+    setIsClosed(Boolean(inactive));
   }, [selectedExam]);
 
   async function onSubmit(data: FormValues) {
