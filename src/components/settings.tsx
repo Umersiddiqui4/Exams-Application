@@ -26,6 +26,7 @@ import { GooeyMenu } from "./GooeyMenu";
 import { useExamDates } from "../lib/useExamDates";
 import { useExams } from "../lib/useExams";
 import { useLocation } from "react-router-dom";
+import { useEmailTemplates } from "../lib/useEmailTemplates";
 
 type CandidateTemplate = {
   type: string;
@@ -87,6 +88,36 @@ export function Settings() {
     return "candidates";
   }, [location.hash]);
 
+  // Email templates (API-backed)
+  const { items: emailTemplates, create: createEmailTemplate, update: updateEmailTemplate } = useEmailTemplates();
+  const [candidateTemplateId, setCandidateTemplateId] = useState<string | null>(null);
+  const [waitingTemplateId, setWaitingTemplateId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const cand = emailTemplates.find((t) => t.type === defaultCandidateTemplate.type);
+    const wait = emailTemplates.find((t) => t.type === defaultWaitingTemplate.type);
+    if (cand) {
+      setCandidateTemplateId(cand.id);
+      setCandidateTemplate({
+        type: cand.type,
+        subject: cand.subject,
+        content: cand.content,
+        isActive: cand.isActive,
+        description: cand.description,
+      });
+    }
+    if (wait) {
+      setWaitingTemplateId(wait.id);
+      setWaitingTemplate({
+        type: wait.type,
+        subject: wait.subject,
+        content: wait.content,
+        isActive: wait.isActive,
+        description: wait.description,
+      });
+    }
+  }, [emailTemplates]);
+
   const handleAddExamDate = async () => {
     if (!newExamDate.trim()) return;
     try {
@@ -127,13 +158,31 @@ export function Settings() {
     }
   }, []);
 
-  const saveTemplates = (type: "candidates" | "waiting") => {
-    if (type === "candidates") {
-      localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
-      toast({ title: "Saved", description: "Candidate template updated." });
-    } else {
-      localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
-      toast({ title: "Saved", description: "Waiting candidate template updated." });
+  const saveTemplates = async (type: "candidates" | "waiting") => {
+    try {
+      if (type === "candidates") {
+        if (candidateTemplateId) {
+          const updated = await updateEmailTemplate(candidateTemplateId, candidateTemplate);
+          setCandidateTemplateId(updated.id);
+        } else {
+          const created = await createEmailTemplate(candidateTemplate);
+          setCandidateTemplateId(created.id);
+        }
+        localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
+        toast({ title: "Saved", description: "Candidate template updated." });
+      } else {
+        if (waitingTemplateId) {
+          const updated = await updateEmailTemplate(waitingTemplateId, waitingTemplate);
+          setWaitingTemplateId(updated.id);
+        } else {
+          const created = await createEmailTemplate(waitingTemplate);
+          setWaitingTemplateId(created.id);
+        }
+        localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
+        toast({ title: "Saved", description: "Waiting candidate template updated." });
+      }
+    } catch (err: unknown) {
+      toast({ title: "Failed", description: err instanceof Error ? err.message : "Unable to save template", variant: "destructive" });
     }
   };
 
