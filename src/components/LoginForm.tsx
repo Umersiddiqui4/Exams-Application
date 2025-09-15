@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { User, Lock } from 'lucide-react';
 import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/Slice';
+import { loginWithEmailPassword } from "../lib/authApi";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 
@@ -73,39 +74,18 @@ export function LoginForm() {
     
     // Start loading
     dispatch(loginRequest());
-
-    // Simulate a login (replace with real login logic)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Check credentials with specific error handling
-    if (email === 'admin' && password === 'admin') {
-      // Successful login
-      dispatch(loginSuccess({ name: 'Admin', email: 'admin@example.com' }));
-      
-      // Show success toast
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back, Admin!',
-        variant: 'default',
-      });
-    } else if (email !== 'admin' && password === 'admin') {
-      // Wrong username, correct password
-      dispatch(loginFailure({ 
-        message: 'Invalid username', 
-        type: 'invalid_username' 
-      }));
-    } else if (email === 'admin' && password !== 'admin') {
-      // Correct username, wrong password
-      dispatch(loginFailure({ 
-        message: 'Invalid password', 
-        type: 'invalid_password' 
-      }));
-    } else {
-      // Both username and password are wrong
-      dispatch(loginFailure({ 
-        message: 'Invalid username and password', 
-        type: 'general' 
-      }));
+    try {
+      const res = await loginWithEmailPassword(email, password);
+      const accessToken = res.data.tokens.access.token;
+      const refreshToken = res.data.tokens.refresh.token;
+      localStorage.setItem("auth_token", accessToken);
+      localStorage.setItem("refresh_token", refreshToken);
+      dispatch(loginSuccess({ name: `${res.data.user.firstName} ${res.data.user.lastName}`, email: res.data.user.email }));
+      toast({ title: 'Login Successful', description: `Welcome back, ${res.data.user.firstName}!` });
+      navigate("/");
+    } catch (err: any) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      dispatch(loginFailure({ message, type: 'general' }));
     }
   };
 
