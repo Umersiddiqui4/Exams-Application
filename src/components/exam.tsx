@@ -16,11 +16,26 @@ import { cn } from "@/lib/utils"
 import { useToast } from "./ui/use-toast"
 import { createExamOccurrence } from "@/lib/examOccurrencesApi"
 import { useExamOccurrences } from "@/lib/useExamOccurrences"
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { GraduationCap, BookOpen } from "lucide-react"
+import CreatableSelect from "react-select/creatable"
+import { useExams } from "@/lib/useExam"
 interface DateRange {
   from: Date | undefined
   to?: Date | undefined
 }
+
+const aktsLocationOptions = [
+  { value: "Colombo", label: "Colombo" },
+  { value: "Chennai", label: "Chennai" },
+  { value: "Dhaka", label: "Dhaka" },
+  { value: "Jeddah", label: "Jeddah" },
+  { value: "Karachi", label: "Karachi" },
+  { value: "Delhi", label: "Delhi" },
+  { value: "Lahore", label: "Lahore" },
+  { value: "Yangon", label: "Yangon" },
+  { value: "Kathmandu", label: "Kathmandu" },
+]
 
 // Zod schema for form validation
 const formSchema = z.object({
@@ -129,11 +144,34 @@ const defaultFormState = {
 }
 
 export function Exam() {
-  const [editMode, setEditMode] = useState(false)
-  const [editId, setEditId] = useState<string | null>(null)
-  const { toast } = useToast()
-  const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence } = useExamOccurrences()
+   const [editMode, setEditMode] = useState(false)
+   const [editId, setEditId] = useState<string | null>(null)
+   const { toast } = useToast()
+   const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence } = useExamOccurrences()
+ const [selectedLocations, setSelectedLocations] = useState<any[]>([])
+ const [examType, setExamType] = useState<"OSCE" | "AKTs">("OSCE")
+ const [currentExam, setCurrentExam] = useState<any>(null)
+  const { items: exams } = useExams();
 
+ const handleLocationChange = (selectedOptions: any) => {
+   setSelectedLocations(selectedOptions || [])
+   const locationString = selectedOptions ? selectedOptions.map((option: any) => option.value).join(', ') : ''
+   form.setValue("location", locationString)
+ }
+
+  const handleExamTypeChange = (newExamType: "OSCE" | "AKTs") => {
+    setExamType(newExamType)
+    const examName = newExamType === "OSCE" ? "OSCE" : "AKT"
+    const exam = exams.find((e: any) => e.name === examName)
+    setCurrentExam(exam || null)
+    if (newExamType === "OSCE") {
+      form.setValue("location", "")
+      setSelectedLocations([])
+    } else {
+      form.setValue("location", "")
+      setSelectedLocations([])
+    }
+  }
   // Initialize form with React Hook Form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -143,6 +181,15 @@ export function Exam() {
 
   const { formState } = form
   const { errors } = formState
+
+  // Initialize currentExam when exams load
+  useEffect(() => {
+    if (exams && exams.length > 0) {
+      const examName = examType === "OSCE" ? "OSCE" : "AKT"
+      const exam = exams.find((e: any) => e.name === examName)
+      setCurrentExam(exam || null)
+    }
+  }, [exams, examType])
 
   // Watch slot dates to calculate minimum dates for subsequent slots
   const slot1DateRange = form.watch("slot1DateRange")
@@ -218,7 +265,7 @@ export function Exam() {
       try {
         await updateOccurrence(editId, {
           title: data.name,
-            location: data.location,
+            location: (examType === "AKTs" ? data.location.split(', ').map((l: string) => l.trim()).filter((l: string) => l) : [data.location]) as string[],
           registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
           registrationEndDate: `${data.applicationsDateRange.to}T23:59:59Z`,
           examDate: `${data.slot1DateRange.from}T09:00:00Z`,
@@ -242,16 +289,16 @@ export function Exam() {
         }
 
         await createExamOccurrence({
-          examId: crypto.randomUUID(),
+          examId: currentExam?.id || crypto.randomUUID(),
           title: `${data.name}`,
-          type: "AKT",
+          type: currentExam?.name || "AKT",
           examDate: examStart,
           registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
           registrationEndDate: regEnd,
           applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
           waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
           isActive: true,
-          location: data.location,
+          location: (examType === "AKTs" ? data.location.split(', ').map((l: string) => l.trim()).filter((l: string) => l) : [data.location]) as string[],
           instructions: "Please bring a valid ID and arrive 30 minutes early",
         })
         await reloadOccurrences()
@@ -277,10 +324,19 @@ export function Exam() {
     // Parse slot dates
     const examDateOnly = exam.examDate ? exam.examDate.substring(0, 10) : ""
 
+    // Handle location based on exam type
+    let locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
+    let selectedLocs: any[] = []
+    if (exam.type === "AKT" && Array.isArray(exam.location)) {
+      selectedLocs = exam.location.map((loc: string) => ({ value: loc, label: loc }))
+    } else {
+      selectedLocs = []
+    }
+
     // Set form data with parsed dates
     form.reset({
       name: exam.title,
-      location: exam.location,
+      location: locationValue,
       applicationsDateRange: {
         from: exam.registrationStartDate?.substring(0, 10),
         to: exam.registrationEndDate?.substring(0, 10),
@@ -301,6 +357,7 @@ export function Exam() {
       },
     })
 
+    setSelectedLocations(selectedLocs)
     setEditMode(true)
     setEditId(exam.id)
 
@@ -312,6 +369,67 @@ export function Exam() {
     form.reset(defaultFormState)
     setEditMode(false)
     setEditId(null)
+  }
+
+const selectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: "hsl(var(--background))",
+      borderColor: state.isFocused ? "#5c347d" : "hsl(var(--border))",
+      boxShadow: state.isFocused ? "0 0 0 2px rgba(92, 52, 125, 0.2)" : "none",
+      color: "hsl(var(--foreground))",
+      minHeight: "40px",
+      "&:hover": {
+        borderColor: "#5c347d",
+      },
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      backgroundColor: "hsl(var(--background))",
+      border: "1px solid hsl(var(--border))",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      zIndex: 50,
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#5c347d" : state.isFocused ? "rgba(92, 52, 125, 0.1)" : "transparent",
+      color: state.isSelected ? "white" : "hsl(var(--foreground))",
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: state.isSelected ? "#5c347d" : "rgba(92, 52, 125, 0.1)",
+      },
+    }),
+    multiValue: (provided: any) => ({
+      ...provided,
+      backgroundColor: "rgba(92, 52, 125, 0.1)",
+      border: "1px solid rgba(92, 52, 125, 0.2)",
+    }),
+    multiValueLabel: (provided: any) => ({
+      ...provided,
+      color: "#5c347d",
+      fontWeight: "500",
+    }),
+    multiValueRemove: (provided: any) => ({
+      ...provided,
+      color: "#5c347d",
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: "#5c347d",
+        color: "white",
+      },
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      color: "hsl(var(--muted-foreground))",
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: "hsl(var(--foreground))",
+    }),
+    input: (provided: any) => ({
+      ...provided,
+      color: "hsl(var(--foreground))",
+    }),
   }
 
   return (
@@ -333,6 +451,28 @@ export function Exam() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+           <Tabs
+                      value={examType}
+                      onValueChange={(value) => handleExamTypeChange(value as "OSCE" | "AKTs")}
+                      className="w-full"
+                    >
+                      <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100 dark:bg-slate-800">
+                        <TabsTrigger
+                          value="OSCE"
+                          className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
+                        >
+                          <GraduationCap className="h-4 w-4" />
+                          <span>OSCE Exam</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="AKTs"
+                          className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          <span>AKTs Exam</span>
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="OSCE">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -483,6 +623,160 @@ export function Exam() {
               )}
             </div>
           </form>
+           </TabsContent>
+           <TabsContent value="AKTs">
+                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="space-y-2">
+                               <Label htmlFor="examName" className="dark:text-slate-200 flex items-center">
+                                 <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                 Exam Name <span className="text-red-500 ml-1">*</span>
+                               </Label>
+                               <Input
+                                 id="examName"
+                                 {...form.register("name")}
+                                 placeholder="AKTs Exam Name"
+                                 className={cn(
+                                   "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                   errors.name && "border-red-500 focus:ring-red-500",
+                                 )}
+                               />
+                             </div>
+           
+                             <div className="space-y-2">
+                               <Label htmlFor="examLocations" className="dark:text-slate-200 flex items-center">
+                                 <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                 Exam Locations <span className="text-red-500 ml-1">*</span>
+                               </Label>
+                               <CreatableSelect
+                                 isMulti
+                                 value={selectedLocations}
+                                 onChange={handleLocationChange}
+                                 options={aktsLocationOptions}
+                                 placeholder="Select or create locations..."
+                                 styles={selectStyles}
+                                 className="react-select-container"
+                                 classNamePrefix="react-select"
+                               />
+                             </div>
+                           </div>
+           
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="space-y-2">
+                               <Label htmlFor="applicationsDateRange" className="dark:text-slate-200 flex items-center">
+                                 <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                 Applications Receiving Dates <span className="text-red-500 ml-1">*</span>
+                               </Label>
+                               <DateRangePickerWithRange
+                                 value={form.watch("applicationsDateRange")}
+                                 onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
+                                 isError={!!errors.applicationsDateRange?.from || !!errors.applicationsDateRange?.to}
+                               />
+                             </div>
+           
+                             <div className="grid grid-cols-2 gap-4">
+                               <div className="space-y-2">
+                                 <Label htmlFor="applicationsLimit" className="dark:text-slate-200 flex items-center">
+                                   <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Applications Limit <span className="text-red-500 ml-1">*</span>
+                                 </Label>
+                                 <Input
+                                   id="applicationsLimit"
+                                   type="number"
+                                   {...form.register("applicationsLimit")}
+                                   placeholder="Limit"
+                                   className={cn(
+                                     "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                     errors.applicationsLimit && "border-red-500 focus:ring-red-500",
+                                   )}
+                                 />
+                               </div>
+                               <div className="space-y-2">
+                                 <Label htmlFor="waitingLimit" className="dark:text-slate-200 flex items-center">
+                                   <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Waiting Limit <span className="text-red-500 ml-1">*</span>
+                                 </Label>
+                                 <Input
+                                   id="waitingLimit"
+                                   type="number"
+                                   {...form.register("waitingLimit")}
+                                   placeholder="Waiting Limit"
+                                   className={cn(
+                                     "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                     errors.waitingLimit && "border-red-500 focus:ring-red-500",
+                                   )}
+                                 />
+                               </div>
+                             </div>
+                           </div>
+           
+                           <div className="space-y-4">
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                               <div className="space-y-2">
+                                 <Label className="dark:text-slate-200 flex items-center">
+                                   <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Exam Slot One <span className="text-red-500 ml-1">*</span>
+                                 </Label>
+                                 <DateRangePickerWithRange
+                                   value={form.watch("slot1DateRange")}
+                                   onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
+                                   isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
+                                 />
+                               </div>
+           
+                               <div className="space-y-2">
+                                 <Label className="dark:text-slate-200 flex items-center">
+                                   <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Exam Slot Two (optional)
+                                 </Label>
+                                 <DateRangePickerWithRange
+                                   value={{
+                                     from: form.watch("slot2DateRange")?.from || "",
+                                     to: form.watch("slot2DateRange")?.to || "",
+                                   }}
+                                   onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
+                                   minDate={getSlot2MinDate()}
+                                 />
+                               </div>
+           
+                               <div className="space-y-2">
+                                 <Label className="dark:text-slate-200 flex items-center">
+                                   <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Exam Slot Three (optional)
+                                 </Label>
+                                 <DateRangePickerWithRange
+                                   value={{
+                                     from: form.watch("slot3DateRange")?.from || "",
+                                     to: form.watch("slot3DateRange")?.to || "",
+                                   }}
+                                   onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
+                                   minDate={getSlot3MinDate()}
+                                 />
+                               </div>
+                             </div>
+                           </div>
+           
+                           <div className="flex space-x-2">
+                             <Button
+                               type="submit"
+                               className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
+                             >
+                               {editMode ? "Update Exam" : "Submit"}
+                             </Button>
+                             {editMode && (
+                               <Button
+                                 type="button"
+                                 variant="outline"
+                                 onClick={cancelEdit}
+                                 className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                               >
+                                 Cancel
+                               </Button>
+                             )}
+                           </div>
+                         </form>
+                       </TabsContent>
+                     </Tabs>
         </CardContent>
       </Card>
 
@@ -496,7 +790,7 @@ export function Exam() {
         <CardContent className="p-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/80">
           <div className="p-4">
             <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {Array.isArray(occurrences) && [...occurrences].reverse().map((exam: any) => (
+              {Array.isArray(occurrences) && [...occurrences].reverse().filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
                 <div
                   key={exam.id}
                   className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]"
@@ -522,7 +816,7 @@ export function Exam() {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm">
                       <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      <span className="dark:text-slate-300">{exam.location}</span>
+                      <span className="dark:text-slate-300">{Array.isArray(exam.location) ? exam.location.join(', ') : exam.location}</span>
                     </div>
 
                     <div className="flex items-center text-sm">

@@ -11,7 +11,7 @@ export type ExamOccurrence = {
 	applicationLimit: number;
 	waitingListLimit: number;
 	isActive: boolean;
-	location: string;
+	location: string[];
 	instructions?: string;
 	createdAt?: string;
 	updatedAt?: string;
@@ -23,7 +23,7 @@ export type UpdateExamOccurrenceDto = Partial<CreateExamOccurrenceDto>;
 const BASE = "/api/v1/exam-occurrences";
 
 export async function listExamOccurrences(): Promise<ExamOccurrence[]> {
-	return apiRequest<ExamOccurrence[]>("/api/v1/exam-occurrences?page=1&take=10&isActive=true", "GET");
+	return apiRequest<ExamOccurrence[]>("/api/v1/exam-occurrences?page=1&take=10", "GET");
 }
 
 export async function listAvailableExamOccurrences(): Promise<ExamOccurrence[]> {
