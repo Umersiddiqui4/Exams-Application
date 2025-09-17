@@ -1,9 +1,10 @@
 // src/ProtectedRoute.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { detectBrowser } from '../lib/browserDetection';
 import { redirectToLoginIfUnauthenticated } from "../lib/apiClient";
+import { logout } from "../redux/Slice";
 import { BrowserRestriction } from '../components/BrowserRestriction';
 
 interface ProtectedRouteProps {
@@ -12,14 +13,25 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Use RootState to access the state properly
+  const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const hasToken = useMemo(() => {
+    try {
+      return Boolean(localStorage.getItem("auth_token"));
+    } catch {
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) redirectToLoginIfUnauthenticated();
-  }, [isAuthenticated]);
+    if (!isAuthenticated || !hasToken) {
+      try { dispatch(logout()); } catch {}
+      redirectToLoginIfUnauthenticated();
+    }
+  }, [isAuthenticated, hasToken, dispatch]);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+  if (!isAuthenticated || !hasToken) {
+    return <Navigate to="/login" replace />;
   }
 
   // Additional browser check for authenticated users

@@ -32,7 +32,7 @@ export async function apiRequest<T>(
 	});
 	if (!res.ok && res.status === 401) {
 		// Try refresh once
-		const refreshed = await refreshAccessToken(baseUrl);
+		const refreshed = await refreshAccessToken(baseUrl, 4);
 		if (refreshed) {
 			headers["Authorization"] = `Bearer ${refreshed}`;
 			res = await fetch(url, {
@@ -45,8 +45,10 @@ export async function apiRequest<T>(
 	if (!res.ok) {
 		if (res.status === 401) {
 			try {
-				localStorage.removeItem("auth_token");
-				localStorage.removeItem("refresh_token");
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("refresh_token");
+            // Immediate redirect if a request hits 401 without successful refresh
+            redirectToLoginIfUnauthenticated();
 			} catch {}
 			redirectToLoginIfUnauthenticated();
 		}
@@ -61,47 +63,70 @@ export async function apiRequest<T>(
 
 let refreshingPromise: Promise<string | null> | null = null;
 
-async function refreshAccessToken(baseUrl: string): Promise<string | null> {
+async function refreshAccessToken(baseUrl: string, maxAttempts: number = 4): Promise<string | null> {
 	if (refreshingPromise) return refreshingPromise;
 	refreshingPromise = (async () => {
 		try {
 			const refreshToken = typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null;
 			if (!refreshToken) return null;
-			const refreshPath = (import.meta as any).env?.VITE_API_REFRESH_PATH ?? "/api/v1/auth/tokens/refresh";
-			const url = `${baseUrl.replace(/\/$/, "")}${refreshPath}`;
-			const res = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ refreshToken }),
-			});
-			if (!res.ok) {
-				// Clear tokens if refresh fails
+
+			// Generate device token if not exists
+			let deviceToken = typeof localStorage !== "undefined" ? localStorage.getItem("device_token") : null;
+			if (!deviceToken) {
+				deviceToken = crypto.randomUUID();
 				try {
-					localStorage.removeItem("auth_token");
-					localStorage.removeItem("refresh_token");
+					localStorage.setItem("device_token", deviceToken);
 				} catch {}
-				redirectToLoginIfUnauthenticated();
-				return null;
 			}
-			const data = await res.json().catch(() => ({}));
-			// Support several shapes
-			const token = data?.data?.tokens?.access?.token || data?.access?.token || data?.token || null;
-			if (token) {
-				try { localStorage.setItem("auth_token", token); } catch {}
-				return token as string;
+
+			// Get timezone
+			const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+			const url = `${baseUrl.replace(/\/$/, "")}/api/v1/auth/refresh`;
+
+			for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+				const res = await fetch(url, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"x-refresh-token": refreshToken
+					},
+					body: JSON.stringify({
+						deviceToken: deviceToken,
+						timeZone: timeZone
+					}),
+				});
+				if (!res.ok) {
+					// try again until attempts exhausted
+					continue;
+				}
+				const data = await res.json().catch(() => ({}));
+				// Support several shapes from backend
+				const accessToken =
+					data?.data?.tokens?.access?.token ||
+					data?.tokens?.access?.token ||
+					data?.accessToken ||
+					data?.access?.token ||
+					data?.token ||
+					null;
+				const nextRefreshToken =
+					data?.data?.tokens?.refresh?.token ||
+					data?.tokens?.refresh?.token ||
+					data?.refreshToken ||
+					data?.refresh?.token ||
+					null;
+				if (accessToken) {
+					try {
+						localStorage.setItem("auth_token", accessToken as string);
+						if (nextRefreshToken) localStorage.setItem("refresh_token", nextRefreshToken as string);
+					} catch {}
+					return accessToken as string;
+				}
+				// If response had no token, try next attempt
 			}
-			// If response had no token, clear tokens
-			try {
-				localStorage.removeItem("auth_token");
-				localStorage.removeItem("refresh_token");
-			} catch {}
 			return null;
 		} catch {
-			try {
-				localStorage.removeItem("auth_token");
-				localStorage.removeItem("refresh_token");
-			} catch {}
-			redirectToLoginIfUnauthenticated();
+			// Swallow and let caller handle
 			return null;
 		} finally {
 			const t = refreshingPromise;
@@ -116,7 +141,7 @@ export function redirectToLoginIfUnauthenticated() {
 	try {
 		const token = localStorage.getItem("auth_token");
 		if (!token && window.location.pathname !== "/login") {
-			window.location.href = "/login";
+			window.location.replace("/login");
 		}
 	} catch {}
 }
