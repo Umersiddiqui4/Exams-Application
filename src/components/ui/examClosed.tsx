@@ -2,8 +2,12 @@
 
 import { Card } from "@/components/ui/card";
 
-export default function ExamClosed() {
-  
+interface ExamClosedProps {
+  reason?: string;
+}
+
+export default function ExamClosed({ reason }: ExamClosedProps) {
+
   return (
     <div className="min-h-screen w-full text-white bg-gray-50 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-3xl mx-auto">
@@ -21,8 +25,7 @@ export default function ExamClosed() {
           <div className="text-center space-y-4 ">
             <h1 className="text-3xl font-semibold text-white-800">Note!</h1>
             <p className="text-lg text-white-600">
-              Exam form submission date has expired. Please wait for the next
-              enrollment period.
+              {reason || "Exam form submission date has expired. Please wait for the next enrollment period."}
             </p>
           </div>
         </Card>

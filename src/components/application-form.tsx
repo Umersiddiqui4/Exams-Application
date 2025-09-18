@@ -14,10 +14,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Eye } from "lucide-react";
 import "react-phone-number-input/style.css";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   incrementApplicationsCount,
-  selectExams,
   toggleBlockExam,
 } from "@/redux/examDataSlice";
 import { supabase } from "@/lib/supabaseClient";
@@ -43,10 +42,8 @@ import {
 } from "./schema/applicationSchema";
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
-import { getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
+import { examOccurrenceAvailability, Availability } from "@/lib/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
-import ExamClosedApp from "./ui/examClosedApplication";
-import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,18 +63,14 @@ export function ApplicationForm() {
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [pdfGenerating] = useState(false);
   const [warning, setWarning] = useState(false);
-  const [examOccurrence, setExamOccurrence] = useState<ExamOccurrence | null>(null);
+  const [examOccurrence, setExamOccurrence] = useState<Availability | null>(null);
   const [occurrenceLoading, setOccurrenceLoading] = useState(false);
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
-  const exams = useSelector(selectExams);
   const params = useParams();
   const dispatch = useDispatch();
 
 
   if (!params.examId) return null;
-
-  // Find the exam in Redux for application counts
-  const reduxExam = exams.find((exam) => exam.id === examOccurrence?.examId);
 
   // Map examOccurrence to selectedExam structure for compatibility
   const selectedExam = examOccurrence ? {
@@ -93,7 +86,7 @@ export function ApplicationForm() {
     waitingLimit: examOccurrence.waitingListLimit,
     formLink: '',
     isBlocked: !examOccurrence.isActive,
-    receivingApplicationsCount: reduxExam?.receivingApplicationsCount || 0,
+    receivingApplicationsCount: examOccurrence.applicationsCount,
     examType: examOccurrence.type,
   } : null;
 
@@ -134,33 +127,9 @@ export function ApplicationForm() {
         setOccurrenceLoading(true);
         setOccurrenceError(null);
         try {
-          const occurrence: any = await getExamOccurrence(params.examId as string);
-          // Check if params id matches
-          console.log("Fetched occurrence:", occurrence.data);
-          console.log("Ids match:", occurrence.data.id === `${params.examId}`);
-          
-          if (occurrence.data.id !== `${params.examId}`) {
-            setOccurrenceError("Exam occurrence ID mismatch.");
-            return;
-          }
-          // Other validations: check if active
-          if (!occurrence.data.isActive) {
-            setOccurrenceError("This exam occurrence is not active.");
-            return;
-          }
-          // Check registration dates
-          const now = new Date();
-          const start = new Date(occurrence.data.registrationStartDate);
-          const end = new Date(occurrence.data.registrationEndDate);
-          if (now < start) {
-            setOccurrenceError("Registration has not started yet.");
-            return;
-          }
-          if (now > end) {
-            setOccurrenceError("Registration has ended.");
-            return;
-          }
-          setExamOccurrence(occurrence.data);
+          const occurrence = await examOccurrenceAvailability(params.examId as string);
+          console.log("Fetched occurrence:", occurrence);
+          setExamOccurrence(occurrence);
         } catch (error) {
           setOccurrenceError("Failed to load exam occurrence.");
           console.error(error);
@@ -549,11 +518,8 @@ console.log("date commparission", examOccurrence && new Date() > new Date(examOc
       </div>
     );
   }
-  if (occurrenceError === "Registration has ended." ) {
-    return <ExamClosed />;
-  }
-  if (occurrenceError === "This exam occurrence is not active." ) {
-    return <ExamClosedApp />;
+  if (examOccurrence && !examOccurrence.canApply) {
+    return <ExamClosed reason={examOccurrence.reason} />;
   }
   if (occurrenceError) {
     return <NotFound />;

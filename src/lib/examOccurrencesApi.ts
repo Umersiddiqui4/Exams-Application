@@ -17,6 +17,13 @@ export type ExamOccurrence = {
 	updatedAt?: string;
 };
 
+export type Availability = ExamOccurrence & {
+	canApply: boolean;
+	reason: string;
+	applicationsCount: number;
+	waitingCount: number;
+};
+
 export type CreateExamOccurrenceDto = Omit<ExamOccurrence, "id" | "createdAt" | "updatedAt">;
 export type UpdateExamOccurrenceDto = Partial<CreateExamOccurrenceDto>;
 
@@ -33,7 +40,7 @@ export async function listExamOccurrences(sortBy: string = "createdAt", sortOrde
 }
 
 export async function listAvailableExamOccurrences(): Promise<ExamOccurrence[]> {
-	return apiRequest<ExamOccurrence[]>(`${BASE}/available`, "GET");
+	return apiRequest<ExamOccurrence[]>(`${BASE}`, "GET");
 }
 
 export async function getExamOccurrence(id: string): Promise<ExamOccurrence> {
@@ -53,4 +60,7 @@ export async function deleteExamOccurrence(id: string): Promise<{ id: string } |
 	return { id };
 }
 
+export async function examOccurrenceAvailability(id: string): Promise<Availability> {
+	return apiRequest<Availability>(`/api/v1/exam-occurrences/${id}/availability`, "GET");
+}
 
