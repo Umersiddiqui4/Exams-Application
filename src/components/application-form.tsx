@@ -25,8 +25,6 @@ import { addApplication } from "@/redux/applicationsSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMemo } from "react";
 import NotFound from "./ui/notFound";
-import ExamClosedApp from "./ui/examClosedApplication";
-import ExamClosed from "./ui/examClosed";
 import "../App.css";
 
 import {
@@ -45,6 +43,10 @@ import {
 } from "./schema/applicationSchema";
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
+import { getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
+import ExamClosed from "./ui/examClosed";
+import ExamClosedApp from "./ui/examClosedApplication";
+import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,16 +65,37 @@ export function ApplicationForm() {
   );
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [pdfGenerating] = useState(false);
-  const [isExamClosed, setIsExamClosed] = useState(false);
-  const [isClosed, setIsClosed] = useState(false);
   const [warning, setWarning] = useState(false);
+  const [examOccurrence, setExamOccurrence] = useState<ExamOccurrence | null>(null);
+  const [occurrenceLoading, setOccurrenceLoading] = useState(false);
+  const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
   const exams = useSelector(selectExams);
   const params = useParams();
   const dispatch = useDispatch();
 
+
   if (!params.examId) return null;
 
-  const selectedExam = exams.find((exam) => exam.id === params.examId);
+  // Find the exam in Redux for application counts
+  const reduxExam = exams.find((exam) => exam.id === examOccurrence?.examId);
+
+  // Map examOccurrence to selectedExam structure for compatibility
+  const selectedExam = examOccurrence ? {
+    id: examOccurrence.id,
+    name: examOccurrence.title,
+    location: Array.isArray(examOccurrence.location) ? examOccurrence.location.join(', ') : examOccurrence.location,
+    openingDate: examOccurrence.registrationStartDate,
+    closingDate: examOccurrence.registrationEndDate,
+    slot1: examOccurrence.examDate, // assuming slot1 is examDate
+    slot2: '',
+    slot3: '',
+    applicationsLimit: examOccurrence.applicationLimit,
+    waitingLimit: examOccurrence.waitingListLimit,
+    formLink: '',
+    isBlocked: !examOccurrence.isActive,
+    receivingApplicationsCount: reduxExam?.receivingApplicationsCount || 0,
+    examType: examOccurrence.type,
+  } : null;
 
   const osceForm = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -106,10 +129,54 @@ export function ApplicationForm() {
   }, [selectedExamType]);
 
   useEffect(() => {
-    if (selectedExam && selectedExam.examType === "AKTs") {
+    if (params.examId) {
+      const fetchOccurrence = async () => {
+        setOccurrenceLoading(true);
+        setOccurrenceError(null);
+        try {
+          const occurrence: any = await getExamOccurrence(params.examId as string);
+          // Check if params id matches
+          console.log("Fetched occurrence:", occurrence.data);
+          console.log("Ids match:", occurrence.data.id === `${params.examId}`);
+          
+          if (occurrence.data.id !== `${params.examId}`) {
+            setOccurrenceError("Exam occurrence ID mismatch.");
+            return;
+          }
+          // Other validations: check if active
+          if (!occurrence.data.isActive) {
+            setOccurrenceError("This exam occurrence is not active.");
+            return;
+          }
+          // Check registration dates
+          const now = new Date();
+          const start = new Date(occurrence.data.registrationStartDate);
+          const end = new Date(occurrence.data.registrationEndDate);
+          if (now < start) {
+            setOccurrenceError("Registration has not started yet.");
+            return;
+          }
+          if (now > end) {
+            setOccurrenceError("Registration has ended.");
+            return;
+          }
+          setExamOccurrence(occurrence.data);
+        } catch (error) {
+          setOccurrenceError("Failed to load exam occurrence.");
+          console.error(error);
+        } finally {
+          setOccurrenceLoading(false);
+        }
+      };
+      fetchOccurrence();
+    }
+  }, [params.examId]);
+
+  useEffect(() => {
+    if (examOccurrence && examOccurrence.type === "AKT") {
       setSelectedExamType(true);
     }
-  }, [selectedExam]);
+  }, [examOccurrence]);
 
   // ✅ Reset form errors when switching exam types
   useEffect(() => {
@@ -141,21 +208,14 @@ export function ApplicationForm() {
     signaturePreview,
   ]);
 
-  useEffect(() => {
-    if (selectedExam && new Date(selectedExam.closingDate) < new Date()) {
-      setIsExamClosed(true);
-    } else {
-      setIsExamClosed(false);
-    }
-    if (selectedExam && selectedExam.isBlocked === true) {
-      setIsClosed(true);
-    } else {
-      setIsClosed(false);
-    }
-  }, [selectedExam]);
 
   async function onSubmit(data: AktsFormValues | FormValues) {
     console.log("Form data being submitted:", data);
+
+    if (!examOccurrence) {
+      alert("Exam occurrence not loaded.");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -302,7 +362,7 @@ export function ApplicationForm() {
       } else if (isWaitingAvailable) {
         application.status = "waiting";
       } else {
-        dispatch(toggleBlockExam(params.examId));
+        dispatch(toggleBlockExam(examOccurrence.id));
         Swal.fire({
           title: "Error",
           text: "No more slots available for this exam.",
@@ -315,7 +375,7 @@ export function ApplicationForm() {
 
       // Final dispatch
       dispatch(addApplication(application));
-      dispatch(incrementApplicationsCount(params.examId));
+      dispatch(incrementApplicationsCount(examOccurrence.examId));
 
       // Success Alert
       Swal.fire({
@@ -476,20 +536,32 @@ export function ApplicationForm() {
       }
     }, 200);
   }
+console.log("Rendering ApplicationForm with selectedExam:", selectedExam);
+console.log("Rendering ApplicationForm with occurrenceLoading:", occurrenceLoading);
+console.log("Rendering ApplicationForm with occurrenceError:", occurrenceError);
+console.log("date commparission", examOccurrence && new Date() > new Date(examOccurrence.examDate));
 
-  // if (isExamClosed) {
-    // return <ExamClosed />;
-  // }
-  // if (isClosed) {
-    // return <ExamClosedApp />;
-  // }
-  // if (selectedExam === undefined) return <NotFound />;
+  if (occurrenceLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] space-y-4">
+        <Loader2 className="h-32 w-32 animate-spin text-indigo-500" />
+        <p className="text-slate-600 dark:text-slate-400">Loading exam details...</p>
+      </div>
+    );
+  }
+  if (occurrenceError === "Registration has ended." ) {
+    return <ExamClosed />;
+  }
+  if (occurrenceError === "This exam occurrence is not active." ) {
+    return <ExamClosedApp />;
+  }
+  if (occurrenceError) {
+    return <NotFound />;
+  }
+  if (!selectedExam) {
+    return <NotFound />;
+  }
 
-  // console.log("current form errors", currentForm.formState.errors);
-  // useEffect(() => {
-  //   const errors = selectedExamType ? aktsForm.formState.errors : osceForm.formState.errors
-  //   console.log("Form errors", errors)
-  // }, [selectedExamType])
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
