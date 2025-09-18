@@ -147,10 +147,10 @@ console.log("examDto", examDto);
   }, [params.examId]);
 
   useEffect(() => {
-    if (examOccurrence && examOccurrence.type === "AKT") {
+    if (examDto && examDto.type === "AKT") {
       setSelectedExamType(true);
     }
-  }, [examOccurrence]);
+  }, [examDto]);
 
   // ✅ Reset form errors when switching exam types
   useEffect(() => {
