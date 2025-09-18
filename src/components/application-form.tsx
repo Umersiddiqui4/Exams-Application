@@ -42,7 +42,7 @@ import {
 } from "./schema/applicationSchema";
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
-import { examOccurrenceAvailability, Availability } from "@/lib/examOccurrencesApi";
+import { examOccurrenceAvailability, Availability, getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
 
 export function ApplicationForm() {
@@ -64,30 +64,32 @@ export function ApplicationForm() {
   const [pdfGenerating] = useState(false);
   const [warning, setWarning] = useState(false);
   const [examOccurrence, setExamOccurrence] = useState<Availability | null>(null);
+  const [examDto, setExamDto] = useState<ExamOccurrence | null>(null);
   const [occurrenceLoading, setOccurrenceLoading] = useState(false);
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
   const params = useParams();
   const dispatch = useDispatch();
 
+console.log("examDto", examDto);
 
   if (!params.examId) return null;
 
   // Map examOccurrence to selectedExam structure for compatibility
-  const selectedExam = examOccurrence ? {
-    id: examOccurrence.id,
-    name: examOccurrence.title,
-    location: Array.isArray(examOccurrence.location) ? examOccurrence.location.join(', ') : examOccurrence.location,
-    openingDate: examOccurrence.registrationStartDate,
-    closingDate: examOccurrence.registrationEndDate,
-    slot1: examOccurrence.examDate, // assuming slot1 is examDate
+  const selectedExam = examDto ? {
+    id: examDto.id,
+    name: examDto.title,
+    location: Array.isArray(examDto.location) ? examDto.location.join(', ') : examDto.location,
+    openingDate: examDto.registrationStartDate,
+    closingDate: examDto.registrationEndDate,
+    slot1: examDto.examDate, // assuming slot1 is examDate
     slot2: '',
     slot3: '',
-    applicationsLimit: examOccurrence.applicationLimit,
-    waitingLimit: examOccurrence.waitingListLimit,
+    applicationsLimit: examDto.applicationLimit,
+    waitingLimit: examDto.waitingListLimit,
     formLink: '',
-    isBlocked: !examOccurrence.isActive,
-    receivingApplicationsCount: examOccurrence.applicationsCount,
-    examType: examOccurrence.type,
+    isBlocked: !examDto.isActive,
+    // receivingApplicationsCount: examDto.applicationsCount,
+    examType: examDto.type,
   } : null;
 
   const osceForm = useForm<FormValues>({
@@ -128,8 +130,11 @@ export function ApplicationForm() {
         setOccurrenceError(null);
         try {
           const occurrence = await examOccurrenceAvailability(params.examId as string);
+          const examData: any = await getExamOccurrence(params.examId as string);
           console.log("Fetched occurrence:", occurrence);
+          
           setExamOccurrence(occurrence);
+          setExamDto(examData?.data);
         } catch (error) {
           setOccurrenceError("Failed to load exam occurrence.");
           console.error(error);
@@ -258,13 +263,7 @@ export function ApplicationForm() {
         return;
       }
 
-      const isPendingAvailable =
-        selectedExam.receivingApplicationsCount <
-        selectedExam.applicationsLimit;
-      const isWaitingAvailable =
-        selectedExam.receivingApplicationsCount <
-        selectedExam.applicationsLimit + selectedExam.waitingLimit;
-
+ 
       // Build unified application object
       const application: any = {
         ...data,
@@ -326,21 +325,21 @@ export function ApplicationForm() {
       };
 
       // Decide status and dispatch
-      if (isPendingAvailable) {
-        application.status = "pending";
-      } else if (isWaitingAvailable) {
-        application.status = "waiting";
-      } else {
-        dispatch(toggleBlockExam(examOccurrence.id));
-        Swal.fire({
-          title: "Error",
-          text: "No more slots available for this exam.",
-          icon: "error",
-          confirmButtonColor: "#6366f1",
-        });
-        setIsSubmitting(false);
-        return;
-      }
+      // if (isPendingAvailable) {
+      //   application.status = "pending";
+      // } else if (isWaitingAvailable) {
+      //   application.status = "waiting";
+      // } else {
+      //   dispatch(toggleBlockExam(examOccurrence.id));
+      //   Swal.fire({
+      //     title: "Error",
+      //     text: "No more slots available for this exam.",
+      //     icon: "error",
+      //     confirmButtonColor: "#6366f1",
+      //   });
+      //   setIsSubmitting(false);
+      //   return;
+      // }
 
       // Final dispatch
       dispatch(addApplication(application));
