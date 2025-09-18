@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./card";
-import { Badge } from "./badge";
 import { Input } from "./input";
 import {
   DropdownMenu,
@@ -33,13 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import { Calendar, Download, Filter, Loader2, Search } from "lucide-react";
+import { Calendar, Download, Filter, Loader2, Search, Settings } from "lucide-react";
 import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
-import { selectExams } from "@/redux/examDataSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { selectApplications, setApplicationStatus } from "@/redux/applicationsSlice";
-import { ApplicationData, columns } from "../columns";
+import { useApplications } from "@/lib/useApplications";
+import { useExamOccurrences } from "@/lib/useExamOccurrences";
+import { columns } from "../columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
@@ -47,24 +45,27 @@ import Swal from "sweetalert2";
 export default function ApplicationTable() {
 
       const [activeFilter, setActiveFilter] = useState<string>("all");
-      const [selectedExam, setSelectedExam] = useState<string>("all");
-      const [filteredData, setFilteredData] = useState<ApplicationData[]>();
+      const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all");
       const [isExporting, setIsExporting] = useState(false);
-      const initialExams = useSelector(selectExams);
       const [pdfGenerating] = useState(false);
-      const dispatch = useDispatch();
       const [searchQuery, setSearchQuery] = useState<string>("");
-      const applications = useSelector(selectApplications);
+      const { items: examOccurrences } = useExamOccurrences();
+      const [pageSize, setPageSize] = useState(10);
+      const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex } = useApplications(
+        selectedExamOccurrence === "all" ? undefined : selectedExamOccurrence,
+        activeFilter === "all" ? undefined : activeFilter,
+        pageSize
+      );
 
       useEffect(() => {
-       const CurrentExam: any = initialExams[initialExams.length - 1];
-       if(CurrentExam && CurrentExam.id) {
-       setSelectedExam(CurrentExam.id.toString());
+       const currentExamOccurrence: any = examOccurrences[examOccurrences.length - 1];
+       if(currentExamOccurrence && currentExamOccurrence.id) {
+       setSelectedExamOccurrence(currentExamOccurrence.id.toString());
        }
-      }, [initialExams]);
+      }, [examOccurrences]);
       
-      console.log("Selected Exam:", selectedExam);
-      console.log("initial Exam:", initialExams);
+      console.log("Selected Exam Occurrence:", selectedExamOccurrence);
+      console.log("Exam Occurrences:", examOccurrences);
       
 
     const actionColumn = {
@@ -76,7 +77,7 @@ export default function ApplicationTable() {
     
           return (
             <div className="flex space-x-2">
-              {(status === "pending" || status === "waiting") && (
+              {(status === "SUBMITTED" || status === "UNDER_REVIEW") && (
                 <>
                   <Button
                     variant="outline"
@@ -113,14 +114,19 @@ export default function ApplicationTable() {
 
       const handleStatusChange = async (id: string, status: "approved" | "rejected") => {
         if (status === "approved") {
-          // Show approval confirmation dialog
+          // Show approval confirmation dialog with optional notes
           const result = await Swal.fire({
             title: "Are you sure you want to approve?",
             imageUrl: "/icon.png", // Replace with your actual icon path
             imageWidth: 150,
             imageHeight: 150,
+            input: "textarea",
+            inputPlaceholder: "Optional admin notes...",
+            inputAttributes: {
+              'aria-label': 'Admin notes'
+            },
             showCancelButton: true,
-            confirmButtonText: "Yes, please approve",
+            confirmButtonText: "Yes, approve",
             cancelButtonText: "Cancel",
             confirmButtonColor: "#4ade80",
             cancelButtonColor: "#ef4444",
@@ -130,14 +136,14 @@ export default function ApplicationTable() {
               cancelButton: "rounded-lg px-4 py-2",
             },
           })
-    
+
           if (result.isConfirmed) {
-            // Call the status change handler
-            dispatch(setApplicationStatus({ id, status }));
-    
+            // Call the review API with APPROVED status
+            await review(id, "APPROVED", result.value || undefined);
+
             // Show success message
             await Swal.fire({
-              title: "Updated Successfully!",
+              title: "Application Approved Successfully!",
               imageUrl: "/icon.png", // Replace with your actual icon path
               imageWidth: 150,
               imageHeight: 150,
@@ -150,19 +156,24 @@ export default function ApplicationTable() {
             })
           }
         } else if (status === "rejected") {
-          // Show rejection confirmation dialog with reason input
+          // Show rejection confirmation dialog with mandatory reason
           const result = await Swal.fire({
             title: "Are you sure you want to reject?",
             imageUrl: "/icon.png", // Replace with your actual logo path
             imageWidth: 150,
             imageHeight: 150,
-            input: "text",
-            inputPlaceholder: "Enter reason...",
+            input: "textarea",
+            inputPlaceholder: "Enter reason for rejection (required)...",
+            inputValidator: (value) => {
+              if (!value) {
+                return 'You need to provide a reason for rejection!';
+              }
+            },
             showCancelButton: true,
-            confirmButtonText: "Yes, please reject!",
+            confirmButtonText: "Yes, reject",
             cancelButtonText: "Cancel",
-            confirmButtonColor: "#4ade80",
-            cancelButtonColor: "#ef4444",
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#6b7280",
             customClass: {
               popup: "rounded-lg",
               input: "border rounded-lg p-2 w-auto",
@@ -170,22 +181,17 @@ export default function ApplicationTable() {
               cancelButton: "rounded-lg px-4 py-2",
             },
           })
-    
-          if (result.isConfirmed) {
-            dispatch(setApplicationStatus({ id, status }));
+
+          if (result.isConfirmed && result.value) {
+            // Call the review API with REJECTED status and reason as adminNotes
+            await review(id, "REJECTED", result.value);
           }
         }
       }
     
-      // const handleStatusChange = (
-      //   id: string,
-      //   newStatus: "approved" | "rejected"
-      // ) => {
-      //   dispatch(setApplicationStatus({ id, status: newStatus }));
-      // };
     
       const handleExamChange = (value: string) => {
-        setSelectedExam(value);
+        setSelectedExamOccurrence(value);
       };
     
       const handlePdfGenerate = async (row: any) => {
@@ -206,23 +212,16 @@ export default function ApplicationTable() {
         // Default: all applications
         let dataToExport = applications;
     
-        // If a specific exam is selected, filter by that exam
-        if (selectedExam !== "all") {
-          dataToExport = dataToExport.filter(
-            (app) => String(app.examId) === selectedExam
-          );
-        }
-    
         const exportData = dataToExport.map((app, index) => ({
           "S/No": index + 1,
           "Condidate ID#": app.candidateId,
           Profile: app.passportUrl,
-          "Application Date": app.submittedDate,
+          "Application Date": app.createdAt,
           Name: app.fullName,
           Email: app.email,
-          WhatsApp: app.whatsapp,
+          WhatsApp: app.personalContact,
           "Emergency Contact": app.emergencyContact,
-          "Residential P.O.Box": app.poBox,
+          "Residential Street Address": app.streetAddress,
           "Residential District": app.district,
           "Residential City/Town/Village": app.city,
           "Residential Province/Region": app.province,
@@ -230,10 +229,10 @@ export default function ApplicationTable() {
           "Date of passing Part 1 exam": app.dateOfPassingPart1,
           "Date of passing Part 2 exam": "0000-00-00",
           "Country of PG clinical": "Country",
-          "Country of ethnic origin": app.countryOfOrigin,
+          "Country of ethnic origin": app.originCountry,
           "Registration Authority": app.registrationAuthority,
           "Registration Number": app.registrationNumber,
-          "Registration Date": app.dateOfRegistration,
+          "Registration Date": app.registrationDate,
           "Preference Date 1": app.preferenceDate1,
           "Preference Date 2": app.preferenceDate2,
           "Preference Date 3": app.preferenceDate3,
@@ -265,10 +264,10 @@ export default function ApplicationTable() {
             });
     
             const examName =
-              selectedExam !== "all"
-                ? initialExams.find((exam) => exam.id.toString() === selectedExam)
-                    ?.name || "Selected-Exam"
-                : "All-Exams";
+              selectedExamOccurrence !== "all"
+                ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)
+                    ?.title || "Selected-Exam-Occurrence"
+                : "All-Exam-Occurrences";
     
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -361,7 +360,7 @@ export default function ApplicationTable() {
                         <View style={styles.fieldRow}>
                           <Text style={styles.fieldLabel}>WhatsApp:</Text>
                           <Text style={styles.fieldValue}>
-                            {data.whatsapp || "Not provided"}
+                            {data.personalContact || "Not provided"}
                           </Text>
                         </View>
                         <View style={styles.fieldRow}>
@@ -393,9 +392,9 @@ export default function ApplicationTable() {
                     <View style={styles.row}>
                       <View style={styles.column}>
                         <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Post Box:</Text>
+                          <Text style={styles.fieldLabel}>Street Address:</Text>
                           <Text style={styles.fieldValue}>
-                            {data.poBox || "No address"}
+                            {data.streetAddress || "No address"}
                           </Text>
                         </View>
                         <View style={styles.fieldRow}>
@@ -446,13 +445,13 @@ export default function ApplicationTable() {
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Country of experience:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.countryOfExperience || "Not provided"}
+                        {data.clinicalExperienceCountry || "Not provided"}
                       </Text>
                     </View>
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Country of origin:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.countryOfOrigin || "Not provided"}
+                        {data.originCountry || "Not provided"}
                       </Text>
                     </View>
                   </View>
@@ -848,36 +847,6 @@ export default function ApplicationTable() {
         actionColumn,
       ];
 
-  useEffect(() => {
-    // First filter by status
-    let statusFiltered: any = applications;
-    if (activeFilter !== "all") {
-      statusFiltered = applications.filter(
-        (app) => app.status === activeFilter
-      );
-    }
-
-    // Then filter by exam
-    if (selectedExam !== "all") {
-      statusFiltered = statusFiltered.filter(
-        (app: any) => app.examId === selectedExam
-      );
-    }
-
-    // Then filter by search query
-    if (searchQuery.trim() !== "") {
-      const query = searchQuery.toLowerCase().trim();
-      statusFiltered = statusFiltered.filter(
-        (app: any) =>
-          app.id.toLowerCase().includes(query) || // SNO
-          app.candidateId?.toLowerCase().includes(query) || // Candidate ID
-          app.name?.toLowerCase().includes(query) || // Name
-          app.email?.toLowerCase().includes(query) // Email
-      );
-    }
-
-    setFilteredData(statusFiltered);
-  }, [activeFilter, selectedExam, applications, searchQuery]);
 
  return (
     <div>
@@ -904,28 +873,40 @@ export default function ApplicationTable() {
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("pending")}
+                  onClick={() => setActiveFilter("DRAFT")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
-                  Pending
+                  Draft
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("approved")}
+                  onClick={() => setActiveFilter("SUBMITTED")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Submitted
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("UNDER_REVIEW")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Under Review
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("APPROVED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("rejected")}
+                  onClick={() => setActiveFilter("REJECTED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("waiting")}
+                  onClick={() => setActiveFilter("APPLIED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
-                  Waiting
+                  Applied
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -954,86 +935,51 @@ export default function ApplicationTable() {
         <CardContent className="p-0">
           <div className="p-4 dark:bg-slate-900">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-              <div className="flex items-center space-x-2 flex-wrap gap-2">
-                <Badge
-                  variant={activeFilter === "all" ? "default" : "outline"}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    activeFilter === "all"
-                      ? "bg-[#5c347d] hover:bg-[#4a2a68] text-white dark:bg-[#3b1f52] dark:hover:bg-[#2d1840]"
-                      : "border-[#5c347d] text-[#5c347d] hover:bg-[#5c347d] hover:text-white dark:border-[#3b1f52] dark:text-[#8b5fbf] dark:hover:bg-[#3b1f52] dark:hover:text-white"
-                  }`}
-                  onClick={() => setActiveFilter("all")}
-                >
-                  All
-                </Badge>
-                <Badge
-                  variant={activeFilter === "pending" ? "default" : "outline"}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    activeFilter === "pending"
-                      ? "bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-700 dark:hover:bg-amber-600"
-                      : "border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-600 dark:hover:text-white"
-                  }`}
-                  onClick={() => setActiveFilter("pending")}
-                >
-                  Pending
-                </Badge>
-                <Badge
-                  variant={activeFilter === "approved" ? "default" : "outline"}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    activeFilter === "approved"
-                      ? "bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600"
-                      : "border-green-600 text-green-600 hover:bg-green-600 hover:text-white dark:border-green-600 dark:text-green-400 dark:hover:bg-green-600 dark:hover:text-white"
-                  }`}
-                  onClick={() => setActiveFilter("approved")}
-                >
-                  Approved
-                </Badge>
-                <Badge
-                  variant={activeFilter === "rejected" ? "default" : "outline"}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    activeFilter === "rejected"
-                      ? "bg-red-600 hover:bg-red-700 text-white dark:bg-red-700 dark:hover:bg-red-600"
-                      : "border-red-600 text-red-600 hover:bg-red-600 hover:text-white dark:border-red-600 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
-                  }`}
-                  onClick={() => setActiveFilter("rejected")}
-                >
-                  Rejected
-                </Badge>
-                <Badge
-                  variant={activeFilter === "waiting" ? "default" : "outline"}
-                  className={`cursor-pointer transition-all duration-200 ${
-                    activeFilter === "waiting"
-                      ? "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600"
-                      : "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-600 dark:hover:text-white"
-                  }`}
-                  onClick={() => setActiveFilter("waiting")}
-                >
-                  Waiting
-                </Badge>
-              </div>
-
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 {/* Exam Dropdown */}
                 <div className="w-full md:w-64">
-                  <Select value={selectedExam} onValueChange={handleExamChange}>
+                  <Select value={selectedExamOccurrence} onValueChange={handleExamChange}>
                     <SelectTrigger className="w-full dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-[#5c347d] dark:text-[#8b5fbf]" />
-                        <SelectValue placeholder="Select Exam" />
+                        <SelectValue placeholder="Select Exam Occurrence" />
                       </div>
                     </SelectTrigger>
                     <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
-                      {initialExams.map((exam: any) => (
+                      {examOccurrences.map((examOccurrence: any) => (
                         <SelectItem
-                          key={exam.id}
-                          value={exam.id.toString()}
+                          key={examOccurrence.id}
+                          value={examOccurrence.id.toString()}
                           className="dark:text-slate-200 dark:focus:bg-slate-800 focus:bg-[#5c347d]/10 focus:text-[#5c347d]"
                         >
-                          {exam.name}
+                          {examOccurrence.title} - {examOccurrence.type}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Page Size Selector */}
+                <div className="flex items-center space-x-2">
+                  <Settings className="h-4 w-4 text-[#5c347d] dark:text-[#8b5fbf]" />
+                  <Select value={pageSize.toString()} onValueChange={(value) => {
+                    const newSize = parseInt(value);
+                    setPageSize(newSize);
+                    updatePageSize(newSize);
+                    // Reset to first page when page size changes
+                    setPageIndex(0);
+                  }}>
+                    <SelectTrigger className="w-20 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="10" className="dark:text-slate-200 dark:focus:bg-slate-800">10</SelectItem>
+                      <SelectItem value="20" className="dark:text-slate-200 dark:focus:bg-slate-800">20</SelectItem>
+                      <SelectItem value="30" className="dark:text-slate-200 dark:focus:bg-slate-800">30</SelectItem>
+                      <SelectItem value="50" className="dark:text-slate-200 dark:focus:bg-slate-800">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">per page</span>
                 </div>
 
                 {/* Search */}
@@ -1049,15 +995,15 @@ export default function ApplicationTable() {
               </div>
             </div>
 
-            {/* Selected Exam Info */}
-            {selectedExam !== "all" && (
+            {/* Selected Exam Occurrence Info */}
+            {selectedExamOccurrence !== "all" && (
               <div className="mb-4 p-3 bg-[#5c347d]/10 dark:bg-[#3b1f52]/20 rounded-md border border-[#5c347d]/20 dark:border-[#3b1f52]/30">
                 <div className="flex items-center">
                   <Calendar className="h-5 w-5 mr-2 text-[#5c347d] dark:text-[#8b5fbf]" />
                   <span className="font-medium dark:text-slate-200 text-slate-700">
                     Showing applications for:{" "}
                     <span className="text-[#5c347d] dark:text-[#8b5fbf] font-semibold">
-                      {applications.find((exam: any) => exam.examId === selectedExam)?.examName || "N/A"}
+                      {examOccurrences.find((examOccurrence: any) => examOccurrence.id.toString() === selectedExamOccurrence)?.title || "N/A"}
                     </span>
                   </span>
                 </div>
@@ -1065,7 +1011,39 @@ export default function ApplicationTable() {
             )}
           </div>
 
-          <DataTable columns={columnsWithActions} data={filteredData || []} />
+          {loadState === "loading" && (
+            <div className="flex justify-center items-center py-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5c347d] mx-auto"></div>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading applications...</p>
+              </div>
+            </div>
+          )}
+
+          {loadState === "error" && (
+            <div className="text-center py-8">
+              <p className="text-red-600 dark:text-red-400">Error loading applications: {error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 px-4 py-2 bg-[#5c347d] text-white rounded hover:bg-[#4a2a68]"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {loadState === "success" && (
+            <DataTable
+              columns={columnsWithActions}
+              data={applications}
+              pagination={{
+                pageIndex: pagination.pageIndex,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                onPageChange: setPageIndex,
+              }}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

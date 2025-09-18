@@ -20,22 +20,47 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  pagination?: {
+    pageIndex: number;
+    pageSize: number;
+    total: number;
+    onPageChange: (pageIndex: number) => void;
+  };
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  pagination,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: pagination ? undefined : getPaginationRowModel(),
+    manualPagination: !!pagination,
+    pageCount: pagination ? Math.ceil(pagination.total / pagination.pageSize) : undefined,
     initialState: {
       pagination: {
-        pageSize: 10,
+        pageSize: pagination?.pageSize || 10,
+        pageIndex: pagination?.pageIndex || 0,
       },
     },
+    state: pagination ? {
+      pagination: {
+        pageSize: pagination.pageSize,
+        pageIndex: pagination.pageIndex,
+      },
+    } : undefined,
+    onPaginationChange: pagination ? (updater) => {
+      if (typeof updater === 'function') {
+        const newState = updater({
+          pageSize: pagination.pageSize,
+          pageIndex: pagination.pageIndex,
+        });
+        pagination.onPageChange(newState.pageIndex);
+      }
+    } : undefined,
   });
   return (
     <div className="p-4">
@@ -98,17 +123,32 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground dark:text-slate-400">
-          Showing{" "}
-          {table.getState().pagination.pageIndex *
-            table.getState().pagination.pageSize +
-            1}{" "}
-          to{" "}
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) *
-              table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )}{" "}
-          of {table.getFilteredRowModel().rows.length} entries
+          {pagination ? (
+            <>
+              Showing{" "}
+              {pagination.pageIndex * pagination.pageSize + 1}{" "}
+              to{" "}
+              {Math.min(
+                (pagination.pageIndex + 1) * pagination.pageSize,
+                pagination.total
+              )}{" "}
+              of {pagination.total} entries
+            </>
+          ) : (
+            <>
+              Showing{" "}
+              {table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                1}{" "}
+              to{" "}
+              {Math.min(
+                (table.getState().pagination.pageIndex + 1) *
+                  table.getState().pagination.pageSize,
+                table.getFilteredRowModel().rows.length
+              )}{" "}
+              of {table.getFilteredRowModel().rows.length} entries
+            </>
+          )}
         </div>
         <Button
           variant="outline"
