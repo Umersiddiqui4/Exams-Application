@@ -58,7 +58,7 @@ export type UpdateApplicationStatusDto = { status: "APPROVED" | "REJECTED" | "PE
 
 const BASE = "/api/v1/applications";
 
-export async function listApplications(examOccurrenceId?: string, status?: string, page = 1, take = 10): Promise<{ data: ApplicationData[]; meta: { itemCount: number; pageCount: number; hasPreviousPage: boolean; hasNextPage: boolean } }> {
+export async function listApplications(examOccurrenceId?: string, status?: string, page = 1, take = 1000): Promise<{ data: ApplicationData[]; meta: { itemCount: number; pageCount: number; hasPreviousPage: boolean; hasNextPage: boolean } }> {
   const params = new URLSearchParams({
     page: page.toString(),
     take: take.toString(),

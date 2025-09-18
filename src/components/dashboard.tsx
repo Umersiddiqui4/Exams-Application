@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Menu, ClipboardList, Clock, CheckCircle, XCircle } from "lucide-react"
+import { Menu, ClipboardList, CheckCircle, XCircle, FileText, Eye } from "lucide-react"
 
 import { Button } from "../components/ui/button"
 import { useMobile } from "../hooks/use-mobile"
@@ -9,27 +9,20 @@ import { Tabs, TabsContent } from "../components/ui/tabs"
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle"
 
 import {  } from "react-router-dom"
-import { useSelector } from "react-redux"
-import { selectApplications } from "@/redux/applicationsSlice"
-import { selectExams } from "@/redux/examDataSlice"
 import { StatusCard } from "./ui/status-card"
 import { GooeyMenu } from "./GooeyMenu"
 import { SidebarNav } from "./SidebarNav"
+import { useDashboardData } from "@/lib/useDashboardData"
 
 export function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [activeFilter, setActiveFilter] = useState<string>("all")
-  // Theme is now handled by SimpleAnimatedThemeToggle component
-  const isMobile = useMobile()
-  // Local dropdown state handled inside GooeyMenu
-  const applications = useSelector(selectApplications)
-  const exams = useSelector(selectExams)
-  const CurrentExam: any = exams[exams.length - 1]
-  console.log(exams, "exams")
-  console.log(CurrentExam, "CurrentExam")
+   const [sidebarOpen, setSidebarOpen] = useState(true)
+   const [activeFilter, setActiveFilter] = useState<string>("all")
+   // Theme is now handled by SimpleAnimatedThemeToggle component
+   const isMobile = useMobile()
 
-  const currentExamApplications = applications.filter((app) => app.examId === CurrentExam.id)
-  console.log(currentExamApplications, "currentExamApplications")
+   // Fetch dashboard data
+   const { allApplications: stats, currentExam } = useDashboardData()
+
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false)
@@ -87,26 +80,18 @@ export function Dashboard() {
           <Tabs defaultValue="applications" className="w-full">
             <TabsContent value="applications">
               <div className="text-3xl p-3">All Batch Status</div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
                 <StatusCard
                   title="Total Requests"
-                  value={applications.length}
+                  value={stats.total}
                   color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("totalAll")}
                   active={activeFilter === "totalAll"}
                   icon={ClipboardList}
                 />
                 <StatusCard
-                  title="Pending Requests"
-                  value={applications.filter((app) => app.status === "pending").length}
-                  color="bg-amber-600 dark:bg-amber-700"
-                  onClick={() => setActiveFilter("totalPending")}
-                  active={activeFilter === "totalPending"}
-                  icon={Clock}
-                />
-                <StatusCard
                   title="Approved Requests"
-                  value={applications.filter((app) => app.status === "approved").length}
+                  value={stats.approved}
                   color="bg-green-600 dark:bg-green-700"
                   onClick={() => setActiveFilter("totalApproved")}
                   active={activeFilter === "totalApproved"}
@@ -114,46 +99,77 @@ export function Dashboard() {
                 />
                 <StatusCard
                   title="Rejected Requests"
-                  value={applications.filter((app) => app.status === "rejected").length}
+                  value={stats.rejected}
                   color="bg-red-600 dark:bg-red-700"
                   onClick={() => setActiveFilter("totalRejected")}
                   active={activeFilter === "totalRejected"}
                   icon={XCircle}
                 />
+                <StatusCard
+                  title="Submitted Requests"
+                  value={stats.submitted}
+                  color="bg-blue-600 dark:bg-blue-700"
+                  onClick={() => setActiveFilter("totalSubmitted")}
+                  active={activeFilter === "totalSubmitted"}
+                  icon={FileText}
+                />
+                <StatusCard
+                  title="Under Review Requests"
+                  value={stats.underReview}
+                  color="bg-purple-600 dark:bg-purple-700"
+                  onClick={() => setActiveFilter("totalUnderReview")}
+                  active={activeFilter === "totalUnderReview"}
+                  icon={Eye}
+                />
               </div>
-              <div className="text-3xl p-3">Current Batch Status</div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+
+              {/* Current Exam Status Section */}
+              <div className="text-3xl p-3 mt-8">Current Exam Status</div>
+              {currentExam.examTitle && (
+                <div className="text-lg p-2 text-[#5c347d] dark:text-[#8b5fbf] font-semibold">
+                  {currentExam.examTitle}
+                </div>
+              )}
+              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
                 <StatusCard
                   title="Total Requests"
-                  value={currentExamApplications.length}
+                  value={currentExam.total}
                   color="bg-[#5c347d] dark:bg-[#3b1f52]"
-                  onClick={() => setActiveFilter("all")}
-                  active={activeFilter === "all"}
+                  onClick={() => setActiveFilter("currentTotal")}
+                  active={activeFilter === "currentTotal"}
                   icon={ClipboardList}
                 />
                 <StatusCard
-                  title="Pending Requests"
-                  value={currentExamApplications.filter((app: any) => app.status === "pending").length}
-                  color="bg-amber-600 dark:bg-amber-700"
-                  onClick={() => setActiveFilter("pending")}
-                  active={activeFilter === "pending"}
-                  icon={Clock}
-                />
-                <StatusCard
                   title="Approved Requests"
-                  value={currentExamApplications.filter((app: any) => app.status === "approved").length}
+                  value={currentExam.approved}
                   color="bg-green-600 dark:bg-green-700"
-                  onClick={() => setActiveFilter("approved")}
-                  active={activeFilter === "approved"}
+                  onClick={() => setActiveFilter("currentApproved")}
+                  active={activeFilter === "currentApproved"}
                   icon={CheckCircle}
                 />
                 <StatusCard
                   title="Rejected Requests"
-                  value={currentExamApplications.filter((app: any) => app.status === "rejected").length}
+                  value={currentExam.rejected}
                   color="bg-red-600 dark:bg-red-700"
-                  onClick={() => setActiveFilter("rejected")}
-                  active={activeFilter === "rejected"}
+                  onClick={() => setActiveFilter("currentRejected")}
+                  active={activeFilter === "currentRejected"}
                   icon={XCircle}
+                />
+                <StatusCard
+                  title="Submitted Requests"
+                  value={currentExam.submitted}
+                  color="bg-blue-600 dark:bg-blue-700"
+                  onClick={() => setActiveFilter("currentSubmitted")}
+                  active={activeFilter === "currentSubmitted"}
+                  icon={FileText}
+                />
+                <StatusCard
+                  title="Under Review Requests"
+                  value={currentExam.underReview}
+                  color="bg-purple-600 dark:bg-purple-700"
+                  onClick={() => setActiveFilter("currentUnderReview")}
+                  active={activeFilter === "currentUnderReview"}
+                  icon={Eye}
                 />
               </div>
             </TabsContent>

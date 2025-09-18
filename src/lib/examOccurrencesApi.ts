@@ -22,8 +22,14 @@ export type UpdateExamOccurrenceDto = Partial<CreateExamOccurrenceDto>;
 
 const BASE = "/api/v1/exam-occurrences";
 
-export async function listExamOccurrences(): Promise<ExamOccurrence[]> {
-	return apiRequest<ExamOccurrence[]>("/api/v1/exam-occurrences?page=1&take=10", "GET");
+export async function listExamOccurrences(sortBy: string = "createdAt", sortOrder: string = "desc"): Promise<ExamOccurrence[]> {
+	const params = new URLSearchParams({
+		page: "1",
+		take: "10",
+		sortBy,
+		sortOrder,
+	});
+	return apiRequest<ExamOccurrence[]>(`/api/v1/exam-occurrences?${params.toString()}`, "GET");
 }
 
 export async function listAvailableExamOccurrences(): Promise<ExamOccurrence[]> {
