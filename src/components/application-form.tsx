@@ -18,7 +18,6 @@ import { useDispatch } from "react-redux";
 import {
   incrementApplicationsCount,
 } from "@/redux/examDataSlice";
-import { supabase } from "@/lib/supabaseClient";
 import { addApplication } from "@/redux/applicationsSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMemo } from "react";
@@ -68,6 +67,7 @@ export function ApplicationForm() {
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [isCreatingApplication, setIsCreatingApplication] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState<{ file: File; inputId: string; localPreviewUrl: string }[]>([]);
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const params = useParams();
   const dispatch = useDispatch();
@@ -263,6 +263,47 @@ console.log("examDto", examDto);
     }
   }, [selectedExamType, osceForm, aktsForm]);
 
+  // Process pending uploads when applicationId becomes available
+  useEffect(() => {
+    if (applicationId && pendingUploads.length > 0) {
+      const processPendingUploads = async () => {
+        for (const { file, inputId, localPreviewUrl } of pendingUploads) {
+          // Upload to API
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('examOccurrenceId', params.examId as string);
+          formData.append('entityType', 'user');
+          formData.append('entityId', applicationId as string);
+          formData.append('category', getCategory(inputId));
+          formData.append('fileName', file.name);
+
+          try {
+            const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (!response.ok) {
+              console.error(`Upload failed for ${inputId}`);
+              continue;
+            }
+
+            const data = await response.json();
+            const serverUrl = data.url; // Capture server URL from response
+            console.log(`Upload successful for ${inputId}:`, data);
+            // Keep the local preview URL, don't replace with server URL
+          } catch (error) {
+            console.error(`Upload error for ${inputId}:`, error);
+          }
+        }
+        // Clear pending uploads after processing
+        setPendingUploads([]);
+      };
+
+      processPendingUploads();
+    }
+  }, [applicationId, pendingUploads, params.examId]);
+
   console.log("Selected Exam Type:", selectedExamType);
 
   // Prepare images for PDF
@@ -282,6 +323,17 @@ console.log("examDto", examDto);
     signaturePreview,
   ]);
 
+
+  const getCategory = (inputId: string) => {
+    switch (inputId) {
+      case "passport-image":
+        return "application_photo";
+      case "signature":
+        return "application_signature";
+      default:
+        return "application_other";
+    }
+  };
 
   async function onSubmit(data: AktsFormValues | FormValues) {
     console.log("Form data being submitted:", data);
@@ -398,9 +450,9 @@ console.log("examDto", examDto);
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
           aktPassingDate: data.dateOfPassingPart1 || "",
           previousOSCEAttempts: 0,
-          preferenceDate1: data.preferenceDate1 || "",
-          preferenceDate2: data.preferenceDate2 || "",
-          preferenceDate3: data.preferenceDate3 || "",
+          preferenceDate1: data.preferenceDate1 || "00/00/0000",
+          preferenceDate2: data.preferenceDate2 || "00/00/0000",
+          preferenceDate3: data.preferenceDate3 || "00/00/0000",
           osceCandidateStatement: false,
           "shouldSubmit": true,
           // notes: ""
@@ -431,9 +483,9 @@ console.log("examDto", examDto);
           previousAKTAttempts: 0,
           aktPassingDate: data.dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
-          preferenceDate1: data.preferenceDate1 || "",
-          preferenceDate2: data.preferenceDate2 || "",
-          preferenceDate3: data.preferenceDate3 || "",
+          preferenceDate1: data.preferenceDate1 || "00/00/0000",
+          preferenceDate2: data.preferenceDate2 || "00/00/0000",
+          preferenceDate3: data.preferenceDate3 || "00/00/0000",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
           examType: examDto?.type || "OSCE",
           "shouldSubmit": true,
@@ -502,9 +554,9 @@ console.log("examDto", examDto);
         dateOfRegistration: data.dateOfRegistration
           ? new Date(data.dateOfRegistration)
           : new Date(),
-        preferenceDate1: data.preferenceDate1 || "",
-        preferenceDate2: data.preferenceDate2 || "",
-        preferenceDate3: data.preferenceDate3 || "",
+        preferenceDate1: data.preferenceDate1 || "00/00/0000",
+        preferenceDate2: data.preferenceDate2 || "00/00/0000",
+        preferenceDate3: data.preferenceDate3 || "00/00/0000",
         ...(selectedExamType
           ? {
               eligibilityA: (data as AktsFormValues).eligibilityA || false,
@@ -616,49 +668,71 @@ console.log("examDto", examDto);
       }
     }
 
-    // Upload to Supabase
-    const fileName = `${inputId}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage
-      .from("restaurant-images")
-      .upload(fileName, file);
+    // Create local preview URL immediately
+    const localPreviewUrl = URL.createObjectURL(file);
 
-    if (error) {
+    // Set immediate preview with local URL
+    switch (inputId) {
+      case "passport-image":
+        setPassportPreview(localPreviewUrl);
+        break;
+      case "medical-license":
+        setMedicalLicensePreview(localPreviewUrl);
+        break;
+      case "part1-email":
+        setPart1EmailPreview(localPreviewUrl);
+        break;
+      case "passport-bio":
+        setPassportBioPreview(localPreviewUrl);
+        break;
+      case "signature":
+        setSignaturePreview(localPreviewUrl);
+        break;
+      case "attachment":
+        setAttachmentUrl(localPreviewUrl);
+        break;
+    }
+
+    // Check if application is created
+    if (!applicationId) {
+      // Queue the file for upload once application is created
+      setPendingUploads(prev => [...prev, { file, inputId, localPreviewUrl }]);
+      setFileError(null); // Clear any previous errors
+      return true; // Return true to indicate file is accepted but queued
+    }
+
+    // Upload to API
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('examOccurrenceId', params.examId as string);
+    formData.append('entityType', 'user');
+    formData.append('entityId', applicationId as string);
+    formData.append('category', getCategory(inputId));
+    formData.append('fileName', file.name);
+
+    try {
+      const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        setFileError("Upload failed. Please try again.");
+        return false;
+      }
+
+      const data = await response.json();
+      const serverUrl = data.url; // Capture server URL from response
+      console.log(`Upload successful for ${inputId}:`, data);
+      // Keep the local preview URL, don't replace with server URL
+    } catch (error) {
       setFileError("Upload failed. Please try again.");
       return false;
     }
 
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from("restaurant-images")
-      .getPublicUrl(fileName);
-    const publicUrl = publicUrlData?.publicUrl;
-
-    if (!publicUrl) {
-      setFileError("Could not retrieve image URL.");
-      return false;
-    }
-
-    // Set image URL in preview state
-    switch (inputId) {
-      case "passport-image":
-        setPassportPreview(publicUrl);
-        break;
-      case "medical-license":
-        setMedicalLicensePreview(publicUrl);
-        break;
-      case "part1-email":
-        setPart1EmailPreview(publicUrl);
-        break;
-      case "passport-bio":
-        setPassportBioPreview(publicUrl);
-        break;
-      case "signature":
-        setSignaturePreview(publicUrl);
-        break;
-      case "attachment":
-        setAttachmentUrl(publicUrl);
-        return publicUrl; // Return URL for attachments
-        break;
+    // For queued uploads, return the local preview URL
+    if (!applicationId) {
+      return localPreviewUrl;
     }
 
     return true;
