@@ -264,6 +264,7 @@ console.log("examDto", examDto);
 
       // Build API payload based on exam type
       let apiPayload: any;
+      let apiEmailPayload: any;
 
       if (selectedExamType) {
         // AKTs payload
@@ -325,14 +326,46 @@ console.log("examDto", examDto);
           date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
           usualForename: data.fullName.split(' ')[0] || "",
           lastName: data.fullName.split(' ').slice(1).join(' ') || "",
-          gender: "MALE", 
+          // gender: "MALE", 
           previousAKTAttempts: 0,
           aktPassingDate: data.dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
-          preferenceDate1: data.preferenceDate1 || "",
-          preferenceDate2: data.preferenceDate2 || "",
-          preferenceDate3: data.preferenceDate3 || "",
+          preferenceDate1: data.preferenceDate1 || "12/4/2020",
+          preferenceDate2: data.preferenceDate2 || "12/4/2020",
+          preferenceDate3: data.preferenceDate3 || "12/4/2020",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
+          "shouldSubmit": true
+        };
+
+        apiEmailPayload = {
+          examOccurrenceId: params.examId,
+          email: data.email,
+          candidateId:  1234567,
+          fullName: "none",
+          streetAddress: "none",
+          district: "none",
+          city: "none",
+          province: "none",
+          country: "none",
+          personalContact: "+923211234567",
+          emergencyContact: "+923211234567",
+          originCountry: "none",
+          clinicalExperienceCountry: "none",
+          registrationAuthority: "none",
+          registrationNumber: "none",
+          registrationDate: "12/4/2020",
+          date: "12/4/2020",
+          usualForename: "none",
+          lastName: "none",
+          // gender: "MALE", 
+          previousAKTAttempts: 0,
+          aktPassingDate: "12/4/2020",
+          previousOSCEAttempts: 0,
+          preferenceDate1: "12/4/2020",
+          preferenceDate2: "12/4/2020",
+          preferenceDate3: "12/4/2020",
+          osceCandidateStatement: "true",
+
         };
       }
 
@@ -344,7 +377,7 @@ console.log("examDto", examDto);
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(apiPayload),
+        body: JSON.stringify(apiEmailPayload),
       });
 
       if (!response.ok) {
@@ -375,9 +408,7 @@ console.log("examDto", examDto);
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              shouldSubmit: true
-            }),
+            body: JSON.stringify(apiPayload),
           });
 
           if (!confirmationResponse.ok) {
