@@ -8,7 +8,7 @@ import { CardDescription } from "@/components/ui/card";
 import { CardTitle } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { Card } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Eye } from "lucide-react";
@@ -66,8 +66,12 @@ export function ApplicationForm() {
   const [examDto, setExamDto] = useState<ExamOccurrence | null>(null);
   const [occurrenceLoading, setOccurrenceLoading] = useState(false);
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [isCreatingApplication, setIsCreatingApplication] = useState(false);
+  const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const params = useParams();
   const dispatch = useDispatch();
+  const prevValuesRef = useRef<any>(null);
 
 console.log("examDto", examDto);
 
@@ -114,6 +118,31 @@ console.log("examDto", examDto);
     const subscription = (selectedExamType ? aktsForm : osceForm).watch(
       (values) => {
         console.log("Watching values:", values);
+
+        const currentForm = selectedExamType ? aktsForm : osceForm;
+        const errors = currentForm.formState.errors;
+        const emailValid = !errors.email;
+        const fullNameFilled = values.fullName && values.fullName.trim() !== '';
+
+        if (emailValid && fullNameFilled) {
+          if (prevValuesRef.current) {
+            // Check if any other field changed
+            const otherFieldsChanged = Object.keys(values).some(key => {
+              if (key === 'email' || key === 'fullName') return false;
+              return (values as any)[key] !== (prevValuesRef.current as any)[key];
+            });
+            if (otherFieldsChanged) {
+              console.log(true, "chala");
+              setApplicationCreateTime(true);
+            }else{
+              setApplicationCreateTime(false);
+            }
+          }
+          prevValuesRef.current = values;
+        } else {
+          // Reset if conditions not met
+          prevValuesRef.current = null;
+        }
       }
     ) as unknown as { unsubscribe: () => void }; // 🔥 Trick TypeScript here
 
@@ -150,6 +179,78 @@ console.log("examDto", examDto);
       setSelectedExamType(true);
     }
   }, [examDto]);
+ const values = currentForm.getValues();
+    console.log("Auto-create check with values:", values, "applicationId:", applicationId, "isCreatingApplication:", isCreatingApplication);
+    
+  // Auto-create application when fullname and email have values
+  useEffect(() => {
+    const currentForm = selectedExamType ? aktsForm : osceForm;
+    const values = currentForm.getValues();
+    console.log("Auto-create check with values:", values, "applicationId:", applicationId, "isCreatingApplication:", isCreatingApplication);
+    
+
+    // Check if we have fullname and email, and haven't created application yet
+    if (
+      values.fullName &&
+      values.email &&
+      values.fullName.trim() !== "" &&
+      values.email.trim() !== "" &&
+      !applicationId &&
+      !isCreatingApplication &&
+      params.examId
+    ) {
+      const createApplication = async () => {
+        try {
+          setIsCreatingApplication(true);
+
+          const apiEmailPayload = {
+            examOccurrenceId: params.examId,
+            fullName: values.fullName,
+            email: values.email,
+          };
+
+          console.log("Auto-creating application with:", apiEmailPayload);
+
+          const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(apiEmailPayload),
+          });
+
+          if (!response.ok) {
+            console.warn(`Auto-application creation failed: ${response.status} ${response.statusText}`);
+            return; // Don't throw error, just log and continue
+          }
+
+          const apiResponse = await response.json();
+          console.log("Auto-application creation response:", apiResponse);
+
+          // Extract application ID from response
+          const appId = apiResponse.id || apiResponse.applicationId || apiResponse.data?.id;
+          if (appId) {
+            setApplicationId(appId);
+            console.log("Application auto-created with ID:", appId);
+          }
+        } catch (error) {
+          console.warn("Auto-application creation error:", error);
+        } finally {
+          setIsCreatingApplication(false);
+        }
+      };
+
+      createApplication();
+    }
+  }, [
+    selectedExamType,
+    aktsForm,
+    osceForm,
+    applicationId,
+    isCreatingApplication,
+    params.examId,
+    applicationCreateTime
+  ]);
 
   // ✅ Reset form errors when switching exam types
   useEffect(() => {
@@ -264,10 +365,9 @@ console.log("examDto", examDto);
 
       // Build API payload based on exam type
       let apiPayload: any;
-      let apiEmailPayload: any;
 
       if (selectedExamType) {
-        // AKTs payload
+        // AKTs full payload
         apiPayload = {
           examOccurrenceId: params.examId,
           email: data.email,
@@ -302,10 +402,11 @@ console.log("examDto", examDto);
           preferenceDate2: data.preferenceDate2 || "",
           preferenceDate3: data.preferenceDate3 || "",
           osceCandidateStatement: false,
+          "shouldSubmit": true,
           // notes: ""
         };
       } else {
-        // OSCE payload
+        // OSCE full payload
         apiPayload = {
           examOccurrenceId: params.examId,
           email: data.email,
@@ -326,71 +427,24 @@ console.log("examDto", examDto);
           date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
           usualForename: data.fullName.split(' ')[0] || "",
           lastName: data.fullName.split(' ').slice(1).join(' ') || "",
-          // gender: "MALE", 
+          // gender: "MALE",
           previousAKTAttempts: 0,
           aktPassingDate: data.dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
-          preferenceDate1: data.preferenceDate1 || "12/4/2020",
-          preferenceDate2: data.preferenceDate2 || "12/4/2020",
-          preferenceDate3: data.preferenceDate3 || "12/4/2020",
+          preferenceDate1: data.preferenceDate1 || "",
+          preferenceDate2: data.preferenceDate2 || "",
+          preferenceDate3: data.preferenceDate3 || "",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
-          "shouldSubmit": true
-        };
-
-        apiEmailPayload = {
-          examOccurrenceId: params.examId,
-          email: data.email,
-          candidateId:  1234567,
-          fullName: "none",
-          streetAddress: "none",
-          district: "none",
-          city: "none",
-          province: "none",
-          country: "none",
-          personalContact: "+923211234567",
-          emergencyContact: "+923211234567",
-          originCountry: "none",
-          clinicalExperienceCountry: "none",
-          registrationAuthority: "none",
-          registrationNumber: "none",
-          registrationDate: "12/4/2020",
-          date: "12/4/2020",
-          usualForename: "none",
-          lastName: "none",
-          // gender: "MALE", 
-          previousAKTAttempts: 0,
-          aktPassingDate: "12/4/2020",
-          previousOSCEAttempts: 0,
-          preferenceDate1: "12/4/2020",
-          preferenceDate2: "12/4/2020",
-          preferenceDate3: "12/4/2020",
-          osceCandidateStatement: "true",
-
+          examType: examDto?.type || "OSCE",
+          "shouldSubmit": true,
         };
       }
 
       console.log("API Payload:", apiPayload);
 
-      // Make initial API call to create application
-      const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiEmailPayload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Application creation failed: ${response.status} ${response.statusText}`);
-      }
-
-      const apiResponse = await response.json();
-      console.log("Application Creation Response:", apiResponse);
-
-      // Extract application ID from response
-      const applicationId = apiResponse.id || apiResponse.applicationId || apiResponse.data?.id;
+      // Check if application was auto-created
       if (!applicationId) {
-        throw new Error("Application ID not found in response");
+        throw new Error("Application not created yet. Please ensure fullname and email are filled.");
       }
 
       // Make confirmation API call with retry logic

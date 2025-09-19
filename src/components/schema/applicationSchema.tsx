@@ -144,7 +144,7 @@ export type { FormValues, AktsFormValues };
 export const formDefaultValues: FormValues = {
     candidateId: "1234567",
   passportImage: undefined,
-  fullName: "John Doe",
+  fullName: "",
   poBox: "123 Main Street",
   district: "Central",
   city: "Karachi",
@@ -152,7 +152,7 @@ export const formDefaultValues: FormValues = {
   country: "Pakistan",
   whatsapp: "+923001234567",
   emergencyContact: "+923001234568",
-  email: "john.doe@example.com",
+  email: "",
   dateOfPassingPart1: "AKT - November 2024",
   previousOsceAttempts: "1",
   countryOfExperience: "Pakistan",
