@@ -17,7 +17,6 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
   incrementApplicationsCount,
-  toggleBlockExam,
 } from "@/redux/examDataSlice";
 import { supabase } from "@/lib/supabaseClient";
 import { addApplication } from "@/redux/applicationsSlice";
@@ -48,19 +47,19 @@ import ExamClosed from "./ui/examClosed";
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [passportPreview, setPassportPreview] = useState<string | null>(null);
+  const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<any>([]);
   const [medicalLicensePreview, setMedicalLicensePreview] = useState<
     string | null
-  >(null);
+  >("https://qph.cf2.quoracdn.net/main-qimg-678953c86023297f1bc61f1221e5418b-lq");
   const [part1EmailPreview, setPart1EmailPreview] = useState<string | null>(
-    null
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Ml67pFyDUglzvcBgFNJunKwo2rApmKrPRw&s"
   );
   const [passportBioPreview, setPassportBioPreview] = useState<string | null>(
-    null
+    "https://pbs.twimg.com/media/FlZ2oDPakAAGGor.jpg"
   );
-  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREb9M5D4J58j_78uhZNxsLXUXNMuFuF2RWTg&s");
   const [pdfGenerating] = useState(false);
   const [warning, setWarning] = useState(false);
   const [examOccurrence, setExamOccurrence] = useState<Availability | null>(null);
@@ -241,7 +240,7 @@ console.log("examDto", examDto);
       }
 
       // Show confirmation dialog
-      const result = await Swal.fire({
+      const confirmationResult = await Swal.fire({
         html: `
         <div style="text-align: center; margin-bottom: 20px;">
           <img src="/icon.png" alt="MRCGP Logo" style="width: 100px; height: 100px; margin: 0 auto 15px auto;">
@@ -258,13 +257,150 @@ console.log("examDto", examDto);
         cancelButtonColor: "#f87171",
       });
 
-      if (!result.isConfirmed) {
+      if (!confirmationResult.isConfirmed) {
         setIsSubmitting(false);
         return;
       }
 
- 
-      // Build unified application object
+      // Build API payload based on exam type
+      let apiPayload: any;
+
+      if (selectedExamType) {
+        // AKTs payload
+        apiPayload = {
+          examOccurrenceId: params.examId,
+          email: data.email,
+          candidateId: (data as AktsFormValues).candidateId || "",
+          fullName: data.fullName,
+          streetAddress: data.poBox,
+          district: data.district,
+          city: data.city,
+          province: data.province,
+          country: data.country,
+          personalContact: data.whatsapp,
+          emergencyContact: data.emergencyContact,
+          originCountry: data.countryOfOrigin,
+          clinicalExperienceCountry: data.countryOfExperience,
+          registrationAuthority: data.registrationAuthority,
+          registrationNumber: data.registrationNumber,
+          registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
+          date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
+          usualForename: data.fullName.split(' ')[0] || "",
+          lastName: data.fullName.split(' ').slice(1).join(' ') || "",
+          gender: "MALE", // Default, could be added to form
+          previousAKTAttempts: (data as AktsFormValues).previousAktsAttempts || 0,
+          graduatingSchoolName: (data as AktsFormValues).schoolName || "",
+          graduatingSchoolLocation: (data as AktsFormValues).schoolLocation || "",
+          dateOfQualification: (data as AktsFormValues).QualificationDate || "",
+          aktEligibility: "A", // Default, could be mapped from eligibility fields
+          examinationCenterPreference: (data as AktsFormValues).examinationCenter || "",
+          aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
+          aktPassingDate: data.dateOfPassingPart1 || "",
+          previousOSCEAttempts: 0,
+          preferenceDate1: data.preferenceDate1 || "",
+          preferenceDate2: data.preferenceDate2 || "",
+          preferenceDate3: data.preferenceDate3 || "",
+          osceCandidateStatement: false,
+          // notes: ""
+        };
+      } else {
+        // OSCE payload
+        apiPayload = {
+          examOccurrenceId: params.examId,
+          email: data.email,
+          candidateId: data.candidateId,
+          fullName: data.fullName,
+          streetAddress: data.poBox,
+          district: data.district,
+          city: data.city,
+          province: data.province,
+          country: data.country,
+          personalContact: data.whatsapp,
+          emergencyContact: data.emergencyContact,
+          originCountry: data.countryOfOrigin,
+          clinicalExperienceCountry: data.countryOfExperience,
+          registrationAuthority: data.registrationAuthority,
+          registrationNumber: data.registrationNumber,
+          registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
+          date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
+          usualForename: data.fullName.split(' ')[0] || "",
+          lastName: data.fullName.split(' ').slice(1).join(' ') || "",
+          gender: "MALE", 
+          previousAKTAttempts: 0,
+          aktPassingDate: data.dateOfPassingPart1 || "",
+          previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
+          preferenceDate1: data.preferenceDate1 || "",
+          preferenceDate2: data.preferenceDate2 || "",
+          preferenceDate3: data.preferenceDate3 || "",
+          osceCandidateStatement: (data as FormValues).termsAgreed || false,
+        };
+      }
+
+      console.log("API Payload:", apiPayload);
+
+      // Make initial API call to create application
+      const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Application creation failed: ${response.status} ${response.statusText}`);
+      }
+
+      const apiResponse = await response.json();
+      console.log("Application Creation Response:", apiResponse);
+
+      // Extract application ID from response
+      const applicationId = apiResponse.id || apiResponse.applicationId || apiResponse.data?.id;
+      if (!applicationId) {
+        throw new Error("Application ID not found in response");
+      }
+
+      // Make confirmation API call with retry logic
+      let confirmationApiResult;
+      let confirmationAttempts = 0;
+      const maxConfirmationAttempts = 2;
+
+      while (confirmationAttempts < maxConfirmationAttempts) {
+        try {
+          confirmationAttempts++;
+          console.log(`Confirmation attempt ${confirmationAttempts}/${maxConfirmationAttempts}`);
+
+          const confirmationResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/applications/${applicationId}`, {
+            method: "PATCH", // Changed to PUT as per API spec
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              shouldSubmit: true
+            }),
+          });
+
+          if (!confirmationResponse.ok) {
+            throw new Error(`Application confirmation failed: ${confirmationResponse.status} ${confirmationResponse.statusText}`);
+          }
+
+          confirmationApiResult = await confirmationResponse.json();
+          console.log("Application Confirmation Response:", confirmationApiResult);
+          break; // Success, exit retry loop
+
+        } catch (error) {
+          console.warn(`Confirmation attempt ${confirmationAttempts} failed:`, error);
+
+          if (confirmationAttempts >= maxConfirmationAttempts) {
+            throw new Error(`Application confirmation failed after ${maxConfirmationAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+
+          // Wait 1 second before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Also dispatch to Redux for local state management
       const application: any = {
         ...data,
         examId: params.examId,
@@ -274,21 +410,16 @@ console.log("examDto", examDto);
         submittedDate: new Date().toISOString(),
         passportUrl: passportPreview || "",
         signatureUrl: signaturePreview || "",
-
         pdfUrl: "",
-        status: "",
+        status: "submitted",
         date: new Date().toISOString(),
         name: data.fullName,
         dateOfRegistration: data.dateOfRegistration
           ? new Date(data.dateOfRegistration)
           : new Date(),
-
-        // Dates
         preferenceDate1: data.preferenceDate1 || "",
         preferenceDate2: data.preferenceDate2 || "",
         preferenceDate3: data.preferenceDate3 || "",
-
-        // Conditional fields for AKTs
         ...(selectedExamType
           ? {
               eligibilityA: (data as AktsFormValues).eligibilityA || false,
@@ -324,24 +455,6 @@ console.log("examDto", examDto);
             }),
       };
 
-      // Decide status and dispatch
-      // if (isPendingAvailable) {
-      //   application.status = "pending";
-      // } else if (isWaitingAvailable) {
-      //   application.status = "waiting";
-      // } else {
-      //   dispatch(toggleBlockExam(examOccurrence.id));
-      //   Swal.fire({
-      //     title: "Error",
-      //     text: "No more slots available for this exam.",
-      //     icon: "error",
-      //     confirmButtonColor: "#6366f1",
-      //   });
-      //   setIsSubmitting(false);
-      //   return;
-      // }
-
-      // Final dispatch
       dispatch(addApplication(application));
       dispatch(incrementApplicationsCount(examOccurrence.examId));
 
@@ -353,11 +466,10 @@ console.log("examDto", examDto);
         </div>
         <h1><b>Form Successfully Submitted!</b></h1>
         <p style="color: #666; font-size: 16px;">
-          You should receive an email within 24 hours. If not, please 
-          <a href="mailto:contact@mrcgpintsouthasia.org" style="color: #818cf8;">contact us</a>.
+          Your application has been submitted successfully. You should receive a confirmation email within 24 hours.
         </p>
         <p style="margin-top: 15px;">
-          For preview final PDF 
+          For preview final PDF
           <a href="#" id="pdf-preview-link" style="color: #818cf8;">Click Me</a>
         </p>
       `,
@@ -378,7 +490,7 @@ console.log("examDto", examDto);
       console.error("Submission error:", err);
       Swal.fire({
         title: "Error",
-        text: "Something went wrong during submission.",
+        text: err instanceof Error ? err.message : "Something went wrong during submission.",
         icon: "error",
         confirmButtonColor: "#6366f1",
       });

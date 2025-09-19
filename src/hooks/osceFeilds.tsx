@@ -261,6 +261,34 @@ export function OsceFeilds(props: OsceFieldsProps) {
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
               {/* Candidate ID */}
+               <FormField
+                  control={currentForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>
+                        E-mail {" "}<span className="text-red-500">*</span>
+                      </FormLabel>
+                      {/* <FormDescription>
+                                  Please provide valid personal email address that you regularly check, as most
+                                  correspondence and important announcements are communicated to candidates by email.
+                                </FormDescription> */}
+                      <FormControl>
+                        <Input
+                          placeholder="Enter Email"
+                          type="email"
+                          {...field}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
+                            currentForm.formState.errors.email
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                          }`}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               <FormField
                 control={currentForm.control}
                 name="candidateId"
@@ -607,34 +635,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                   )}
                 />
 
-                <FormField
-                  control={currentForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
-                      <FormLabel>
-                        E-mail <span className="text-red-500">*</span>
-                      </FormLabel>
-                      {/* <FormDescription>
-                                  Please provide valid personal email address that you regularly check, as most
-                                  correspondence and important announcements are communicated to candidates by email.
-                                </FormDescription> */}
-                      <FormControl>
-                        <Input
-                          placeholder="Enter Email"
-                          type="email"
-                          {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.email
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+               
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
