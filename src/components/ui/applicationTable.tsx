@@ -50,6 +50,7 @@ export default function ApplicationTable() {
       const [isExporting, setIsExporting] = useState(false);
       const [pdfGenerating, setPdfGenerating] = useState(false);
       const [searchQuery, setSearchQuery] = useState<string>("");
+     const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
       const { items: examOccurrences } = useExamOccurrences();
       const [pageSize, setPageSize] = useState(10);
       const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex } = useApplications(
@@ -101,18 +102,19 @@ export default function ApplicationTable() {
                 </>
               )}
     
-              <Button
+    
+              <Button key={id}
                 onClick={() => handlePdfGenerate(row)}
-                disabled={pdfGenerating}
+                disabled={generatingIds.has(id)}
                 className="bg-red-400 hover:bg-red-200 text-white dark:bg-red-900 dark:hover:bg-blue-900/50 dark:text-white border-blue-200 dark:border-blue-800"
               >
-                {pdfGenerating ? (
+                {generatingIds.has(id) ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                     Generating...
                   </>
                 ) : (
-                  "PDF"
+                  status === "SUBMITTED" ? "Review" : "Get PDF"
                 )}
               </Button>
             </div>
@@ -203,6 +205,7 @@ export default function ApplicationTable() {
       };
     
       const handlePdfGenerate = async (row: any) => {
+        setGeneratingIds(prev => new Set(prev).add(row.original.id));
         setPdfGenerating(true);
         try {
           // Fetch detailed application data
@@ -272,6 +275,7 @@ export default function ApplicationTable() {
             confirmButtonText: "OK",
           });
         } finally {
+           setGeneratingIds(prev => { const newSet = new Set(prev); newSet.delete(row.original.id); return newSet; });
           setPdfGenerating(false);
         }
       };
