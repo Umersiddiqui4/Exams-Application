@@ -156,6 +156,10 @@ export async function reviewApplication(id: string, status: "APPROVED" | "REJECT
   return apiRequest<ApplicationData>(`${BASE}/${id}/review`, "PATCH", { status, adminNotes });
 }
 
+export async function startReview(id: string): Promise<void> {
+  return apiRequest<void>(`${BASE}/${id}/start-review`, "GET");
+}
+
 export async function deleteApplication(id: string): Promise<{ id: string } | undefined> {
   await apiRequest<unknown>(`${BASE}/${id}`, "DELETE");
   return { id };

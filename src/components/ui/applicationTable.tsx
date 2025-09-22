@@ -37,7 +37,7 @@ import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
 import { useApplications } from "@/lib/useApplications";
 import { useExamOccurrences } from "@/lib/useExamOccurrences";
-import { getApplication } from "@/lib/applicationsApi";
+import { getApplication, startReview } from "@/lib/applicationsApi";
 import { columns } from "../columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
@@ -53,7 +53,7 @@ export default function ApplicationTable() {
      const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
       const { items: examOccurrences } = useExamOccurrences();
       const [pageSize, setPageSize] = useState(10);
-      const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex } = useApplications(
+      const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex, reload } = useApplications(
         selectedExamOccurrence === "all" ? undefined : selectedExamOccurrence,
         activeFilter === "all" ? undefined : activeFilter,
         pageSize
@@ -208,6 +208,16 @@ export default function ApplicationTable() {
         setGeneratingIds(prev => new Set(prev).add(row.original.id));
         setPdfGenerating(true);
         try {
+          // Call start-review API if status is SUBMITTED
+          if (row.original.status === "SUBMITTED") {
+            try {
+              await startReview(row.original.id);
+            } catch (error) {
+              // Ignore start-review API errors for now
+              console.log('Start review API failed, continuing with PDF generation:', error);
+            }
+          }
+
           // Fetch detailed application data
           const detailedData: any = await getApplication(row.original.id);
 
@@ -266,6 +276,9 @@ export default function ApplicationTable() {
           const blob = await generatePdfBlob(dataWithImages);
           const url = URL.createObjectURL(blob);
           window.open(url, "_blank");
+
+          // Refetch applications after PDF opens
+          await reload();
         } catch (error) {
           console.error('Error generating PDF:', error);
           Swal.fire({
