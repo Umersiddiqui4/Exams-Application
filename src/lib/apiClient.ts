@@ -97,7 +97,11 @@ async function refreshAccessToken(baseUrl: string, maxAttempts: number = 4): Pro
 					}),
 				});
 				if (!res.ok) {
-					// try again until attempts exhausted
+					// If refresh API returns 401, refresh token is invalid, don't retry
+					if (res.status === 401) {
+						return null;
+					}
+					// try again until attempts exhausted for other errors
 					continue;
 				}
 				const data = await res.json().catch(() => ({}));
