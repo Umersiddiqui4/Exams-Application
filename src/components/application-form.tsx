@@ -15,6 +15,7 @@ import { Loader2, Eye } from "lucide-react";
 import "react-phone-number-input/style.css";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { useToast } from "@/components/ui/use-toast";
 import {
   incrementApplicationsCount,
 } from "@/redux/examDataSlice";
@@ -68,9 +69,13 @@ export function ApplicationForm() {
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [isCreatingApplication, setIsCreatingApplication] = useState(false);
   const [pendingUploads, setPendingUploads] = useState<{ file: File; inputId: string; localPreviewUrl: string }[]>([]);
+  const [uploadedFileIds, setUploadedFileIds] = useState<{ [inputId: string]: string }>({});
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
+  const [applicationExists, setApplicationExists] = useState(false);
+  const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
   const params = useParams();
   const dispatch = useDispatch();
+  const { toast } = useToast();
   const prevValuesRef = useRef<any>(null);
 
 console.log("examDto", examDto);
@@ -182,22 +187,25 @@ console.log("examDto", examDto);
  const values = currentForm.getValues();
     console.log("Auto-create check with values:", values, "applicationId:", applicationId, "isCreatingApplication:", isCreatingApplication);
     
-  // Auto-create application when fullname and email have values
+  // Auto-create application when fullname and email have values or when email blur triggers check
   useEffect(() => {
     const currentForm = selectedExamType ? aktsForm : osceForm;
     const values = currentForm.getValues();
     console.log("Auto-create check with values:", values, "applicationId:", applicationId, "isCreatingApplication:", isCreatingApplication);
-    
 
-    // Check if we have fullname and email, and haven't created application yet
+
+    // Check if we have both email and fullName, and haven't created application yet
+    // Also check if application doesn't already exist
     if (
-      values.fullName &&
       values.email &&
-      values.fullName.trim() !== "" &&
       values.email.trim() !== "" &&
+      values.fullName &&
+      values.fullName.trim() !== "" &&
       !applicationId &&
       !isCreatingApplication &&
-      params.examId
+      !applicationExists &&
+      params.examId &&
+      triggerApplicationCheck
     ) {
       const createApplication = async () => {
         try {
@@ -220,6 +228,26 @@ console.log("examDto", examDto);
           });
 
           if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.message || `Application creation failed: ${response.status} ${response.statusText}`;
+
+            // Check for specific 409 conflict error
+            if (response.status === 409 && errorData.message === "Application already exists for this exam occurrence") {
+              setApplicationExists(true);
+              toast({
+                title: "Application Already Exists",
+                description: "An application with this email already exists for this exam. Please use a different email address.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            toast({
+              title: "Application Creation Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+
             console.warn(`Auto-application creation failed: ${response.status} ${response.statusText}`);
             return; // Don't throw error, just log and continue
           }
@@ -234,9 +262,18 @@ console.log("examDto", examDto);
             console.log("Application auto-created with ID:", appId);
           }
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : "Network error occurred";
+
+          toast({
+            title: "Application Creation Error",
+            description: errorMessage,
+            variant: "destructive",
+          });
+
           console.warn("Auto-application creation error:", error);
         } finally {
           setIsCreatingApplication(false);
+          setTriggerApplicationCheck(false); // Reset the trigger
         }
       };
 
@@ -249,8 +286,19 @@ console.log("examDto", examDto);
     applicationId,
     isCreatingApplication,
     params.examId,
-    applicationCreateTime
+    applicationCreateTime,
+    triggerApplicationCheck
   ]);
+
+  // Function to trigger application creation check
+  const handleEmailBlur = () => {
+    setTriggerApplicationCheck(true);
+  };
+
+  // Function to trigger application creation check for full name
+  const handleFullNameBlur = () => {
+    setTriggerApplicationCheck(true);
+  };
 
   // ✅ Reset form errors when switching exam types
   useEffect(() => {
@@ -263,11 +311,67 @@ console.log("examDto", examDto);
     }
   }, [selectedExamType, osceForm, aktsForm]);
 
+  // Reset application exists state when email changes
+  useEffect(() => {
+    if (applicationExists) {
+      setApplicationExists(false);
+    }
+  }, [currentForm.watch("email")]);
+
   // Process pending uploads when applicationId becomes available
   useEffect(() => {
     if (applicationId && pendingUploads.length > 0) {
       const processPendingUploads = async () => {
         for (const { file, inputId, localPreviewUrl } of pendingUploads) {
+          // Delete existing file if it exists
+          const existingFileId = uploadedFileIds[inputId];
+          if (existingFileId) {
+            try {
+              const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
+                method: 'DELETE'
+              });
+
+              if (!deleteResponse.ok) {
+                console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
+              } else {
+                console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
+              }
+            } catch (error) {
+              console.warn(`Error deleting existing file for ${inputId}:`, error);
+            }
+          }
+
+          // Determine filename based on exam type and input
+          let fileName = file.name;
+          if (selectedExamType && inputId === "attachment") {
+            // For AKT attachments, find the attachment with the matching file
+            const attachment = attachments.find((att: any) => att.file === file);
+            if (attachment && attachment.title) {
+              fileName = attachment.title;
+            }
+          } else if (!selectedExamType) {
+            // For OSCE applications, use standard titles for all file types
+            switch (inputId) {
+              case "passport-image":
+                fileName = "passport size image";
+                break;
+              case "medical-license":
+                fileName = "medical license";
+                break;
+              case "part1-email":
+                fileName = "part 1 passing email";
+                break;
+              case "passport-bio":
+                fileName = "passport bio page";
+                break;
+              case "signature":
+                fileName = "signature";
+                break;
+              default:
+                fileName = file.name; // fallback to original name
+            }
+          }
+
           // Upload to API
           const formData = new FormData();
           formData.append('file', file);
@@ -275,7 +379,7 @@ console.log("examDto", examDto);
           formData.append('entityType', 'user');
           formData.append('entityId', applicationId as string);
           formData.append('category', getCategory(inputId));
-          formData.append('fileName', file.name);
+          formData.append('fileName', fileName);
 
           try {
             const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
@@ -289,7 +393,15 @@ console.log("examDto", examDto);
             }
 
             const data = await response.json();
+            const newFileId = data.id; // Capture the new file ID
             const serverUrl = data.url; // Capture server URL from response
+
+            // Store the new file ID for future deletions
+            setUploadedFileIds(prev => ({
+              ...prev,
+              [inputId]: newFileId
+            }));
+
             console.log(`Upload successful for ${inputId}:`, data);
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
@@ -332,6 +444,31 @@ console.log("examDto", examDto);
         return "application_signature";
       default:
         return "application_other";
+    }
+  };
+
+  const deleteUploadedFile = async (inputId: string) => {
+    const existingFileId = uploadedFileIds[inputId];
+    if (existingFileId) {
+      try {
+        const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
+          method: 'DELETE'
+        });
+
+        if (!deleteResponse.ok) {
+          console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
+        } else {
+          console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
+          // Remove from uploadedFileIds
+          setUploadedFileIds(prev => {
+            const newState = { ...prev };
+            delete newState[inputId];
+            return newState;
+          });
+        }
+      } catch (error) {
+        console.warn(`Error deleting existing file for ${inputId}:`, error);
+      }
     }
   };
 
@@ -518,7 +655,16 @@ console.log("examDto", examDto);
           });
 
           if (!confirmationResponse.ok) {
-            throw new Error(`Application confirmation failed: ${confirmationResponse.status} ${confirmationResponse.statusText}`);
+            const errorData = await confirmationResponse.json().catch(() => ({}));
+            const errorMessage = errorData.message || `Application confirmation failed: ${confirmationResponse.status} ${confirmationResponse.statusText}`;
+
+            toast({
+              title: "Application Submission Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+
+            throw new Error(errorMessage);
           }
 
           confirmationApiResult = await confirmationResponse.json();
@@ -529,7 +675,15 @@ console.log("examDto", examDto);
           console.warn(`Confirmation attempt ${confirmationAttempts} failed:`, error);
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
-            throw new Error(`Application confirmation failed after ${maxConfirmationAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            const errorMessage = `Application confirmation failed after ${maxConfirmationAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+            toast({
+              title: "Application Submission Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+
+            throw new Error(errorMessage);
           }
 
           // Wait 1 second before retry
@@ -701,6 +855,55 @@ console.log("examDto", examDto);
       return true; // Return true to indicate file is accepted but queued
     }
 
+    // Determine filename based on exam type and input
+    let fileName = file.name;
+    if (selectedExamType && inputId === "attachment") {
+      // For AKT attachments, find the attachment with the matching file
+      const attachment = attachments.find((att: any) => att.file === file);
+      if (attachment && attachment.title) {
+        fileName = attachment.title;
+      }
+    } else if (!selectedExamType) {
+      // For OSCE applications, use standard titles for all file types
+      switch (inputId) {
+        case "passport-image":
+          fileName = "passport size image";
+          break;
+        case "medical-license":
+          fileName = "medical license";
+          break;
+        case "part1-email":
+          fileName = "part 1 passing email";
+          break;
+        case "passport-bio":
+          fileName = "passport bio page";
+          break;
+        case "signature":
+          fileName = "signature";
+          break;
+        default:
+          fileName = file.name; // fallback to original name
+      }
+    }
+
+    // Delete existing file if it exists
+    const existingFileId = uploadedFileIds[inputId];
+    if (existingFileId) {
+      try {
+        const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
+          method: 'DELETE'
+        });
+
+        if (!deleteResponse.ok) {
+          console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
+        } else {
+          console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
+        }
+      } catch (error) {
+        console.warn(`Error deleting existing file for ${inputId}:`, error);
+      }
+    }
+
     // Upload to API
     const formData = new FormData();
     formData.append('file', file);
@@ -708,7 +911,7 @@ console.log("examDto", examDto);
     formData.append('entityType', 'user');
     formData.append('entityId', applicationId as string);
     formData.append('category', getCategory(inputId));
-    formData.append('fileName', file.name);
+    formData.append('fileName', fileName);
 
     try {
       const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
@@ -722,7 +925,15 @@ console.log("examDto", examDto);
       }
 
       const data = await response.json();
+      const newFileId = data.id; // Capture the new file ID
       const serverUrl = data.url; // Capture server URL from response
+
+      // Store the new file ID for future deletions
+      setUploadedFileIds(prev => ({
+        ...prev,
+        [inputId]: newFileId
+      }));
+
       console.log(`Upload successful for ${inputId}:`, data);
       // Keep the local preview URL, don't replace with server URL
     } catch (error) {
@@ -850,6 +1061,9 @@ console.log("date commparission", examOccurrence && new Date() > new Date(examOc
                   setSignaturePreview={setSignaturePreview}
                   signaturePreview={signaturePreview}
                   selectedExam={selectedExam}
+                  deleteUploadedFile={deleteUploadedFile}
+                  onEmailBlur={handleEmailBlur}
+                  onFullNameBlur={handleFullNameBlur}
                 />
               ) : (
                 <AktFeilds
@@ -974,14 +1188,16 @@ console.log("date commparission", examOccurrence && new Date() > new Date(examOc
                 ></Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all duration-200 transform hover:scale-105"
+                  disabled={isSubmitting || applicationExists}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Submitting...
                     </>
+                  ) : applicationExists ? (
+                    "Application Already Exists - Change Email"
                   ) : (
                     "Submit"
                   )}

@@ -106,6 +106,9 @@ interface OsceFieldsProps {
   passportBioPreview: string | null;
   setSignaturePreview: (value: string | null) => void;
   signaturePreview: string | null;
+  deleteUploadedFile: (inputId: string) => Promise<void>;
+  onEmailBlur: () => void;
+  onFullNameBlur: () => void;
 }
 
 export function OsceFeilds(props: OsceFieldsProps) {
@@ -126,6 +129,9 @@ export function OsceFeilds(props: OsceFieldsProps) {
     passportBioPreview,
     setSignaturePreview,
     signaturePreview,
+    deleteUploadedFile,
+    onEmailBlur,
+    onFullNameBlur,
   } = props;
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
@@ -278,6 +284,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           placeholder="Enter Email"
                           type="email"
                           {...field}
+                          onBlur={(e) => {
+                            // Trigger application creation check when email loses focus
+                            const emailValue = e.target.value.trim();
+                            if (emailValue && !currentForm.formState.errors.email) {
+                              onEmailBlur();
+                            }
+                          }}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                             currentForm.formState.errors.email
                               ? "border-red-500 dark:border-red-700"
@@ -349,7 +362,8 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => {
+                          onClick={async () => {
+                            await deleteUploadedFile("passport-image");
                             setPassportPreview(null);
                             const fileInput = document.getElementById(
                               "passport-image"
@@ -411,6 +425,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                       <Input
                         placeholder="Enter Full Name"
                         {...field}
+                        onBlur={(e) => {
+                          // Trigger application creation check when full name loses focus
+                          const fullNameValue = e.target.value.trim();
+                          if (fullNameValue && !currentForm.formState.errors.fullName) {
+                            onFullNameBlur();
+                          }
+                        }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                           currentForm.formState.errors.fullName
                             ? "border-red-500 dark:border-red-700"
@@ -1213,7 +1234,8 @@ export function OsceFeilds(props: OsceFieldsProps) {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => {
+                                onClick={async () => {
+                                  await deleteUploadedFile("medical-license");
                                   setMedicalLicensePreview(null);
                                   const fileInput = document.getElementById(
                                     "medical-license"
@@ -1289,7 +1311,8 @@ export function OsceFeilds(props: OsceFieldsProps) {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => {
+                                onClick={async () => {
+                                  await deleteUploadedFile("part1-email");
                                   setPart1EmailPreview(null);
                                   const fileInput = document.getElementById(
                                     "part1-email"
@@ -1365,7 +1388,8 @@ export function OsceFeilds(props: OsceFieldsProps) {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => {
+                                onClick={async () => {
+                                  await deleteUploadedFile("passport-bio");
                                   setPassportBioPreview(null);
                                   const fileInput = document.getElementById(
                                     "passport-bio"
@@ -1434,7 +1458,8 @@ export function OsceFeilds(props: OsceFieldsProps) {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => {
+                                onClick={async () => {
+                                  await deleteUploadedFile("signature");
                                   setSignaturePreview(null);
                                   const fileInput = document.getElementById(
                                     "signature"
