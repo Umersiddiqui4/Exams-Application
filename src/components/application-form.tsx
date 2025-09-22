@@ -322,7 +322,7 @@ console.log("examDto", examDto);
   useEffect(() => {
     if (applicationId && pendingUploads.length > 0) {
       const processPendingUploads = async () => {
-        for (const { file, inputId, localPreviewUrl } of pendingUploads) {
+        for (const { file, inputId } of pendingUploads) {
           // Delete existing file if it exists
           const existingFileId = uploadedFileIds[inputId];
           if (existingFileId) {
@@ -394,7 +394,7 @@ console.log("examDto", examDto);
 
             const data = await response.json();
             const newFileId = data.id; // Capture the new file ID
-            const serverUrl = data.url; // Capture server URL from response
+            // const serverUrl = data.url; // Capture server URL from response
 
             // Store the new file ID for future deletions
             setUploadedFileIds(prev => ({
@@ -926,7 +926,7 @@ console.log("examDto", examDto);
 
       const data = await response.json();
       const newFileId = data.id; // Capture the new file ID
-      const serverUrl = data.url; // Capture server URL from response
+      // const serverUrl = data.url; // Capture server URL from response
 
       // Store the new file ID for future deletions
       setUploadedFileIds(prev => ({
