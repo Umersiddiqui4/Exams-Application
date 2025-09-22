@@ -48,7 +48,6 @@ export default function ApplicationTable() {
       const [activeFilter, setActiveFilter] = useState<string>("all");
       const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all");
       const [isExporting, setIsExporting] = useState(false);
-      const [pdfGenerating, setPdfGenerating] = useState(false);
       const [searchQuery, setSearchQuery] = useState<string>("");
      const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
       const { items: examOccurrences } = useExamOccurrences();
@@ -206,7 +205,6 @@ export default function ApplicationTable() {
     
       const handlePdfGenerate = async (row: any) => {
         setGeneratingIds(prev => new Set(prev).add(row.original.id));
-        setPdfGenerating(true);
         try {
           // Call start-review API if status is SUBMITTED
           if (row.original.status === "SUBMITTED") {
@@ -289,7 +287,6 @@ export default function ApplicationTable() {
           });
         } finally {
            setGeneratingIds(prev => { const newSet = new Set(prev); newSet.delete(row.original.id); return newSet; });
-          setPdfGenerating(false);
         }
       };
     
