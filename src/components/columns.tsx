@@ -24,7 +24,7 @@ export type ApplicationData = {
   registrationNumber: string
   registrationDate: string
   examOccurrenceId: string
-  status: "APPROVED" | "REJECTED" | "PENDING" | "WAITING"
+  status: "APPROVED" | "REJECTED" | "PENDING" | "WAITING" | "SUBMITTED"
   isWaiting: boolean
   notes?: string
   adminNotes?: string

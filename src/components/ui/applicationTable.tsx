@@ -37,6 +37,7 @@ import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
 import { useApplications } from "@/lib/useApplications";
 import { useExamOccurrences } from "@/lib/useExamOccurrences";
+import { getApplication } from "@/lib/applicationsApi";
 import { columns } from "../columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
@@ -47,7 +48,7 @@ export default function ApplicationTable() {
       const [activeFilter, setActiveFilter] = useState<string>("all");
       const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all");
       const [isExporting, setIsExporting] = useState(false);
-      const [pdfGenerating] = useState(false);
+      const [pdfGenerating, setPdfGenerating] = useState(false);
       const [searchQuery, setSearchQuery] = useState<string>("");
       const { items: examOccurrences } = useExamOccurrences();
       const [pageSize, setPageSize] = useState(10);
@@ -105,7 +106,14 @@ export default function ApplicationTable() {
                 disabled={pdfGenerating}
                 className="bg-red-400 hover:bg-red-200 text-white dark:bg-red-900 dark:hover:bg-blue-900/50 dark:text-white border-blue-200 dark:border-blue-800"
               >
-                PDF
+                {pdfGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "PDF"
+                )}
               </Button>
             </div>
           );
@@ -195,15 +203,77 @@ export default function ApplicationTable() {
       };
     
       const handlePdfGenerate = async (row: any) => {
-        const blob = await generatePdfBlob(row.original, {
-          passport: row.original.passportUrl,
-          medicalLicense: row.original.medicalLicenseUrl,
-          part1Email: row.original.part1EmailUrl,
-          passportBio: row.original.passportBioUrl,
-          signature: row.original.signatureUrl,
-        });
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
+        setPdfGenerating(true);
+        try {
+          // Fetch detailed application data
+          const detailedData: any = await getApplication(row.original.id);
+
+          // Convert images to base64 using the API endpoint for attachments
+          const imagePromises = detailedData.data.attachments?.map(async (attachment: any) => {
+            if (!attachment.id) return { ...attachment, base64Data: null };
+
+            try {
+              console.log('Fetching image from API:', attachment.id);
+
+              // Get the auth token from localStorage (same as apiClient)
+              const token = localStorage.getItem("auth_token");
+
+              // Use the API endpoint to download the attachment with authentication
+              const response = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${attachment.id}`, {
+                method: 'GET',
+                headers: {
+                  'Accept': 'image/*',
+                  ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
+              });
+
+              console.log('API response status:', response.status);
+              if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+              const blob = await response.blob();
+              console.log('Blob size:', blob.size, 'type:', blob.type);
+
+              const base64Data = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  console.log('Base64 conversion successful for:', attachment.fileName);
+                  resolve(reader.result as string);
+                };
+                reader.onerror = (error) => {
+                  console.error('Base64 conversion failed for:', attachment.fileName, error);
+                  reject(error);
+                };
+                reader.readAsDataURL(blob);
+              });
+
+              return { ...attachment, base64Data };
+            } catch (error) {
+              console.error(`Failed to load image ${attachment.fileName}:`, error);
+              return { ...attachment, base64Data: null };
+            }
+          }) || [];
+
+          const attachmentsWithImages = await Promise.all(imagePromises);
+          console.log('Attachments with images:', attachmentsWithImages);
+
+          const dataWithImages = {
+            ...detailedData.data,
+            attachments: attachmentsWithImages
+          };
+          const blob = await generatePdfBlob(dataWithImages);
+          const url = URL.createObjectURL(blob);
+          window.open(url, "_blank");
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+          Swal.fire({
+            title: "Error",
+            text: `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        } finally {
+          setPdfGenerating(false);
+        }
       };
     
       const handleExport = () => {
@@ -286,15 +356,15 @@ export default function ApplicationTable() {
         }, 500);
       };
 
-      const generatePdfBlob = async (data: any, images: any) => {
-        const doc = <ApplicationPDF data={data} images={images} />;
+      const generatePdfBlob = async (data: any) => {
+        const doc = <ApplicationPDF data={data} />;
         const asPdf = pdf();
         asPdf.updateContainer(doc);
         const blob = await asPdf.toBlob();
         return blob;
       };
 
-      const ApplicationPDF = ({ data, images }: any) => {
+      const ApplicationPDF = ({ data }: any) => {
         return (
           <Document>
             {/* Main application form page */}
@@ -310,12 +380,17 @@ export default function ApplicationTable() {
                     </Text>
                   </div>
                 </View>
-                {images.passport && (
-                  <Image
-                    src={images.passport || "/placeholder.svg"}
-                    style={styles.passportImage}
-                  />
-                )}
+                {(() => {
+                  const passportAttachment = data.attachments?.find((att: any) =>
+                    att.category === 'application_photo' && att.base64Data
+                  );
+                  return passportAttachment ? (
+                    <Image
+                      src={passportAttachment.base64Data}
+                      style={styles.passportImage}
+                    />
+                  ) : null;
+                })()}
               </View>
     
               {/* Main content - Resume style format */}
@@ -433,13 +508,15 @@ export default function ApplicationTable() {
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Date of passing Part 1:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.dateOfPassingPart1 || "Not provided"}
+                        {data.osceDetails?.aktPassingDate
+                          ? format(new Date(data.osceDetails.aktPassingDate), "PPP")
+                          : "Not provided"}
                       </Text>
                     </View>
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Previous OSCE attempts:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.previousOsceAttempts || "Not provided"}
+                        {data.osceDetails?.previousOSCEAttempts || "Not provided"}
                       </Text>
                     </View>
                     <View style={styles.fieldRow}>
@@ -478,8 +555,8 @@ export default function ApplicationTable() {
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Date of registration:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.dateOfRegistration
-                          ? format(data.dateOfRegistration, "PPP")
+                        {data.registrationDate
+                          ? format(new Date(data.registrationDate), "PPP")
                           : "Not provided"}
                       </Text>
                     </View>
@@ -497,24 +574,24 @@ export default function ApplicationTable() {
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Preference Date 1:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.preferenceDate1
-                          ? format(new Date(data.preferenceDate1), "PPP")
+                        {data.osceDetails?.preferenceDate1 && data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
+                          ? format(new Date(data.osceDetails.preferenceDate1), "PPP")
                           : "Not provided"}
                       </Text>
                     </View>
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Preference Date 2:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.preferenceDate2
-                          ? format(new Date(data.preferenceDate2), "PPP")
+                        {data.osceDetails?.preferenceDate2 && data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
+                          ? format(new Date(data.osceDetails.preferenceDate2), "PPP")
                           : "Not provided"}
                       </Text>
                     </View>
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Preference Date 3:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.preferenceDate3
-                          ? format(new Date(data.preferenceDate3), "PPP")
+                        {data.osceDetails?.preferenceDate3 && data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
+                          ? format(new Date(data.osceDetails.preferenceDate3), "PPP")
                           : "Not provided"}
                       </Text>
                     </View>
@@ -530,21 +607,13 @@ export default function ApplicationTable() {
                     <View style={styles.fieldRow}>
                       <Text style={styles.fieldLabel}>Name:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.agreementName || "Not provided"}
+                        {data.fullName || "Not provided"}
                       </Text>
                     </View>
                     <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Date:</Text>
+                      <Text style={styles.fieldLabel}>OSCE Candidate Statement:</Text>
                       <Text style={styles.fieldValue}>
-                        {data.agreementDate
-                          ? format(data.agreementDate, "PPP")
-                          : "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Terms Agreed:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.termsAgreed ? "Yes" : "No"}
+                        {data.osceDetails?.osceCandidateStatement ? "Agreed" : "Not agreed"}
                       </Text>
                     </View>
                   </View>
@@ -620,74 +689,47 @@ export default function ApplicationTable() {
               </View>
             </Page>
     
-            {/* Each document on its own page */}
-            {images.medicalLicense && (
-              <Page size="A4" style={styles.page}>
+            {/* Each attachment on its own page */}
+            {data.attachments && data.attachments.filter((attachment: any) => attachment.url).map((attachment: any, index: number) => (
+              <Page key={attachment.id} size="A4" style={styles.page}>
                 <View style={styles.documentPage}>
-                  <Text style={styles.documentPageTitle}>Medical License</Text>
-                  <Image
-                    src={images.medicalLicense || "/placeholder.svg"}
-                    style={styles.documentPageImage}
-                  />
+                  <Text style={styles.documentPageTitle}>
+                    {attachment.category === 'application_photo' ? 'Passport Photo' :
+                     attachment.category === 'application_other' && attachment.fileName.toLowerCase().includes('medical_license') ? 'Medical License' :
+                     attachment.category === 'application_other' && attachment.fileName.toLowerCase().includes('part_1_passing_email') ? 'Part 1 Passing Email' :
+                     attachment.category === 'application_other' && attachment.fileName.toLowerCase().includes('passport_bio_page') ? 'Passport Bio Page' :
+                     attachment.category === 'application_signature' ? 'Signature' :
+                     `Attachment ${index + 1}`}
+                  </Text>
+                  {attachment.base64Data ? (
+                    <>
+                      {console.log('Rendering image for:', attachment.fileName, 'base64Data length:', attachment.base64Data.length)}
+                      <Image
+                        src={attachment.base64Data}
+                        style={styles.documentPageImage}
+                      />
+                    </>
+                  ) : (
+                    <View style={styles.documentPageImageContainer}>
+                      <Text style={styles.imagePlaceholderText}>
+                        Image: {attachment.fileName}
+                      </Text>
+                      <Text style={styles.imageNoteText}>
+                        Note: Image could not be loaded from the server. The original image is available in the application.
+                      </Text>
+                    </View>
+                  )}
                   <View style={styles.documentPageFooter}>
                     <Text style={styles.documentPageFooterText}>
                       {data.fullName} - Candidate ID: {data.candidateId}
                     </Text>
-                  </View>
-                </View>
-              </Page>
-            )}
-    
-            {images.part1Email && (
-              <Page size="A4" style={styles.page}>
-                <View style={styles.documentPage}>
-                  <Text style={styles.documentPageTitle}>Part 1 Passing Email</Text>
-                  <Image
-                    src={images.part1Email || "/placeholder.svg"}
-                    style={styles.documentPageImage}
-                  />
-                  <View style={styles.documentPageFooter}>
                     <Text style={styles.documentPageFooterText}>
-                      {data.fullName} - Candidate ID: {data.candidateId}
+                      {attachment.fileName}
                     </Text>
                   </View>
                 </View>
               </Page>
-            )}
-    
-            {images.passportBio && (
-              <Page size="A4" style={styles.page}>
-                <View style={styles.documentPage}>
-                  <Text style={styles.documentPageTitle}>Passport Bio Page</Text>
-                  <Image
-                    src={images.passportBio || "/placeholder.svg"}
-                    style={styles.documentPageImage}
-                  />
-                  <View style={styles.documentPageFooter}>
-                    <Text style={styles.documentPageFooterText}>
-                      {data.fullName} - Candidate ID: {data.candidateId}
-                    </Text>
-                  </View>
-                </View>
-              </Page>
-            )}
-    
-            {images.signature && (
-              <Page size="A4" style={styles.page}>
-                <View style={styles.documentPage}>
-                  <Text style={styles.documentPageTitle}>Signature</Text>
-                  <Image
-                    src={images.signature || "/placeholder.svg"}
-                    style={styles.documentPageImage}
-                  />
-                  <View style={styles.documentPageFooter}>
-                    <Text style={styles.documentPageFooterText}>
-                      {data.fullName} - Candidate ID: {data.candidateId}
-                    </Text>
-                  </View>
-                </View>
-              </Page>
-            )}
+            ))}
           </Document>
         );
       };
@@ -840,6 +882,28 @@ export default function ApplicationTable() {
         documentPageFooterText: {
           fontSize: 10,
           color: "#6b7280",
+        },
+        documentPageImageContainer: {
+          width: "90%",
+          height: "70%",
+          justifyContent: "center",
+          alignItems: "center",
+          border: "1px solid #e5e7eb",
+          backgroundColor: "#f9fafb",
+          marginBottom: 20,
+        },
+        imagePlaceholderText: {
+          fontSize: 14,
+          fontWeight: "bold",
+          color: "#4f46e5",
+          textAlign: "center",
+          marginBottom: 10,
+        },
+        imageNoteText: {
+          fontSize: 10,
+          color: "#6b7280",
+          textAlign: "center",
+          paddingHorizontal: 10,
         },
       });
       const columnsWithActions = [
