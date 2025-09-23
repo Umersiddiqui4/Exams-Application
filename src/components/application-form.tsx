@@ -99,6 +99,7 @@ console.log("examDto", examDto);
     // receivingApplicationsCount: examDto.applicationsCount,
     examType: examDto.type,
   } : null;
+console.log("selectedExam", selectedExam);
 
   const osceForm = useForm<FormValues>({
     resolver: zodResolver(formSchema),

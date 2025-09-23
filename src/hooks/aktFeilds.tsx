@@ -1220,46 +1220,29 @@ export function AktFeilds(props: AktsFieldsProps) {
                   <FormItem className="space-y-3">
                     <FormControl>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {Array.isArray(selectedExam?.location) ? (
-                          selectedExam.location.map((location: any) => (
-                            <div
-                              key={location}
-                              className="flex items-center space-x-2"
-                            >
-                              <input
-                                type="radio"
-                                id={location}
-                                value={location}
-                                checked={field.value === location}
-                                onChange={(e) => field.onChange(e.target.value)}
-                                className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                              />
-                              <label
-                                htmlFor={location}
-                                className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                        {selectedExam?.location
+                          ? selectedExam.location.split(', ').map((location: string) => (
+                              <div
+                                key={location.trim()}
+                                className="flex items-center space-x-2"
                               >
-                                {location}
-                              </label>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id={selectedExam?.location}
-                              value={selectedExam?.location}
-                              checked={field.value === selectedExam?.location}
-                              onChange={(e) => field.onChange(e.target.value)}
-                              className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                            />
-                            <label
-                              htmlFor={selectedExam?.location}
-                              className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                            >
-                              {selectedExam?.location}
-                            </label>
-                          </div>
-                        )}
+                                <input
+                                  type="radio"
+                                  id={location.trim()}
+                                  value={location.trim()}
+                                  checked={field.value === location.trim()}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                  className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <label
+                                  htmlFor={location.trim()}
+                                  className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                >
+                                  {location.trim()}
+                                </label>
+                              </div>
+                            ))
+                          : null}
                       </div>
                     </FormControl>
                     <FormMessage />
