@@ -147,11 +147,11 @@ export function Exam() {
    const [editMode, setEditMode] = useState(false)
    const [editId, setEditId] = useState<string | null>(null)
    const { toast } = useToast()
-   const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence } = useExamOccurrences()
+   const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence, toggleActive } = useExamOccurrences()
  const [selectedLocations, setSelectedLocations] = useState<any[]>([])
  const [examType, setExamType] = useState<"OSCE" | "AKTs">("OSCE")
  const [currentExam, setCurrentExam] = useState<any>(null)
-  const { items: exams } = useExams();
+  const { items: exams, reload: reloadExams } = useExams();
 
  const handleLocationChange = (selectedOptions: any) => {
    setSelectedLocations(selectedOptions || [])
@@ -313,7 +313,7 @@ export function Exam() {
 
   const toggleBlock = async (id: string, current: boolean) => {
     try {
-      await updateOccurrence(id, { isActive: !current })
+      await toggleActive(id, !current)
       await reloadOccurrences()
     } catch (err) {
       toast({ title: "Toggle failed", description: err instanceof Error ? err.message : "Unable to toggle", variant: "destructive" })
@@ -790,7 +790,7 @@ const selectStyles = {
         <CardContent className="p-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/80">
           <div className="p-4">
             <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {Array.isArray(occurrences) && [...occurrences].sort((a: any, b: any) => b.examDate.localeCompare(a.examDate)).filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
+              {Array.isArray(occurrences) && [...occurrences].sort((a: any, b: any) => (b.examDate || '').localeCompare(a.examDate || '')).filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
                 <div
                   key={exam.id}
                   className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]"

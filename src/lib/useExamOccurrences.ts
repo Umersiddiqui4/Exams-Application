@@ -7,6 +7,7 @@ import {
 	createExamOccurrence,
 	updateExamOccurrence,
 	deleteExamOccurrence,
+	toggleActiveExamOccurrence,
 } from "./examOccurrencesApi";
 
 type LoadState = "idle" | "loading" | "success" | "error";
@@ -57,7 +58,13 @@ export function useExamOccurrences() {
 		setItems((prev) => prev.filter((o) => o.id !== id));
 	}, []);
 
-	return useMemo(() => ({ items, loadState, error, create, update, remove, reload }), [items, loadState, error, create, update, remove, reload]);
+	const toggleActive = useCallback(async (id: string, isActive: boolean) => {
+		const next = await toggleActiveExamOccurrence(id, isActive);
+		setItems((prev) => prev.map((o) => (o.id === id ? next : o)));
+		return next;
+	}, []);
+
+	return useMemo(() => ({ items, loadState, error, create, update, remove, toggleActive, reload }), [items, loadState, error, create, update, remove, toggleActive, reload]);
 }
 
 export type { ExamOccurrence } from "./examOccurrencesApi";

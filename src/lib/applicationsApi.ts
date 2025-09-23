@@ -157,7 +157,7 @@ export async function reviewApplication(id: string, status: "APPROVED" | "REJECT
 }
 
 export async function startReview(id: string): Promise<void> {
-  return apiRequest<void>(`${BASE}/${id}/start-review`, "GET");
+  return apiRequest<void>(`${BASE}/${id}/start-review`, "PATCH");
 }
 
 export async function deleteApplication(id: string): Promise<{ id: string } | undefined> {

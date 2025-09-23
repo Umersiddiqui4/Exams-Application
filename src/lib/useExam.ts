@@ -21,7 +21,12 @@ export function useExams() {
 		listExams()
 			.then((data: any) => {
 				if (!mounted) return;
-				setItems(data.data);
+				const normalized: Exam[] = Array.isArray(data?.data)
+					? (data.data as Exam[])
+					: Array.isArray(data)
+						? (data as Exam[])
+						: [];
+				setItems(normalized);
 				setLoadState("success");
 				setCreated1(true);
 			})
@@ -55,11 +60,11 @@ export function useExams() {
 		setItems((prev) => prev.filter((e) => e.id !== id));
 	}, []);
 
+	const reload = useCallback(() => {
+		setCreated1(prev => !prev);
+	}, []);
 
-
-
-
-	return useMemo(() => ({ items, loadState, error, create, update, remove }), [items, loadState, error, create, update, remove]);
+	return useMemo(() => ({ items, loadState, error, create, update, remove, reload }), [items, loadState, error, create, update, remove, reload]);
 }
 
 
