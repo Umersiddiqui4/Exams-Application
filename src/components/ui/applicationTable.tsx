@@ -55,7 +55,8 @@ export default function ApplicationTable() {
       const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex, reload } = useApplications(
         selectedExamOccurrence === "all" ? undefined : selectedExamOccurrence,
         activeFilter === "all" ? undefined : activeFilter,
-        pageSize
+        pageSize,
+        searchQuery
       );
 
       useEffect(() => {

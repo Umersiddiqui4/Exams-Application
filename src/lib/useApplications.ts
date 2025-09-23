@@ -14,7 +14,7 @@ import {
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
-export function useApplications(examOccurrenceId?: string, status?: string, pageSize = 10) {
+export function useApplications(examOccurrenceId?: string, status?: string, pageSize = 10, searchQuery?: string) {
   const [items, setItems] = useState<ApplicationData[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
     setLoadState("loading");
     setError(null);
     try {
-      const response = await listApplications(examOccurrenceId, status, pageIndex + 1, pageSize);
+      const response = await listApplications(examOccurrenceId, status, pageIndex + 1, pageSize, searchQuery);
       const normalized: ApplicationData[] = response.data;
       setItems(normalized);
       setPagination({
@@ -43,7 +43,7 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
       setError(err instanceof Error ? err.message : "Failed to load applications");
       setLoadState("error");
     }
-  }, [examOccurrenceId, status, pageSize]);
+  }, [examOccurrenceId, status, pageSize, searchQuery]);
 
   useEffect(() => {
     reload();
@@ -85,7 +85,7 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
     setLoadState("loading");
     setError(null);
     try {
-      const response = await listApplications(examOccurrenceId, status, 1, newPageSize);
+      const response = await listApplications(examOccurrenceId, status, 1, newPageSize, searchQuery);
       const normalized: ApplicationData[] = response.data;
       setItems(normalized);
       setPagination({
@@ -99,7 +99,7 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
       setError(err instanceof Error ? err.message : "Failed to load applications");
       setLoadState("error");
     }
-  }, [examOccurrenceId, status]);
+  }, [examOccurrenceId, status, searchQuery]);
 
   const setPageIndex = useCallback((newPageIndex: number) => {
     setPagination(prev => ({ ...prev, pageIndex: newPageIndex }));
