@@ -60,6 +60,10 @@ export async function deleteExamOccurrence(id: string): Promise<{ id: string } |
 	return { id };
 }
 
+export async function toggleActiveExamOccurrence(id: string, isActive: boolean): Promise<ExamOccurrence> {
+	return apiRequest<ExamOccurrence>(`/api/v1/exam-occurrences/${id}/toggle-active`, "PATCH", { isActive });
+}
+
 export async function examOccurrenceAvailability(id: string): Promise<Availability> {
 	return apiRequest<Availability>(`/api/v1/exam-occurrences/${id}/availability`, "GET");
 }
