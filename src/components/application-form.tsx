@@ -343,7 +343,11 @@ console.log("examDto", examDto);
 
           // Determine filename based on exam type and input
           let fileName = file.name;
+          console.log("Determining filename for:", { selectedExamType, inputId, file, attachments });
+          
           if (selectedExamType && inputId === "attachment") {
+            console.log("Finding attachment title for file:", file, attachments);
+            
             // For AKT attachments, find the attachment with the matching file
             const attachment = attachments.find((att: any) => att.file === file);
             if (attachment && attachment.title) {
@@ -886,21 +890,23 @@ console.log("examDto", examDto);
       }
     }
 
-    // Delete existing file if it exists
-    const existingFileId = uploadedFileIds[inputId];
-    if (existingFileId) {
-      try {
-        const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
-          method: 'DELETE'
-        });
+    // Delete existing file if it exists (skip for attachments since each is independent)
+    if (inputId !== "attachment") {
+      const existingFileId = uploadedFileIds[inputId];
+      if (existingFileId) {
+        try {
+          const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
+            method: 'DELETE'
+          });
 
-        if (!deleteResponse.ok) {
-          console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
-        } else {
-          console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
+          if (!deleteResponse.ok) {
+            console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
+          } else {
+            console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
+          }
+        } catch (error) {
+          console.warn(`Error deleting existing file for ${inputId}:`, error);
         }
-      } catch (error) {
-        console.warn(`Error deleting existing file for ${inputId}:`, error);
       }
     }
 
