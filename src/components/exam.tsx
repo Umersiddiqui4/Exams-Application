@@ -151,7 +151,7 @@ export function Exam() {
  const [selectedLocations, setSelectedLocations] = useState<any[]>([])
  const [examType, setExamType] = useState<"OSCE" | "AKTs">("OSCE")
  const [currentExam, setCurrentExam] = useState<any>(null)
-  const { items: exams, reload: reloadExams } = useExams();
+  const { items: exams  } = useExams();
 
  const handleLocationChange = (selectedOptions: any) => {
    setSelectedLocations(selectedOptions || [])
