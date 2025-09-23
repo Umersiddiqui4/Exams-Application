@@ -1101,7 +1101,7 @@ export default function ApplicationTable() {
           {loadState === "success" && (
             <DataTable
               columns={columnsWithActions}
-              data={applications.filter(app => app.status !== "DRAFT")}
+              data={applications}
               pagination={{
                 pageIndex: pagination.pageIndex,
                 pageSize: pagination.pageSize,
