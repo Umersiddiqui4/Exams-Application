@@ -951,12 +951,6 @@ export default function ApplicationTable() {
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("DRAFT")}
-                  className="dark:text-slate-200 dark:focus:bg-slate-800"
-                >
-                  Draft
-                </DropdownMenuItem>
-                <DropdownMenuItem
                   onClick={() => setActiveFilter("SUBMITTED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
@@ -979,12 +973,6 @@ export default function ApplicationTable() {
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setActiveFilter("APPLIED")}
-                  className="dark:text-slate-200 dark:focus:bg-slate-800"
-                >
-                  Applied
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1113,7 +1101,7 @@ export default function ApplicationTable() {
           {loadState === "success" && (
             <DataTable
               columns={columnsWithActions}
-              data={applications}
+              data={applications.filter(app => app.status !== "DRAFT")}
               pagination={{
                 pageIndex: pagination.pageIndex,
                 pageSize: pagination.pageSize,
