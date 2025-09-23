@@ -83,7 +83,7 @@ export function Dashboard() {
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
                 <StatusCard
                   title="Total Requests"
-                  value={stats.total}
+                  value={stats.approved + stats.rejected + stats.submitted + stats.underReview}
                   color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("totalAll")}
                   active={activeFilter === "totalAll"}
@@ -133,7 +133,7 @@ export function Dashboard() {
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
                 <StatusCard
                   title="Total Requests"
-                  value={currentExam.total}
+                  value={currentExam.approved + currentExam.rejected + currentExam.submitted + currentExam.underReview}
                   color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("currentTotal")}
                   active={activeFilter === "currentTotal"}
