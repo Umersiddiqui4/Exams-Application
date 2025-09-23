@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { SidebarNav } from "./SidebarNav";
-import { Menu } from "lucide-react";
+import { Menu, Eye, EyeOff, Plus } from "lucide-react";
 import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
@@ -27,6 +28,7 @@ import { useAktPastExams } from "../lib/useAktPastExams";
 import { useExams } from "../lib/useExam";
 import { useLocation } from "react-router-dom";
 import { useEmailTemplates } from "../lib/useEmailTemplates";
+import { signupWithEmail, uploadImage } from "../lib/authApi";
 
 type CandidateTemplate = {
   type: string;
@@ -79,11 +81,25 @@ export function Settings() {
   const [pendingExamDeleteId, setPendingExamDeleteId] = useState<string | null>(null);
   const [pendingExamDeleteName, setPendingExamDeleteName] = useState<string>("");
 
+  // User creation state
+  const [newUser, setNewUser] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+  });
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   // Determine which section to show based on URL hash
   const activeSection = useMemo(() => {
     const raw = (location.hash || "#candidates").replace("#", "");
-    if (["candidates", "waiting", "exam-dates", "exams"].includes(raw)) {
-      return raw as "candidates" | "waiting" | "exam-dates" | "exams";
+    if (["candidates", "waiting", "exam-dates", "exams", "users"].includes(raw)) {
+      return raw as "candidates" | "waiting" | "exam-dates" | "exams" | "users";
     }
     return "candidates";
   }, [location.hash]);
@@ -616,6 +632,174 @@ export function Settings() {
                         )}
                       </TableBody>
                     </Table>
+                  </div>
+                </div>
+                )}
+
+                {activeSection === "users" && (
+                <div className="mt-10 space-y-4" id="users">
+                  <h3 className="text-xl md:text-2xl font-semibold">Create User</h3>
+                  <div className="flex justify-center">
+                    <div
+                      className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
+                      onClick={() => document.getElementById('profile-image-input')?.click()}
+                    >
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="Profile Preview" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <Plus className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">First Name</label>
+                      <Input
+                        value={newUser.firstName}
+                        onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Last Name</label>
+                      <Input
+                        value={newUser.lastName}
+                        onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Email</label>
+                      <Input
+                        type="email"
+                        value={newUser.email}
+                        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Phone</label>
+                      <PhoneInput
+                        value={newUser.phone}
+                        onChange={(value) => setNewUser({ ...newUser, phone: value })}
+                      />
+                    </div>
+                    <Input
+                      id="profile-image-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        if (imagePreview) {
+                          URL.revokeObjectURL(imagePreview);
+                        }
+                        setProfileImage(file);
+                        if (file) {
+                          const url = URL.createObjectURL(file);
+                          setImagePreview(url);
+                        } else {
+                          setImagePreview(null);
+                        }
+                      }}
+                    />
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium mb-1">Password</label>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          value={newUser.password}
+                          onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <Button
+                      onClick={async () => {
+                        if (newUser.password !== confirmPassword) {
+                          toast({
+                            title: "Passwords do not match",
+                            description: "Please ensure both password fields are identical.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        try {
+                          const response = await signupWithEmail(newUser);
+                          toast({ title: "User created", description: response.message });
+
+                          // Upload image if provided
+                          if (profileImage) {
+                            try {
+                              const fileName = `${newUser.firstName}-${newUser.lastName}-profile`;
+                              await uploadImage({
+                                entityType: "user",
+                                entityId: response.data.user.id,
+                                category: "user_profile",
+                                fileName,
+                                file: profileImage,
+                              });
+                              toast({ title: "Image uploaded", description: "Profile image uploaded successfully." });
+                            } catch (uploadErr: unknown) {
+                              toast({
+                                title: "Image upload failed",
+                                description: uploadErr instanceof Error ? uploadErr.message : "Failed to upload profile image",
+                                variant: "destructive",
+                              });
+                            }
+                          }
+
+                          setNewUser({
+                            firstName: "",
+                            lastName: "",
+                            email: "",
+                            password: "",
+                            phone: "",
+                          });
+                          setConfirmPassword("");
+                          setProfileImage(null);
+                          if (imagePreview) {
+                            URL.revokeObjectURL(imagePreview);
+                            setImagePreview(null);
+                          }
+                        } catch (err: unknown) {
+                          toast({
+                            title: "Failed to create user",
+                            description: err instanceof Error ? err.message : "Unknown error",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      disabled={!newUser.firstName || !newUser.lastName || !newUser.email || !newUser.password || !newUser.phone || !confirmPassword}
+                    >
+                      Create User
+                    </Button>
                   </div>
                 </div>
                 )}
