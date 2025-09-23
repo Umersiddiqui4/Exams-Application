@@ -59,7 +59,7 @@ export default function ApplicationTable() {
       );
 
       useEffect(() => {
-       const currentExamOccurrence: any = examOccurrences[examOccurrences.length - 1];
+       const currentExamOccurrence: any = examOccurrences[0];
        if(currentExamOccurrence && currentExamOccurrence.id) {
        setSelectedExamOccurrence(currentExamOccurrence.id.toString());
        }

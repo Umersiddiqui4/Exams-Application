@@ -26,6 +26,8 @@ export function useExamOccurrences() {
 				: Array.isArray(data)
 					? (data as ExamOccurrence[])
 					: [];
+			// Sort by createdAt descending (newest first)
+			normalized.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 			setItems(normalized);
 			setLoadState("success");
 		} catch (err: unknown) {
