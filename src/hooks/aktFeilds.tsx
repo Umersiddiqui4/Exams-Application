@@ -66,6 +66,8 @@ interface AktsFieldsProps {
   attachments: any[];
   setAttachments: (attachments: any[]) => void;
   attachmentUrl: string | null;
+  onEmailBlur?: () => void;
+  onFullNameBlur?: () => void;
 }
 
 const part1ExamDates = [
@@ -118,6 +120,8 @@ export function AktFeilds(props: AktsFieldsProps) {
     selectedExam,
     setAttachments,
     attachments,
+    onEmailBlur,
+    onFullNameBlur,
   } = props;
 
   const [phone, setPhone] = useState<string | undefined>();
@@ -419,6 +423,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <Input
                         placeholder="Enter Full Name"
                         {...field}
+                        onBlur={() => {
+                          field.onBlur();
+                          onFullNameBlur?.();
+                        }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                           currentForm.formState.errors.fullName
                             ? "border-red-500 dark:border-red-700"
@@ -778,6 +786,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                           placeholder="Enter Email"
                           type="email"
                           {...field}
+                          onBlur={() => {
+                            field.onBlur();
+                            onEmailBlur?.();
+                          }}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                             currentForm.formState.errors.email
                               ? "border-red-500 dark:border-red-700"

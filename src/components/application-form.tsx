@@ -1077,6 +1077,8 @@ console.log("date commparission", examOccurrence && new Date() > new Date(examOc
                   attachmentUrl={attachmentUrl}
                   attachments={attachments}
                   setAttachments={setAttachments}
+                  onEmailBlur={handleEmailBlur}
+                  onFullNameBlur={handleFullNameBlur}
                 />
               )}
 
