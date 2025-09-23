@@ -790,7 +790,7 @@ const selectStyles = {
         <CardContent className="p-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/80">
           <div className="p-4">
             <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {Array.isArray(occurrences) && [...occurrences].reverse().filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
+              {Array.isArray(occurrences) && [...occurrences].sort((a: any, b: any) => b.examDate.localeCompare(a.examDate)).filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
                 <div
                   key={exam.id}
                   className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]"
