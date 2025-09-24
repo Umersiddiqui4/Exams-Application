@@ -438,6 +438,34 @@ export function AktFeilds(props: AktsFieldsProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                  control={currentForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>
+                        E-mail <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter Email"
+                          type="email"
+                          {...field}
+                          onBlur={() => {
+                            field.onBlur();
+                            onEmailBlur?.();
+                          }}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
+                            currentForm.formState.errors.email
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                          }`}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={currentForm.control}
@@ -773,34 +801,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                   )}
                 />
 
-                <FormField
-                  control={currentForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
-                      <FormLabel>
-                        E-mail <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter Email"
-                          type="email"
-                          {...field}
-                          onBlur={() => {
-                            field.onBlur();
-                            onEmailBlur?.();
-                          }}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.email
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

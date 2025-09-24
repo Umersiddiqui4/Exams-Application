@@ -603,9 +603,7 @@ console.log("selectedExam", selectedExam);
         // OSCE full payload
         apiPayload = {
           examOccurrenceId: params.examId,
-          email: data.email,
           candidateId: data.candidateId,
-          fullName: data.fullName,
           streetAddress: data.poBox,
           district: data.district,
           city: data.city,
