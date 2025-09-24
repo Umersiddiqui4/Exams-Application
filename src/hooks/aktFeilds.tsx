@@ -81,7 +81,6 @@ export function AktFeilds(props: AktsFieldsProps) {
 
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
-  const [availableDates, setAvailableDates] = useState<Date[]>([]);
 
   const handleBlury = () => {
     if (!phone) {
@@ -127,7 +126,6 @@ export function AktFeilds(props: AktsFieldsProps) {
 
       uniqueDates.sort((a, b) => a.getTime() - b.getTime());
 
-      setAvailableDates(uniqueDates);
     }
   }, [selectedExam]);
 
