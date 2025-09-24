@@ -35,16 +35,6 @@ import {
   FormMessage,
   FormField,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  aktsFormDefaultValues,
-  aktsFormSchema,
-  AktsFormValues,
-  formDefaultValues,
-  formSchema,
-  FormValues,
-} from "@/components/schema/applicationSchema";
 import { format } from "date-fns";
 import { Upload, Calendar, User, FileText, Shield } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -114,23 +104,8 @@ export function OsceFeilds(props: OsceFieldsProps) {
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  const [slotRanges, setSlotRanges] = useState<{start: Date, end: Date, label: string}[]>([]);
 
-  // Removed selectedSlots state, will use form values directly
 
-  const osceForm = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: formDefaultValues,
-    shouldUnregister: false,
-    mode: "onChange", // ✅ Added real-time validation
-  });
-
-  const aktsForm = useForm<AktsFormValues>({
-    resolver: zodResolver(aktsFormSchema),
-    defaultValues: aktsFormDefaultValues,
-    shouldUnregister: false,
-    mode: "onBlur", // ✅ Added real-time validation
-  });
 
   const handleBlury = () => {
     if (!phone) {
@@ -178,7 +153,6 @@ useEffect(() => {
       uniqueDates.sort((a, b) => a.getTime() - b.getTime());
 
       setAvailableDates(uniqueDates);
-      setSlotRanges(ranges);
     }
   }, [selectedExam]);
 
@@ -199,20 +173,6 @@ const getAvailableDatesForField = (
       return true;
     });
   };
-
-  const getSlotRangeForDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    for (const range of slotRanges) {
-      if (date >= range.start && date <= range.end) {
-        return range.label;
-      }
-    }
-    return null;
-  };
-
-  // Removed useEffect for selectedDates, now using form values directly
-
 
   return (
     <div>

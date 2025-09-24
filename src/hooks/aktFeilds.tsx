@@ -28,16 +28,6 @@ import {
   FormMessage,
   FormField,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  aktsFormDefaultValues,
-  aktsFormSchema,
-  AktsFormValues,
-  formDefaultValues,
-  formSchema,
-  FormValues,
-} from "@/components/schema/applicationSchema";
 import { format } from "date-fns";
 import {
   Upload,
@@ -104,23 +94,6 @@ export function AktFeilds(props: AktsFieldsProps) {
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  const [slotRanges, setSlotRanges] = useState<{start: Date, end: Date, label: string}[]>([]);
-
-  // Removed selectedDates state, will use form values directly
-
-  const osceForm = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: formDefaultValues,
-    shouldUnregister: false,
-    mode: "onChange",
-  });
-
-  const aktsForm = useForm<AktsFormValues>({
-    resolver: zodResolver(aktsFormSchema),
-    defaultValues: aktsFormDefaultValues,
-    shouldUnregister: false,
-    mode: "onBlur",
-  });
 
   const handleBlury = () => {
     if (!phone) {
@@ -167,7 +140,6 @@ export function AktFeilds(props: AktsFieldsProps) {
       uniqueDates.sort((a, b) => a.getTime() - b.getTime());
 
       setAvailableDates(uniqueDates);
-      setSlotRanges(ranges);
     }
   }, [selectedExam]);
   const getAvailableDatesForField = (
@@ -187,19 +159,6 @@ export function AktFeilds(props: AktsFieldsProps) {
       return true;
     });
   };
-
-  const getSlotRangeForDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    for (const range of slotRanges) {
-      if (date >= range.start && date <= range.end) {
-        return range.label;
-      }
-    }
-    return null;
-  };
-
-  // Removed useEffect for selectedDates, now using form values directly
 
   const addAttachment = () => {
     const newAttachment: any = {
@@ -1254,7 +1213,7 @@ export function AktFeilds(props: AktsFieldsProps) {
             <div className="space-y-6">
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
                 <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                  The OSCE exam will take place over {availableDates.length} days (
+                  The AKT exam will take place over {availableDates.length} days (
                   {selectedExam ? selectedExam?.name : ""}{" "}
                   {Object.values(availableDates).map((dateStr: any) => {
                     const day = new Date(dateStr).getDate();
