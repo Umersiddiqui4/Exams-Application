@@ -66,29 +66,7 @@ const part1ExamDates = [
   "AKT - May 2019",
 ];
 
-const parseSlotDates = (slotString: string): Date[] => {
-  // If the slot string contains a range (e.g., "2025-04-02 | 2025-04-08")
-  const dates = slotString.split(" | ");
 
-  if (dates.length === 2) {
-    const startDate = new Date(dates[0]);
-    const endDate = new Date(dates[1]);
-
-    // Generate all dates between start and end (inclusive)
-    const allDates: Date[] = [];
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      allDates.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return allDates;
-  }
-
-  // If it's not a range, just return the parsed dates
-  return dates.map((dateStr) => new Date(dateStr));
-};
 interface OsceFieldsProps {
   currentForm: any;
   selectedExamType: boolean;
@@ -136,17 +114,9 @@ export function OsceFeilds(props: OsceFieldsProps) {
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  const [slotOptions, setSlotOptions] = useState<{label: string, value: string}[]>([]);
+  const [slotRanges, setSlotRanges] = useState<{start: Date, end: Date, label: string}[]>([]);
 
-  const [selectedSlots, setSelectedSlots] = useState<{
-    preferenceDate1: string | null;
-    preferenceDate2: string | null;
-    preferenceDate3: string | null;
-  }>({
-    preferenceDate1: null,
-    preferenceDate2: null,
-    preferenceDate3: null,
-  });
+  // Removed selectedSlots state, will use form values directly
 
   const osceForm = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -173,79 +143,76 @@ export function OsceFeilds(props: OsceFieldsProps) {
   };
 
   // Parse slot dates when selectedExam changes
-  useEffect(() => {
-    if (selectedExam) {
-      const slots: {label: string, value: string}[] = [];
+useEffect(() => {
+    if (selectedExam && selectedExam.examSlots) {
       const allDates: Date[] = [];
+      const ranges: {start: Date, end: Date, label: string}[] = [];
 
-      [selectedExam.slot1, selectedExam.slot2, selectedExam.slot3].forEach((slotStr, index) => {
-        if (slotStr) {
-          const dates = parseSlotDates(slotStr);
-          if (dates.length >= 2) {
-            const startDate = dates[0];
-            const endDate = dates[dates.length - 1];
-            const slotLabel = `Slot ${index + 1}: ${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
-            slots.push({ label: slotLabel, value: index.toString() });
-            allDates.push(...dates);
+      selectedExam.examSlots.forEach((slot: any, index: number) => {
+        if (slot.startDate && slot.endDate) {
+          const startDate = new Date(slot.startDate);
+          const endDate = new Date(slot.endDate);
+
+          // Create slot range
+          const slotLabel = `Slot ${index + 1}: ${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
+          ranges.push({ start: startDate, end: endDate, label: slotLabel });
+
+          // Generate all dates between start and end (inclusive)
+          const currentDate = new Date(startDate);
+          while (currentDate <= endDate) {
+            allDates.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
           }
         }
       });
 
-      // Combine all dates and remove duplicates
       const uniqueDatesStr = [
         ...new Set(
           allDates
             .filter((date) => date instanceof Date && !isNaN(date.getTime()))
-            .map((date) => date.toISOString())
+            .map((date) => date.toISOString().split('T')[0]) // Use date only, not time
         ),
       ];
       const uniqueDates = uniqueDatesStr.map((dateStr) => new Date(dateStr));
 
-      // Sort dates in ascending order
       uniqueDates.sort((a, b) => a.getTime() - b.getTime());
 
       setAvailableDates(uniqueDates);
-      setSlotOptions(slots);
+      setSlotRanges(ranges);
     }
   }, [selectedExam]);
-  // Get available slots for a specific field (excluding slots selected in other fields)
-  const getAvailableSlotsForField = (
+
+const getAvailableDatesForField = (
     fieldName: "preferenceDate1" | "preferenceDate2" | "preferenceDate3"
   ) => {
-    return slotOptions.filter((slot) => {
-      // Check if this slot is selected in another field
-      for (const [field, selectedSlot] of Object.entries(selectedSlots)) {
-        if (field !== fieldName && selectedSlot === slot.value) {
-          return false;
-        }
-      }
+    return availableDates.filter((date) => {
+      const dateStr = date.toISOString();
+
+      const pref1 = currentForm.watch("preferenceDate1");
+      const pref2 = currentForm.watch("preferenceDate2");
+      const pref3 = currentForm.watch("preferenceDate3");
+
+      if (fieldName !== "preferenceDate1" && pref1 && pref1 !== " " && pref1 === dateStr) return false;
+      if (fieldName !== "preferenceDate2" && pref2 && pref2 !== " " && pref2 === dateStr) return false;
+      if (fieldName !== "preferenceDate3" && pref3 && pref3 !== " " && pref3 === dateStr) return false;
+
       return true;
     });
   };
 
-  useEffect(() => {
-    const activeForm = selectedExamType ? aktsForm : osceForm;
-
-    // 👇 Yeh watch function callback ke sath hai, so it's a Subscription
-    const subscription = activeForm.watch((value) => {
-      setSelectedSlots({
-        preferenceDate1: value.preferenceDate1 || null,
-        preferenceDate2: value.preferenceDate2 || null,
-        preferenceDate3: value.preferenceDate3 || null,
-      });
-    });
-
-    // ✅ Clean up safely
-    return () => {
-      if (
-        typeof subscription === "object" &&
-        subscription !== null &&
-        "unsubscribe" in subscription
-      ) {
-        subscription.unsubscribe();
+  const getSlotRangeForDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    for (const range of slotRanges) {
+      if (date >= range.start && date <= range.end) {
+        return range.label;
       }
-    };
-  }, [selectedExamType]);
+    }
+    return null;
+  };
+
+  // Removed useEffect for selectedDates, now using form values directly
+
 
   return (
     <div>
@@ -954,17 +921,15 @@ export function OsceFeilds(props: OsceFieldsProps) {
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
-                <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                  The {selectedExamType ? "AKT" : "OSCE"} exam will take place in the following slots (
+               <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                  The OSCE exam will take place over {availableDates.length} days (
                   {selectedExam ? selectedExam?.name : ""}{" "}
-                  {slotOptions.map((slot, index) => (
-                    <span key={slot.value}>
-                      {slot.label}
-                      {index < slotOptions.length - 1 ? ", " : ""}
-                    </span>
-                  ))}
-                  ). If you have a preference (e.g. for travel purposes) for a
-                  particular slot, please indicate below your preferred choice:
+                  {Object.values(availableDates).map((dateStr: any) => {
+                    const day = new Date(dateStr).getDate();
+                    return <span key={dateStr}>{day}, </span>;
+                  })}
+                  ) If you have a preference (e.g. for travel purposes) for a
+                  particular day, please indicate below your preferred choice:
                 </p>
               </div>
 
@@ -987,13 +952,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                          {getAvailableSlotsForField("preferenceDate1").map(
-                            (slot) => (
+                        {getAvailableDatesForField("preferenceDate1").map(
+                            (date) => (
                               <SelectItem
-                                key={slot.value}
-                                value={slot.value}
+                                key={date.toISOString()}
+                                value={date.toISOString()}
                               >
-                                {slot.label}
+                                {format(date, "MMMM d, yyyy")}
                               </SelectItem>
                             )
                           )}
@@ -1022,13 +987,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                          {getAvailableSlotsForField("preferenceDate2").map(
-                            (slot) => (
+                         {getAvailableDatesForField("preferenceDate2").map(
+                            (date) => (
                               <SelectItem
-                                key={slot.value}
-                                value={slot.value}
+                                key={date.toISOString()}
+                                value={date.toISOString()}
                               >
-                                {slot.label}
+                                {format(date, "MMMM d, yyyy")}
                               </SelectItem>
                             )
                           )}
@@ -1057,13 +1022,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                          {getAvailableSlotsForField("preferenceDate3").map(
-                            (slot) => (
+                      {getAvailableDatesForField("preferenceDate3").map(
+                            (date) => (
                               <SelectItem
-                                key={slot.value}
-                                value={slot.value}
+                                key={date.toISOString()}
+                                value={date.toISOString()}
                               >
-                                {slot.label}
+                                {format(date, "MMMM d, yyyy")}
                               </SelectItem>
                             )
                           )}
