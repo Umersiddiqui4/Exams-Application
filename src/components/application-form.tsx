@@ -89,15 +89,16 @@ console.log("examDto", examDto);
     location: Array.isArray(examDto.location) ? examDto.location.join(', ') : examDto.location,
     openingDate: examDto.registrationStartDate,
     closingDate: examDto.registrationEndDate,
-    slot1: examDto.examSlots?.[0]?.startDate || '',
-    slot2: examDto.examSlots?.[1]?.startDate || '',
-    slot3: examDto.examSlots?.[2]?.startDate || '',
+    slot1: examDto.examSlots?.[0] ? `${examDto.examSlots[0].startDate} | ${examDto.examSlots[0].endDate}` : '',
+    slot2: examDto.examSlots?.[1] ? `${examDto.examSlots[1].startDate} | ${examDto.examSlots[1].endDate}` : '',
+    slot3: examDto.examSlots?.[2] ? `${examDto.examSlots[2].startDate} | ${examDto.examSlots[2].endDate}` : '',
     applicationsLimit: examDto.applicationLimit,
     waitingLimit: examDto.waitingListLimit,
     formLink: '',
     isBlocked: !examDto.isActive,
     // receivingApplicationsCount: examDto.applicationsCount,
     examType: examDto.type,
+    examSlots: examDto.examSlots, // Add full examSlots for AktFeilds
   } : null;
 console.log("selectedExam", selectedExam);
 

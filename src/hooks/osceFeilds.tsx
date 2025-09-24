@@ -136,8 +136,9 @@ export function OsceFeilds(props: OsceFieldsProps) {
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [slotOptions, setSlotOptions] = useState<{label: string, value: string}[]>([]);
 
-  const [selectedDates, setSelectedDates] = useState<{
+  const [selectedSlots, setSelectedSlots] = useState<{
     preferenceDate1: string | null;
     preferenceDate2: string | null;
     preferenceDate3: string | null;
@@ -173,13 +174,24 @@ export function OsceFeilds(props: OsceFieldsProps) {
 
   // Parse slot dates when selectedExam changes
   useEffect(() => {
-    if (selectedExam && selectedExam.slot1) {
-      const slot1Dates = parseSlotDates(selectedExam.slot1);
-      const slot2Dates = parseSlotDates(selectedExam.slot2);
-      const slot3Dates = parseSlotDates(selectedExam.slot3);
+    if (selectedExam) {
+      const slots: {label: string, value: string}[] = [];
+      const allDates: Date[] = [];
+
+      [selectedExam.slot1, selectedExam.slot2, selectedExam.slot3].forEach((slotStr, index) => {
+        if (slotStr) {
+          const dates = parseSlotDates(slotStr);
+          if (dates.length >= 2) {
+            const startDate = dates[0];
+            const endDate = dates[dates.length - 1];
+            const slotLabel = `Slot ${index + 1}: ${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
+            slots.push({ label: slotLabel, value: index.toString() });
+            allDates.push(...dates);
+          }
+        }
+      });
 
       // Combine all dates and remove duplicates
-      const allDates = [...slot1Dates, ...slot2Dates, ...slot3Dates];
       const uniqueDatesStr = [
         ...new Set(
           allDates
@@ -193,22 +205,20 @@ export function OsceFeilds(props: OsceFieldsProps) {
       uniqueDates.sort((a, b) => a.getTime() - b.getTime());
 
       setAvailableDates(uniqueDates);
+      setSlotOptions(slots);
     }
   }, [selectedExam]);
-  // Get available dates for a specific field (excluding dates selected in other fields)
-  const getAvailableDatesForField = (
+  // Get available slots for a specific field (excluding slots selected in other fields)
+  const getAvailableSlotsForField = (
     fieldName: "preferenceDate1" | "preferenceDate2" | "preferenceDate3"
   ) => {
-    return availableDates.filter((date) => {
-      const dateStr = date.toISOString();
-
-      // Check if this date is selected in another field
-      for (const [field, selectedDate] of Object.entries(selectedDates)) {
-        if (field !== fieldName && selectedDate === dateStr) {
+    return slotOptions.filter((slot) => {
+      // Check if this slot is selected in another field
+      for (const [field, selectedSlot] of Object.entries(selectedSlots)) {
+        if (field !== fieldName && selectedSlot === slot.value) {
           return false;
         }
       }
-
       return true;
     });
   };
@@ -218,19 +228,10 @@ export function OsceFeilds(props: OsceFieldsProps) {
 
     // 👇 Yeh watch function callback ke sath hai, so it's a Subscription
     const subscription = activeForm.watch((value) => {
-      setSelectedDates({
-        preferenceDate1:
-          value.preferenceDate1 && value.preferenceDate1 !== " "
-            ? new Date(value.preferenceDate1).toISOString()
-            : null,
-        preferenceDate2:
-          value.preferenceDate2 && value.preferenceDate2 !== " "
-            ? new Date(value.preferenceDate2).toISOString()
-            : null,
-        preferenceDate3:
-          value.preferenceDate3 && value.preferenceDate3 !== " "
-            ? new Date(value.preferenceDate3).toISOString()
-            : null,
+      setSelectedSlots({
+        preferenceDate1: value.preferenceDate1 || null,
+        preferenceDate2: value.preferenceDate2 || null,
+        preferenceDate3: value.preferenceDate3 || null,
       });
     });
 
@@ -954,14 +955,16 @@ export function OsceFeilds(props: OsceFieldsProps) {
             <div className="space-y-6">
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
                 <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                  The OSCE exam will take place over 12 days (
+                  The {selectedExamType ? "AKT" : "OSCE"} exam will take place in the following slots (
                   {selectedExam ? selectedExam?.name : ""}{" "}
-                  {Object.values(availableDates).map((dateStr: any) => {
-                    const day = new Date(dateStr).getDate();
-                    return <span key={dateStr}>{day}, </span>;
-                  })}
-                  ) If you have a preference (e.g. for travel purposes) for a
-                  particular day, please indicate below your preferred choice:
+                  {slotOptions.map((slot, index) => (
+                    <span key={slot.value}>
+                      {slot.label}
+                      {index < slotOptions.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                  ). If you have a preference (e.g. for travel purposes) for a
+                  particular slot, please indicate below your preferred choice:
                 </p>
               </div>
 
@@ -984,13 +987,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                          {getAvailableDatesForField("preferenceDate1").map(
-                            (date) => (
+                          {getAvailableSlotsForField("preferenceDate1").map(
+                            (slot) => (
                               <SelectItem
-                                key={date.toISOString()}
-                                value={date.toISOString()}
+                                key={slot.value}
+                                value={slot.value}
                               >
-                                {format(date, "MMMM d, yyyy")}
+                                {slot.label}
                               </SelectItem>
                             )
                           )}
@@ -1019,13 +1022,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                          {getAvailableDatesForField("preferenceDate2").map(
-                            (date) => (
+                          {getAvailableSlotsForField("preferenceDate2").map(
+                            (slot) => (
                               <SelectItem
-                                key={date.toISOString()}
-                                value={date.toISOString()}
+                                key={slot.value}
+                                value={slot.value}
                               >
-                                {format(date, "MMMM d, yyyy")}
+                                {slot.label}
                               </SelectItem>
                             )
                           )}
@@ -1054,13 +1057,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                          {getAvailableDatesForField("preferenceDate3").map(
-                            (date) => (
+                          {getAvailableSlotsForField("preferenceDate3").map(
+                            (slot) => (
                               <SelectItem
-                                key={date.toISOString()}
-                                value={date.toISOString()}
+                                key={slot.value}
+                                value={slot.value}
                               >
-                                {format(date, "MMMM d, yyyy")}
+                                {slot.label}
                               </SelectItem>
                             )
                           )}
