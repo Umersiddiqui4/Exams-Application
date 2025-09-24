@@ -263,12 +263,42 @@ export function Exam() {
   const onSubmit = async (data: FormValues) => {
     if (editMode && editId !== null) {
       try {
+        const examSlots = [
+          {
+            slotNumber: 1,
+            startDate: `${data.slot1DateRange.from}T09:00:00Z`,
+            endDate: `${data.slot1DateRange.to}T17:00:00Z`,
+            isActive: true,
+            description: "Morning Session"
+          }
+        ];
+
+        if (data.slot2DateRange.from && data.slot2DateRange.to) {
+          examSlots.push({
+            slotNumber: 2,
+            startDate: `${data.slot2DateRange.from}T09:00:00Z`,
+            endDate: `${data.slot2DateRange.to}T17:00:00Z`,
+            isActive: true,
+            description: "Afternoon Session"
+          });
+        }
+
+        if (data.slot3DateRange.from && data.slot3DateRange.to) {
+          examSlots.push({
+            slotNumber: 3,
+            startDate: `${data.slot3DateRange.from}T09:00:00Z`,
+            endDate: `${data.slot3DateRange.to}T17:00:00Z`,
+            isActive: true,
+            description: "Evening Session"
+          });
+        }
+
         await updateOccurrence(editId, {
           title: data.name,
-            location: (examType === "AKTs" ? data.location.split(', ').map((l: string) => l.trim()).filter((l: string) => l) : [data.location]) as string[],
+          location: (examType === "AKTs" ? data.location.split(', ').map((l: string) => l.trim()).filter((l: string) => l) : [data.location]) as string[],
           registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
           registrationEndDate: `${data.applicationsDateRange.to}T23:59:59Z`,
-          examDate: `${data.slot1DateRange.from}T09:00:00Z`,
+          examSlots,
           applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
           waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
         })
@@ -288,11 +318,41 @@ export function Exam() {
           return
         }
 
+        const examSlots = [
+          {
+            slotNumber: 1,
+            startDate: `${data.slot1DateRange.from}T09:00:00Z`,
+            endDate: `${data.slot1DateRange.to}T17:00:00Z`,
+            isActive: true,
+            description: "Morning Session"
+          }
+        ];
+
+        if (data.slot2DateRange.from && data.slot2DateRange.to) {
+          examSlots.push({
+            slotNumber: 2,
+            startDate: `${data.slot2DateRange.from}T09:00:00Z`,
+            endDate: `${data.slot2DateRange.to}T17:00:00Z`,
+            isActive: true,
+            description: "Afternoon Session"
+          });
+        }
+
+        if (data.slot3DateRange.from && data.slot3DateRange.to) {
+          examSlots.push({
+            slotNumber: 3,
+            startDate: `${data.slot3DateRange.from}T09:00:00Z`,
+            endDate: `${data.slot3DateRange.to}T17:00:00Z`,
+            isActive: true,
+            description: "Evening Session"
+          });
+        }
+
         await createExamOccurrence({
           examId: currentExam?.id || crypto.randomUUID(),
           title: `${data.name}`,
           type: currentExam?.name || "AKT",
-          examDate: examStart,
+          examSlots,
           registrationStartDate: `${data.applicationsDateRange.from}T00:00:00Z`,
           registrationEndDate: regEnd,
           applicationLimit: Number.parseInt(data.applicationsLimit) || 0,
@@ -321,9 +381,6 @@ export function Exam() {
   }
 
   const handleEdit = (exam: any) => {
-    // Parse slot dates
-    const examDateOnly = exam.examDate ? exam.examDate.substring(0, 10) : ""
-
     // Handle location based on exam type
     let locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
     let selectedLocs: any[] = []
@@ -332,6 +389,12 @@ export function Exam() {
     } else {
       selectedLocs = []
     }
+
+    // Parse exam slots
+    const slots = exam.examSlots || []
+    const slot1 = slots.find((s: any) => s.slotNumber === 1)
+    const slot2 = slots.find((s: any) => s.slotNumber === 2)
+    const slot3 = slots.find((s: any) => s.slotNumber === 3)
 
     // Set form data with parsed dates
     form.reset({
@@ -344,16 +407,16 @@ export function Exam() {
       applicationsLimit: String(exam.applicationLimit ?? ""),
       waitingLimit: String(exam.waitingListLimit ?? ""),
       slot1DateRange: {
-        from: examDateOnly,
-        to: examDateOnly,
+        from: slot1?.startDate?.substring(0, 10) || "",
+        to: slot1?.endDate?.substring(0, 10) || "",
       },
       slot2DateRange: {
-        from: "",
-        to: "",
+        from: slot2?.startDate?.substring(0, 10) || "",
+        to: slot2?.endDate?.substring(0, 10) || "",
       },
       slot3DateRange: {
-        from: "",
-        to: "",
+        from: slot3?.startDate?.substring(0, 10) || "",
+        to: slot3?.endDate?.substring(0, 10) || "",
       },
     })
 
@@ -790,7 +853,11 @@ const selectStyles = {
         <CardContent className="p-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/80">
           <div className="p-4">
             <div className="grid grid-cols-1 w-auto md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {Array.isArray(occurrences) && [...occurrences].sort((a: any, b: any) => (b.examDate || '').localeCompare(a.examDate || '')).filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
+              {Array.isArray(occurrences) && [...occurrences].sort((a: any, b: any) => {
+                const aDate = a.examSlots?.[0]?.startDate || '';
+                const bDate = b.examSlots?.[0]?.startDate || '';
+                return bDate.localeCompare(aDate);
+              }).filter((exam: any) => exam.type === currentExam?.name).map((exam: any) => (
                 <div
                   key={exam.id}
                   className="exam-card relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:shadow-xl dark:shadow-slate-900/30 hover:translate-y-[-5px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-[280px]"
@@ -832,10 +899,14 @@ const selectStyles = {
                   </div>
 
                   <div className="space-y-1 flex-grow">
-                    <h4 className="text-sm font-semibold dark:text-slate-200">Exam Date:</h4>
-                      <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300">
-                      {exam.examDate?.substring(0,10)}
-                      </div>
+                    <h4 className="text-sm font-semibold dark:text-slate-200">Exam Slots:</h4>
+                    <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300 space-y-1">
+                      {exam.examSlots?.map((slot: any) => (
+                        <div key={slot.slotNumber}>
+                          Slot {slot.slotNumber}: {slot.startDate?.substring(0,10)} - {slot.description}
+                        </div>
+                      )) || <div>No slots</div>}
+                    </div>
                   </div>
 
                   <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">

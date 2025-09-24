@@ -89,9 +89,9 @@ console.log("examDto", examDto);
     location: Array.isArray(examDto.location) ? examDto.location.join(', ') : examDto.location,
     openingDate: examDto.registrationStartDate,
     closingDate: examDto.registrationEndDate,
-    slot1: examDto.examDate, // assuming slot1 is examDate
-    slot2: '',
-    slot3: '',
+    slot1: examDto.examSlots?.[0]?.startDate || '',
+    slot2: examDto.examSlots?.[1]?.startDate || '',
+    slot3: examDto.examSlots?.[2]?.startDate || '',
     applicationsLimit: examDto.applicationLimit,
     waitingLimit: examDto.waitingListLimit,
     formLink: '',
@@ -996,7 +996,7 @@ console.log("selectedExam", selectedExam);
 console.log("Rendering ApplicationForm with selectedExam:", selectedExam);
 console.log("Rendering ApplicationForm with occurrenceLoading:", occurrenceLoading);
 console.log("Rendering ApplicationForm with occurrenceError:", occurrenceError);
-console.log("date commparission", examOccurrence && new Date() > new Date(examOccurrence.examDate));
+console.log("date comparison", examOccurrence && new Date() > new Date(examOccurrence.examSlots?.[0]?.startDate || ''));
 
   if (occurrenceLoading) {
     return (

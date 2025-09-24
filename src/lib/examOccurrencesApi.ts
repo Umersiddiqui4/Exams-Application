@@ -1,11 +1,19 @@
 import { apiRequest } from "./apiClient";
 
+export type ExamSlot = {
+	slotNumber: number;
+	startDate: string; // ISO date string
+	endDate: string; // ISO date string
+	isActive: boolean;
+	description: string;
+};
+
 export type ExamOccurrence = {
 	id: string;
 	examId: string;
 	title: string;
 	type: string; // e.g., AKT, OSCE
-	examDate: string; // ISO date string
+	examSlots: ExamSlot[];
 	registrationStartDate: string; // ISO date string
 	registrationEndDate: string; // ISO date string
 	applicationLimit: number;
