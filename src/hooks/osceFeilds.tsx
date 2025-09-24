@@ -180,7 +180,7 @@ const getAvailableDatesForField = (
         type="single"
         collapsible
         defaultValue="personal"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="personal"
@@ -692,7 +692,7 @@ const getAvailableDatesForField = (
         type="single"
         collapsible
         defaultValue="experience"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="experience"
@@ -866,7 +866,7 @@ const getAvailableDatesForField = (
         type="single"
         collapsible
         defaultValue="osce"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="osce"
@@ -1043,7 +1043,7 @@ const getAvailableDatesForField = (
           type="single"
           collapsible
           defaultValue="statement"
-          className="w-full"
+          className="w-full mb-4"
         >
           <AccordionItem
             value="statement"

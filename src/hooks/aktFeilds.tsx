@@ -221,7 +221,7 @@ export function AktFeilds(props: AktsFieldsProps) {
         type="single"
         collapsible
         defaultValue="personal"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="personal"
@@ -235,6 +235,34 @@ export function AktFeilds(props: AktsFieldsProps) {
           </AccordionTrigger>
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
+               <FormField
+                  control={currentForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>
+                        E-mail <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter Email"
+                          type="email"
+                          {...field}
+                          onBlur={() => {
+                            field.onBlur();
+                            onEmailBlur?.();
+                          }}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
+                            currentForm.formState.errors.email
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                          }`}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               {/* Candidate ID */}
               <FormField
                 control={currentForm.control}
@@ -367,34 +395,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                  control={currentForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
-                      <FormLabel>
-                        E-mail <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter Email"
-                          type="email"
-                          {...field}
-                          onBlur={() => {
-                            field.onBlur();
-                            onEmailBlur?.();
-                          }}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.email
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+             
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={currentForm.control}
@@ -735,7 +736,7 @@ export function AktFeilds(props: AktsFieldsProps) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Date of passing Part 1 exam */}
-                <FormField
+                {/* <FormField
                   control={currentForm.control}
                   name="dateOfPassingPart1"
                   render={({ field }) => (
@@ -774,7 +775,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
 
                 {/* No. of previous OSCE attempts */}
                 <FormField
@@ -837,7 +838,7 @@ export function AktFeilds(props: AktsFieldsProps) {
         type="single"
         collapsible
         defaultValue="experience"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="experience"
@@ -1011,7 +1012,7 @@ export function AktFeilds(props: AktsFieldsProps) {
         type="single"
         collapsible
         defaultValue="eligibility"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="eligibility"
@@ -1115,7 +1116,7 @@ export function AktFeilds(props: AktsFieldsProps) {
         type="single"
         collapsible
         defaultValue="center-preference"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="center-preference"
@@ -1193,11 +1194,11 @@ export function AktFeilds(props: AktsFieldsProps) {
         </AccordionItem>
       </Accordion>
 
-      <Accordion
+      {/* <Accordion
         type="single"
         collapsible
         defaultValue="osce"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="osce"
@@ -1366,13 +1367,13 @@ export function AktFeilds(props: AktsFieldsProps) {
             </div>
           </AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion> */}
 
       <Accordion
         type="single"
         collapsible
         defaultValue="candidate-statement"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="candidate-statement"
@@ -1498,7 +1499,7 @@ export function AktFeilds(props: AktsFieldsProps) {
         type="single"
         collapsible
         defaultValue="experience"
-        className="w-full"
+        className="w-full mb-4"
       >
         <AccordionItem
           value="attachments"

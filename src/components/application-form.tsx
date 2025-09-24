@@ -121,42 +121,7 @@ console.log("selectedExam", selectedExam);
 
   const currentForm: any = !selectedExamType ? osceForm : aktsForm;
 
-  useEffect(() => {
-    const subscription = (selectedExamType ? aktsForm : osceForm).watch(
-      (values) => {
-        console.log("Watching values:", values);
 
-        const currentForm = selectedExamType ? aktsForm : osceForm;
-        const errors = currentForm.formState.errors;
-        const emailValid = !errors.email;
-        const fullNameFilled = values.fullName && values.fullName.trim() !== '';
-
-        if (emailValid && fullNameFilled) {
-          if (prevValuesRef.current) {
-            // Check if any other field changed
-            const otherFieldsChanged = Object.keys(values).some(key => {
-              if (key === 'email' || key === 'fullName') return false;
-              return (values as any)[key] !== (prevValuesRef.current as any)[key];
-            });
-            if (otherFieldsChanged) {
-              console.log(true, "chala");
-              setApplicationCreateTime(true);
-            }else{
-              setApplicationCreateTime(false);
-            }
-          }
-          prevValuesRef.current = values;
-        } else {
-          // Reset if conditions not met
-          prevValuesRef.current = null;
-        }
-      }
-    ) as unknown as { unsubscribe: () => void }; // 🔥 Trick TypeScript here
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [selectedExamType]);
 
   useEffect(() => {
     if (params.examId) {
@@ -187,17 +152,12 @@ console.log("selectedExam", selectedExam);
     }
   }, [examDto]);
  const values = currentForm.getValues();
-    console.log("Auto-create check with values:", values, "applicationId:", applicationId, "isCreatingApplication:", isCreatingApplication);
     
   // Auto-create application when fullname and email have values or when email blur triggers check
   useEffect(() => {
     const currentForm = selectedExamType ? aktsForm : osceForm;
     const values = currentForm.getValues();
-    console.log("Auto-create check with values:", values, "applicationId:", applicationId, "isCreatingApplication:", isCreatingApplication);
 
-
-    // Check if we have both email and fullName, and haven't created application yet
-    // Also check if application doesn't already exist
     if (
       values.email &&
       values.email.trim() !== "" &&
@@ -207,7 +167,8 @@ console.log("selectedExam", selectedExam);
       !isCreatingApplication &&
       !applicationExists &&
       params.examId &&
-      triggerApplicationCheck
+      triggerApplicationCheck &&
+      applicationCreateTime
     ) {
       const createApplication = async () => {
         try {
@@ -289,9 +250,48 @@ console.log("selectedExam", selectedExam);
     isCreatingApplication,
     params.examId,
     applicationCreateTime,
-    triggerApplicationCheck
+    triggerApplicationCheck,
+    values.fullName
   ]);
 
+    useEffect(() => {
+    const subscription = (selectedExamType ? aktsForm : osceForm).watch(
+      (values) => {
+        console.log("Watching values:", values);
+
+        const currentForm = selectedExamType ? aktsForm : osceForm;
+        const errors = currentForm.formState.errors;
+        const emailValid = !errors.email;
+        const fullNameFilled = values.fullName && values.fullName.trim() !== '';
+
+        if (emailValid && fullNameFilled) {
+          setApplicationCreateTime(true);
+          if (prevValuesRef.current) {
+            // Check if any other field changed
+            const otherFieldsChanged = Object.keys(values).some(key => {
+              if (key === 'email' || key === 'fullName') return false;
+              return (values as any)[key] !== (prevValuesRef.current as any)[key];
+            });
+            if (otherFieldsChanged) {
+              console.log(true, "chala");
+              setApplicationCreateTime(true);
+            }else{
+              setApplicationCreateTime(false);
+            }
+          }
+          prevValuesRef.current = values;
+        } else {
+          // Reset if conditions not met
+          prevValuesRef.current = null;
+        }
+      }
+    ) as unknown as { unsubscribe: () => void }; // 🔥 Trick TypeScript here
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [selectedExamType]);
+  
   // Function to trigger application creation check
   const handleEmailBlur = () => {
     setTriggerApplicationCheck(true);
@@ -565,7 +565,6 @@ console.log("selectedExam", selectedExam);
         // AKTs full payload
         apiPayload = {
           examOccurrenceId: params.examId,
-          email: data.email,
           candidateId: (data as AktsFormValues).candidateId || "",
           fullName: data.fullName,
           streetAddress: data.poBox,
@@ -580,9 +579,7 @@ console.log("selectedExam", selectedExam);
           registrationAuthority: data.registrationAuthority,
           registrationNumber: data.registrationNumber,
           registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
-          date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
           usualForename: data.fullName.split(' ')[0] || "",
-          lastName: data.fullName.split(' ').slice(1).join(' ') || "",
           gender: "MALE", // Default, could be added to form
           previousAKTAttempts: (data as AktsFormValues).previousAktsAttempts || 0,
           graduatingSchoolName: (data as AktsFormValues).schoolName || "",
@@ -591,12 +588,6 @@ console.log("selectedExam", selectedExam);
           aktEligibility: "A", // Default, could be mapped from eligibility fields
           examinationCenterPreference: (data as AktsFormValues).examinationCenter || "",
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
-          aktPassingDate: data.dateOfPassingPart1 || "",
-          previousOSCEAttempts: 0,
-          preferenceDate1: data.preferenceDate1 || "00/00/0000",
-          preferenceDate2: data.preferenceDate2 || "00/00/0000",
-          preferenceDate3: data.preferenceDate3 || "00/00/0000",
-          osceCandidateStatement: false,
           "shouldSubmit": true,
           // notes: ""
         };
@@ -619,7 +610,6 @@ console.log("selectedExam", selectedExam);
           registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
           date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
           usualForename: data.fullName.split(' ')[0] || "",
-          lastName: data.fullName.split(' ').slice(1).join(' ') || "",
           // gender: "MALE",
           previousAKTAttempts: 0,
           aktPassingDate: data.dateOfPassingPart1 || "",
