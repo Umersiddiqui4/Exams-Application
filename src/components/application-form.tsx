@@ -610,7 +610,6 @@ export function ApplicationForm() {
       }
 
       // Make confirmation API call with retry logic
-      let confirmationApiResult;
       let confirmationAttempts = 0;
       const maxConfirmationAttempts = 2;
 
@@ -639,7 +638,6 @@ export function ApplicationForm() {
             throw new Error(errorMessage);
           }
 
-          confirmationApiResult = await confirmationResponse.json();
           break; // Success, exit retry loop
 
         } catch (error) {
