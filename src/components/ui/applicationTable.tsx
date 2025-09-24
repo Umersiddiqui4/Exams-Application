@@ -32,6 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "./dialog";
+import { Checkbox } from "./checkbox";
 import { Calendar, Download, Filter, Loader2, Search, Settings } from "lucide-react";
 import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
@@ -50,6 +58,9 @@ export default function ApplicationTable() {
       const [isExporting, setIsExporting] = useState(false);
       const [searchQuery, setSearchQuery] = useState<string>("");
      const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
+      const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+      const [includeWaitingList, setIncludeWaitingList] = useState(true);
+      const [includeRejected, setIncludeRejected] = useState(false);
       const { items: examOccurrences } = useExamOccurrences();
       const [pageSize, setPageSize] = useState(10);
       const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex, reload } = useApplications(
@@ -292,83 +303,53 @@ export default function ApplicationTable() {
       };
     
       const handleExport = () => {
+        setIsExportDialogOpen(true);
+      };
+
+      const handleConfirmExport = async () => {
         setIsExporting(true);
-    
-        // Default: all applications
-        let dataToExport = applications;
-    
-        const exportData = dataToExport.map((app, index) => ({
-          "S/No": index + 1,
-          "Condidate ID#": app.candidateId,
-          Profile: app.passportUrl,
-          "Application Date": app.createdAt,
-          Name: app.fullName,
-          Email: app.email,
-          WhatsApp: app.personalContact,
-          "Emergency Contact": app.emergencyContact,
-          "Residential Street Address": app.streetAddress,
-          "Residential District": app.district,
-          "Residential City/Town/Village": app.city,
-          "Residential Province/Region": app.province,
-          "Residential Country": app.country,
-          "Date of passing Part 1 exam": app.dateOfPassingPart1,
-          "Date of passing Part 2 exam": "0000-00-00",
-          "Country of PG clinical": "Country",
-          "Country of ethnic origin": app.originCountry,
-          "Registration Authority": app.registrationAuthority,
-          "Registration Number": app.registrationNumber,
-          "Registration Date": app.registrationDate,
-          "Preference Date 1": app.preferenceDate1,
-          "Preference Date 2": app.preferenceDate2,
-          "Preference Date 3": app.preferenceDate3,
-          Status: app.status,
-          Action: "PDF",
-        }));
-    
-        setTimeout(() => {
-          try {
-            const headers = Object.keys(exportData[0]);
-            const csvContent = [
-              headers.join("\t"),
-              ...exportData.map((row) =>
-                headers
-                  .map((header) => {
-                    const cell = row[header as keyof typeof row];
-                    const cellStr = String(cell);
-                    return cellStr.includes("\t") || cellStr.includes('"')
-                      ? `"${cellStr.replace(/"/g, '""')}"`
-                      : cellStr;
-                  })
-                  .join("\t")
-              ),
-            ].join("\n");
-    
-            const BOM = "\uFEFF";
-            const blob = new Blob([BOM + csvContent], {
-              type: "text/csv;charset=utf-16",
-            });
-    
-            const examName =
-              selectedExamOccurrence !== "all"
-                ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)
-                    ?.title || "Selected-Exam-Occurrence"
-                : "All-Exam-Occurrences";
-    
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `Applications_${examName}.xls`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-    
-            setIsExporting(false);
-          } catch (error) {
-            console.error("Export error:", error);
-            setIsExporting(false);
-          }
-        }, 500);
+        setIsExportDialogOpen(false);
+
+        try {
+          const token = localStorage.getItem("auth_token");
+          const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?includeWaitingList=${includeWaitingList}&includeRejected=${includeRejected}`;
+
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+          });
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+          const blob = await response.blob();
+
+          const examName =
+            selectedExamOccurrence !== "all"
+              ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)
+                  ?.title || "Selected-Exam-Occurrence"
+              : "All-Exam-Occurrences";
+
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute("download", `Applications_${examName}.xlsx`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(link.href);
+
+        } catch (error) {
+          console.error("Export error:", error);
+          Swal.fire({
+            title: "Error",
+            text: `Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        } finally {
+          setIsExporting(false);
+        }
       };
 
       const generatePdfBlob = async (data: any) => {
@@ -1113,6 +1094,57 @@ export default function ApplicationTable() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Export Applications</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="includeWaitingList"
+                checked={includeWaitingList}
+                onCheckedChange={(checked) => setIncludeWaitingList(checked === true)}
+              />
+              <label
+                htmlFor="includeWaitingList"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Include Waiting List
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="includeRejected"
+                checked={includeRejected}
+                onCheckedChange={(checked) => setIncludeRejected(checked === true)}
+              />
+              <label
+                htmlFor="includeRejected"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Include Rejected
+              </label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmExport} disabled={isExporting}>
+              {isExporting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                "Export"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
