@@ -15,8 +15,7 @@ export function GooeyMenu({ className }: GooeyMenuProps) {
   const dispatch = useDispatch();
 
   const handleLogout = () => {
-    console.log("logout");
-    
+
     dispatch(logout());
     window.location.href = "/login";
   };

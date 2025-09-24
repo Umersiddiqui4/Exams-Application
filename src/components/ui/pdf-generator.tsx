@@ -810,7 +810,6 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
 };
 
 export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
-  console.log("ApplicationPDFCompleteAktApp data:", data);
 
   return (
     <Document>

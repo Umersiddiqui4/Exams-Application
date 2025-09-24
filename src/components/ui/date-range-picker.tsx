@@ -27,7 +27,6 @@ export function DatePickerWithRange({
     setDate(undefined)
     setOpen(false) // just close
   }
-console.log("DatePickerWithRange rendered with date:", date);
 
   return (
     <div className={cn("grid gap-2", className)}>

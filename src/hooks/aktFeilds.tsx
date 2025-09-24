@@ -197,8 +197,6 @@ export function AktFeilds(props: AktsFieldsProps) {
     try {
       const url = await validateFile(file, "attachment");
 
-      console.log("URL:", url);
-
       if (typeof url === "string") {
         setAttachments(
           attachments.map((att: any) =>
@@ -213,7 +211,7 @@ export function AktFeilds(props: AktsFieldsProps) {
     }
   };
 
-  console.log("Attachments:", attachments);
+
 
   return (
     <div>
@@ -502,7 +500,6 @@ export function AktFeilds(props: AktsFieldsProps) {
                           value={field.value || ""}
                           onChange={(e) => {
                             const selectedDate = e.target.value;
-                            console.log("Selected date:", selectedDate);
 
                             // Store as ISO date string (YYYY-MM-DD format)
                             field.onChange(selectedDate);

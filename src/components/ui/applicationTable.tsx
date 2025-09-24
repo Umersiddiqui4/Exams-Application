@@ -76,10 +76,7 @@ export default function ApplicationTable() {
        setSelectedExamOccurrence(currentExamOccurrence.id.toString());
        }
       }, [examOccurrences]);
-      
-      console.log("Selected Exam Occurrence:", selectedExamOccurrence);
-      console.log("Exam Occurrences:", examOccurrences);
-      
+
 
     const actionColumn = {
         id: "actions",
@@ -224,7 +221,6 @@ export default function ApplicationTable() {
               await startReview(row.original.id);
             } catch (error) {
               // Ignore start-review API errors for now
-              console.log('Start review API failed, continuing with PDF generation:', error);
             }
           }
 
@@ -236,8 +232,6 @@ export default function ApplicationTable() {
             if (!attachment.id) return { ...attachment, base64Data: null };
 
             try {
-              console.log('Fetching image from API:', attachment.id);
-
               // Get the auth token from localStorage (same as apiClient)
               const token = localStorage.getItem("auth_token");
 
@@ -250,16 +244,13 @@ export default function ApplicationTable() {
                 },
               });
 
-              console.log('API response status:', response.status);
               if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
               const blob = await response.blob();
-              console.log('Blob size:', blob.size, 'type:', blob.type);
 
               const base64Data = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                  console.log('Base64 conversion successful for:', attachment.fileName);
                   resolve(reader.result as string);
                 };
                 reader.onerror = (error) => {
@@ -277,7 +268,6 @@ export default function ApplicationTable() {
           }) || [];
 
           const attachmentsWithImages = await Promise.all(imagePromises);
-          console.log('Attachments with images:', attachmentsWithImages);
 
           const dataWithImages = {
             ...detailedData.data,
@@ -698,13 +688,10 @@ export default function ApplicationTable() {
                      `Attachment ${index + 1}`}
                   </Text>
                   {attachment.base64Data ? (
-                    <>
-                      {console.log('Rendering image for:', attachment.fileName, 'base64Data length:', attachment.base64Data.length)}
-                      <Image
-                        src={attachment.base64Data}
-                        style={styles.documentPageImage}
-                      />
-                    </>
+                    <Image
+                      src={attachment.base64Data}
+                      style={styles.documentPageImage}
+                    />
                   ) : (
                     <View style={styles.documentPageImageContainer}>
                       <Text style={styles.imagePlaceholderText}>

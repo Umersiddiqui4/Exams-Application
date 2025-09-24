@@ -139,7 +139,6 @@ export function Settings() {
     if (!newExamDate.trim()) return;
     try {
       const created: any = await create(newExamDate);
-      console.log("created", created);
       setNewExamDate("");
       toast({ title: "Added", description: created.message });
     } catch (err: unknown) {

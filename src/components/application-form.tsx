@@ -78,8 +78,6 @@ export function ApplicationForm() {
   const { toast } = useToast();
   const prevValuesRef = useRef<any>(null);
 
-console.log("examDto", examDto);
-
   if (!params.examId) return null;
 
   // Map examOccurrence to selectedExam structure for compatibility
@@ -100,7 +98,6 @@ console.log("examDto", examDto);
     examType: examDto.type,
     examSlots: examDto.examSlots, // Add full examSlots for AktFeilds
   } : null;
-console.log("selectedExam", selectedExam);
 
   const osceForm = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -131,8 +128,7 @@ console.log("selectedExam", selectedExam);
         try {
           const occurrence = await examOccurrenceAvailability(params.examId as string);
           const examData: any = await getExamOccurrence(params.examId as string);
-          console.log("Fetched occurrence:", occurrence);
-          
+
           setExamOccurrence(occurrence);
           setExamDto(examData?.data);
         } catch (error) {
@@ -180,8 +176,6 @@ console.log("selectedExam", selectedExam);
             email: values.email,
           };
 
-          console.log("Auto-creating application with:", apiEmailPayload);
-
           const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications", {
             method: "POST",
             headers: {
@@ -216,13 +210,11 @@ console.log("selectedExam", selectedExam);
           }
 
           const apiResponse = await response.json();
-          console.log("Auto-application creation response:", apiResponse);
 
           // Extract application ID from response
           const appId = apiResponse.id || apiResponse.applicationId || apiResponse.data?.id;
           if (appId) {
             setApplicationId(appId);
-            console.log("Application auto-created with ID:", appId);
           }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : "Network error occurred";
@@ -257,7 +249,6 @@ console.log("selectedExam", selectedExam);
     useEffect(() => {
     const subscription = (selectedExamType ? aktsForm : osceForm).watch(
       (values) => {
-        console.log("Watching values:", values);
 
         const currentForm = selectedExamType ? aktsForm : osceForm;
         const errors = currentForm.formState.errors;
@@ -273,7 +264,6 @@ console.log("selectedExam", selectedExam);
               return (values as any)[key] !== (prevValuesRef.current as any)[key];
             });
             if (otherFieldsChanged) {
-              console.log(true, "chala");
               setApplicationCreateTime(true);
             }else{
               setApplicationCreateTime(false);
@@ -335,8 +325,6 @@ console.log("selectedExam", selectedExam);
 
               if (!deleteResponse.ok) {
                 console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
-              } else {
-                console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
               }
             } catch (error) {
               console.warn(`Error deleting existing file for ${inputId}:`, error);
@@ -345,11 +333,9 @@ console.log("selectedExam", selectedExam);
 
           // Determine filename based on exam type and input
           let fileName = file.name;
-          console.log("Determining filename for:", { selectedExamType, inputId, file, attachments });
-          
+
           if (selectedExamType && inputId === "attachment") {
-            console.log("Finding attachment title for file:", file, attachments);
-            
+
             // For AKT attachments, find the attachment with the matching file
             const attachment = attachments.find((att: any) => att.file === file);
             if (attachment && attachment.title) {
@@ -408,7 +394,6 @@ console.log("selectedExam", selectedExam);
               [inputId]: newFileId
             }));
 
-            console.log(`Upload successful for ${inputId}:`, data);
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
@@ -421,8 +406,6 @@ console.log("selectedExam", selectedExam);
       processPendingUploads();
     }
   }, [applicationId, pendingUploads, params.examId]);
-
-  console.log("Selected Exam Type:", selectedExamType);
 
   // Prepare images for PDF
   const pdfImages = useMemo(() => {
@@ -479,7 +462,6 @@ console.log("selectedExam", selectedExam);
   };
 
   async function onSubmit(data: AktsFormValues | FormValues) {
-    console.log("Form data being submitted:", data);
 
     if (!examOccurrence) {
       alert("Exam occurrence not loaded.");
@@ -491,7 +473,6 @@ console.log("selectedExam", selectedExam);
 
       const isValid = await currentForm.trigger();
       if (!isValid) {
-        console.log("Form validation failed");
         setIsSubmitting(false);
         return;
       }
@@ -623,8 +604,6 @@ console.log("selectedExam", selectedExam);
         };
       }
 
-      console.log("API Payload:", apiPayload);
-
       // Check if application was auto-created
       if (!applicationId) {
         throw new Error("Application not created yet. Please ensure fullname and email are filled.");
@@ -638,7 +617,6 @@ console.log("selectedExam", selectedExam);
       while (confirmationAttempts < maxConfirmationAttempts) {
         try {
           confirmationAttempts++;
-          console.log(`Confirmation attempt ${confirmationAttempts}/${maxConfirmationAttempts}`);
 
           const confirmationResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/applications/${applicationId}`, {
             method: "PATCH", // Changed to PUT as per API spec
@@ -662,7 +640,6 @@ console.log("selectedExam", selectedExam);
           }
 
           confirmationApiResult = await confirmationResponse.json();
-          console.log("Application Confirmation Response:", confirmationApiResult);
           break; // Success, exit retry loop
 
         } catch (error) {
@@ -783,7 +760,7 @@ console.log("selectedExam", selectedExam);
       setIsSubmitting(false);
     }
   }
-
+  // console.log("Attachments:", attachments);
   const validateFile = async (file: File, inputId: string) => {
     // List of input IDs that require validation
     const validateThese = ["passport-image"];
@@ -876,7 +853,7 @@ console.log("selectedExam", selectedExam);
           fileName = "signature";
           break;
         default:
-          fileName = file.name; // fallback to original name
+          fileName = attachments.title; // fallback to original name
       }
     }
 
@@ -891,8 +868,6 @@ console.log("selectedExam", selectedExam);
 
           if (!deleteResponse.ok) {
             console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
-          } else {
-            console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
           }
         } catch (error) {
           console.warn(`Error deleting existing file for ${inputId}:`, error);
@@ -907,7 +882,7 @@ console.log("selectedExam", selectedExam);
     formData.append('entityType', 'application');
     formData.append('entityId', applicationId as string);
     formData.append('category', getCategory(inputId));
-    formData.append('fileName', fileName);
+    formData.append('fileName', attachments.title || fileName);
 
     try {
       const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
@@ -930,7 +905,6 @@ console.log("selectedExam", selectedExam);
         [inputId]: newFileId
       }));
 
-      console.log(`Upload successful for ${inputId}:`, data);
       // Keep the local preview URL, don't replace with server URL
     } catch (error) {
       setFileError("Upload failed. Please try again.");
@@ -944,6 +918,7 @@ console.log("selectedExam", selectedExam);
 
     return true;
   };
+  console.error("validateFile:", validateFile);
 
   useEffect(() => {
     // Cleanup function to revoke object URLs when component unmounts
@@ -982,10 +957,6 @@ console.log("selectedExam", selectedExam);
       }
     }, 200);
   }
-console.log("Rendering ApplicationForm with selectedExam:", selectedExam);
-console.log("Rendering ApplicationForm with occurrenceLoading:", occurrenceLoading);
-console.log("Rendering ApplicationForm with occurrenceError:", occurrenceError);
-console.log("date comparison", examOccurrence && new Date() > new Date(examOccurrence.examSlots?.[0]?.startDate || ''));
 
   if (occurrenceLoading) {
     return (

@@ -49,7 +49,6 @@ export function useDashboardData(): DashboardData {
 
         // Get the most recent exam occurrence
         const currentExamOccurrence = examOccurrences?.data?.[0];
-console.log('Current Exam Occurrence:', examOccurrences);
         if (currentExamOccurrence) {
           // Fetch all applications
           const allAppsResponse = await listApplications();
@@ -58,7 +57,6 @@ console.log('Current Exam Occurrence:', examOccurrences);
           // Fetch applications for current exam
           const currentExamAppsResponse = await listApplications(currentExamOccurrence.id);
           const currentExamApplications = currentExamAppsResponse.data;
-          console.log('Current Exam Applications:', currentExamApplications);
           
 
           // Helper function to count applications by status

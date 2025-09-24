@@ -15,9 +15,6 @@ export const BrowserCompatibilityWrapper: React.FC<BrowserCompatibilityWrapperPr
     const detectedBrowser = detectBrowser();
     setBrowserInfo(detectedBrowser);
     setIsChecking(false);
-
-    // Optional: Log browser info for debugging
-    console.log('Browser Detection Result:', detectedBrowser);
   }, []);
 
   // Show loading state while checking

@@ -41,9 +41,6 @@ const examDataSlice = createSlice({
     updateExam(state, action: PayloadAction<ExamData>) {
       const updatedExam = action.payload;
 
-      state.exams.forEach((exam, i) => {
-        console.log(`Index ${i}: Exam ID = ${exam.id}`);
-      });
     
       state.exams = state.exams.map(exam =>
         exam.id === updatedExam.id ? updatedExam : exam
