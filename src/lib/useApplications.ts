@@ -29,7 +29,9 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
     setLoadState("loading");
     setError(null);
     try {
-      const response = await listApplications(examOccurrenceId, status, pageIndex + 1, pageSize, searchQuery);
+      const isWaiting = status === "waiting" ? true : undefined;
+      const actualStatus = status === "waiting" ? undefined : status;
+      const response = await listApplications(examOccurrenceId, actualStatus, pageIndex + 1, pageSize, searchQuery, isWaiting);
       const normalized: ApplicationData[] = response.data;
       setItems(normalized);
       setPagination({
@@ -85,7 +87,9 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
     setLoadState("loading");
     setError(null);
     try {
-      const response = await listApplications(examOccurrenceId, status, 1, newPageSize, searchQuery);
+      const isWaiting = status === "waiting" ? true : undefined;
+      const actualStatus = status === "waiting" ? undefined : status;
+      const response = await listApplications(examOccurrenceId, actualStatus, 1, newPageSize, searchQuery, isWaiting);
       const normalized: ApplicationData[] = response.data;
       setItems(normalized);
       setPagination({

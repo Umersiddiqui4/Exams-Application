@@ -956,6 +956,12 @@ export default function ApplicationTable() {
                 >
                   Rejected
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("waiting")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Waiting
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -1054,6 +1060,35 @@ export default function ApplicationTable() {
                       {examOccurrences.find((examOccurrence: any) => examOccurrence.id.toString() === selectedExamOccurrence)?.title || "N/A"}
                     </span>
                   </span>
+                </div>
+              </div>
+            )}
+
+            {/* Active Filter Info */}
+            {activeFilter !== "all" && (
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Filter className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    <span className="font-medium dark:text-slate-200 text-slate-700">
+                      Filter applied:{" "}
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                        {activeFilter === "SUBMITTED" ? "Submitted" :
+                         activeFilter === "UNDER_REVIEW" ? "Under Review" :
+                         activeFilter === "APPROVED" ? "Approved" :
+                         activeFilter === "REJECTED" ? "Rejected" :
+                         activeFilter === "waiting" ? "Waiting" : activeFilter}
+                      </span>
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveFilter("all")}
+                    className="ml-4 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                  >
+                    Clear Filter
+                  </Button>
                 </div>
               </div>
             )}
