@@ -60,19 +60,7 @@ interface AktsFieldsProps {
   onFullNameBlur?: () => void;
 }
 
-const part1ExamDates = [
-  "AKT - November 2024",
-  "AKT - May 2024",
-  "AKT - November 2023",
-  "AKT - May 2023",
-  "AKT - November 2022",
-  "AKT - June 2022",
-  "AKT - January 2022",
-  "AKT - June 2021",
-  "AKT - September 2020",
-  "AKT - November 2019",
-  "AKT - May 2019",
-];
+
 const genderCategory = ["Male", "Female", "Other"];
 
 
@@ -142,23 +130,6 @@ export function AktFeilds(props: AktsFieldsProps) {
       setAvailableDates(uniqueDates);
     }
   }, [selectedExam]);
-  const getAvailableDatesForField = (
-    fieldName: "preferenceDate1" | "preferenceDate2" | "preferenceDate3"
-  ) => {
-    return availableDates.filter((date) => {
-      const dateStr = date.toISOString();
-
-      const pref1 = currentForm.watch("preferenceDate1");
-      const pref2 = currentForm.watch("preferenceDate2");
-      const pref3 = currentForm.watch("preferenceDate3");
-
-      if (fieldName !== "preferenceDate1" && pref1 && pref1 !== " " && pref1 === dateStr) return false;
-      if (fieldName !== "preferenceDate2" && pref2 && pref2 !== " " && pref2 === dateStr) return false;
-      if (fieldName !== "preferenceDate3" && pref3 && pref3 !== " " && pref3 === dateStr) return false;
-
-      return true;
-    });
-  };
 
   const addAttachment = () => {
     const newAttachment: any = {
