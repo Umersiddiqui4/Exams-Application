@@ -1373,7 +1373,7 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                         <Input
                           id={`file-${attachment.id}`}
                           type="file"
-                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                          accept=".pdf,.webp,.jpg,.jpeg,.png,.gif"
                           onChange={(e) => {
                             const file = e.target.files?.[0] || null;
                             updateAttachmentFile(attachment.id, file);

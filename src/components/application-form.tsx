@@ -794,7 +794,7 @@ export function ApplicationForm() {
       }
 
       // Check file size (2MB = 2 * 1024 * 1024 bytes)
-      const maxSize = 2 * 1024 * 1024;
+      const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
         setFileError(
           `File size exceeds 2MB limit. Please choose a smaller file.`
