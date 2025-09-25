@@ -44,12 +44,22 @@ import { AktFeilds } from "@/hooks/aktFeilds";
 import { examOccurrenceAvailability, Availability, getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
 
+
+export type Attachment = {
+  id: string;
+  title: string;
+  file: File | null;
+  attachmentUrl?: string;
+};
+
+
+
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
-  const [attachments, setAttachments] = useState<any>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [medicalLicensePreview, setMedicalLicensePreview] = useState<
     string | null
   >("https://qph.cf2.quoracdn.net/main-qimg-678953c86023297f1bc61f1221e5418b-lq");
@@ -68,7 +78,7 @@ export function ApplicationForm() {
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [isCreatingApplication, setIsCreatingApplication] = useState(false);
-  const [pendingUploads, setPendingUploads] = useState<{ file: File; inputId: string; localPreviewUrl: string }[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<{ file: File; inputId: string; localPreviewUrl: string; title?: string; }[]>([]);
   const [uploadedFileIds, setUploadedFileIds] = useState<{ [inputId: string]: string }>({});
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const [applicationExists, setApplicationExists] = useState(false);
@@ -147,8 +157,8 @@ export function ApplicationForm() {
       setSelectedExamType(true);
     }
   }, [examDto]);
- const values = currentForm.getValues();
-    
+  const values = currentForm.getValues();
+
   // Auto-create application when fullname and email have values or when email blur triggers check
   useEffect(() => {
     const currentForm = selectedExamType ? aktsForm : osceForm;
@@ -246,7 +256,7 @@ export function ApplicationForm() {
     values.fullName
   ]);
 
-    useEffect(() => {
+  useEffect(() => {
     const subscription = (selectedExamType ? aktsForm : osceForm).watch(
       (values) => {
 
@@ -265,7 +275,7 @@ export function ApplicationForm() {
             });
             if (otherFieldsChanged) {
               setApplicationCreateTime(true);
-            }else{
+            } else {
               setApplicationCreateTime(false);
             }
           }
@@ -281,7 +291,7 @@ export function ApplicationForm() {
       subscription.unsubscribe();
     };
   }, [selectedExamType]);
-  
+
   // Function to trigger application creation check
   const handleEmailBlur = () => {
     setTriggerApplicationCheck(true);
@@ -314,7 +324,7 @@ export function ApplicationForm() {
   useEffect(() => {
     if (applicationId && pendingUploads.length > 0) {
       const processPendingUploads = async () => {
-        for (const { file, inputId } of pendingUploads) {
+        for (const { file, inputId, title } of pendingUploads) {
           // Delete existing file if it exists
           const existingFileId = uploadedFileIds[inputId];
           if (existingFileId) {
@@ -332,15 +342,17 @@ export function ApplicationForm() {
           }
 
           // Determine filename based on exam type and input
+
           let fileName = file.name;
+          console.log("Uploading file:", file.name);
 
           if (selectedExamType && inputId === "attachment") {
 
             // For AKT attachments, find the attachment with the matching file
-            const attachment = attachments.find((att: any) => att.file === file);
-            if (attachment && attachment.title) {
-              fileName = attachment.title;
-            }
+    if (title) {
+      fileName = title; // ✅ direct use karo
+    }
+
           } else if (!selectedExamType) {
             // For OSCE applications, use standard titles for all file types
             switch (inputId) {
@@ -565,9 +577,9 @@ export function ApplicationForm() {
           previousAKTAttempts: (data as AktsFormValues).previousAktsAttempts || 0,
           graduatingSchoolName: (data as AktsFormValues).schoolName || "",
           graduatingSchoolLocation: (data as AktsFormValues).schoolLocation || "",
-          dateOfQualification: (data as AktsFormValues).QualificationDate ? new Date((data as AktsFormValues).QualificationDate ).toISOString() : "",
+          dateOfQualification: (data as AktsFormValues).QualificationDate ? new Date((data as AktsFormValues).QualificationDate).toISOString() : "",
           aktEligibility: "A", // Default, could be mapped from eligibility fields
-          examinationCenterPreference: (data as AktsFormValues).examinationCenter || "",
+          examinationCenterPreference: (data as AktsFormValues).examinationCenter || "null",
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
           date: new Date().toISOString(),
           examType: examDto?.type || "AKT",
@@ -684,37 +696,37 @@ export function ApplicationForm() {
         preferenceDate3: data.preferenceDate3 || "00/00/0000",
         ...(selectedExamType
           ? {
-              eligibilityA: (data as AktsFormValues).eligibilityA || false,
-              eligibilityB: (data as AktsFormValues).eligibilityB || false,
-              eligibilityC: (data as AktsFormValues).eligibilityC || false,
-              schoolName: (data as AktsFormValues).schoolName || "",
-              schoolLocation: (data as AktsFormValues).schoolLocation || "",
-              QualificationDate: (data as AktsFormValues).QualificationDate
-                ? new Date(
-                    (data as AktsFormValues).QualificationDate
-                  ).toISOString()
-                : "",
-              candidateId: (data as AktsFormValues).candidateId || "",
-              candidateStatementA:
-                (data as AktsFormValues).candidateStatementA || false,
-              candidateStatementB:
-                (data as AktsFormValues).candidateStatementB || false,
-              candidateStatementC:
-                (data as AktsFormValues).candidateStatementC || false,
-              examinationCenter:
-                (data as AktsFormValues).examinationCenter || "",
-              attachments: attachments.map((att: any) => ({
-                id: att.id,
-                attachmentUrl: att.attachmentUrl || "",
-                title: att.title || "",
-              })),
-            }
+            eligibilityA: (data as AktsFormValues).eligibilityA || false,
+            eligibilityB: (data as AktsFormValues).eligibilityB || false,
+            eligibilityC: (data as AktsFormValues).eligibilityC || false,
+            schoolName: (data as AktsFormValues).schoolName || "",
+            schoolLocation: (data as AktsFormValues).schoolLocation || "",
+            QualificationDate: (data as AktsFormValues).QualificationDate
+              ? new Date(
+                (data as AktsFormValues).QualificationDate
+              ).toISOString()
+              : "",
+            candidateId: (data as AktsFormValues).candidateId || "",
+            candidateStatementA:
+              (data as AktsFormValues).candidateStatementA || false,
+            candidateStatementB:
+              (data as AktsFormValues).candidateStatementB || false,
+            candidateStatementC:
+              (data as AktsFormValues).candidateStatementC || false,
+            examinationCenter:
+              (data as AktsFormValues).examinationCenter || "",
+            attachments: attachments.map((att: any) => ({
+              id: att.id,
+              attachmentUrl: att.attachmentUrl || "",
+              title: att.title || "",
+            })),
+          }
           : {
-              medicalLicenseUrl: medicalLicensePreview || "",
-              part1EmailUrl: part1EmailPreview || "",
-              passportBioUrl: passportBioPreview || "",
-              part1PassingEmailUrl: part1EmailPreview || "",
-            }),
+            medicalLicenseUrl: medicalLicensePreview || "",
+            part1EmailUrl: part1EmailPreview || "",
+            passportBioUrl: passportBioPreview || "",
+            part1PassingEmailUrl: part1EmailPreview || "",
+          }),
       };
 
       dispatch(addApplication(application));
@@ -760,13 +772,11 @@ export function ApplicationForm() {
       setIsSubmitting(false);
     }
   }
-  console.log("Attachments:", attachments);
-  const validateFile = async (file: File, inputId: string) => {
+
+  const validateFile = async (file: File, inputId: string, title?: string ) => {
     // List of input IDs that require validation
     const validateThese = ["passport-image"];
-console.log("validateFile called with:", file );
-console.log("validate inputID:", inputId);
-
+   
     // Reset error
     setFileError(null);
 
@@ -823,21 +833,19 @@ console.log("validate inputID:", inputId);
     // Check if application is created
     if (!applicationId) {
       // Queue the file for upload once application is created
-      setPendingUploads(prev => [...prev, { file, inputId, localPreviewUrl }]);
+      setPendingUploads(prev => [...prev, { file, inputId, title, localPreviewUrl }]);
       setFileError(null); // Clear any previous errors
       return true; // Return true to indicate file is accepted but queued
     }
+    console.log("Proceeding to upload file:", file);
 
     // Determine filename based on exam type and input
     let fileName = file.name;
-    if (selectedExamType && inputId === "attachment") {
-      // For AKT attachments, find the attachment with the matching file
-      const attachment = attachments.find((att: any) => att.file === file);
-      console.log("Found attachment for filename:", attachment);
-      
-      if (attachment && attachment.title) {
-        fileName = attachment.title;
-      }
+
+   if (inputId === "attachment") {
+    if (title) {
+      fileName = title; // ✅ direct use karo
+    }
     } else if (!selectedExamType) {
       // For OSCE applications, use standard titles for all file types
       switch (inputId) {
@@ -856,8 +864,11 @@ console.log("validate inputID:", inputId);
         case "signature":
           fileName = "signature";
           break;
-        default:
-          fileName = attachments.title; // fallback to original name
+        default: {
+          // find the attachment by file or id
+          const att = attachments.find((a) => a.file === file || a.id === inputId);
+          fileName = att?.title || file.name; // fallback
+        }
       }
     }
 
@@ -886,7 +897,14 @@ console.log("validate inputID:", inputId);
     formData.append('entityType', 'application');
     formData.append('entityId', applicationId as string);
     formData.append('category', getCategory(inputId));
-    formData.append('fileName', attachments.title || fileName);
+    const matchedAttachment = attachments.find(
+      (att: any) => att.file === file || att.id === inputId
+    );
+
+    // File name preference: attachment title > computed fileName > actual file name
+    const finalFileName = matchedAttachment?.title || fileName || file.name;
+
+    formData.append('fileName', finalFileName);
 
     try {
       const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {

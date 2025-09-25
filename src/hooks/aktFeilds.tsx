@@ -45,16 +45,17 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 
+
 interface AktsFieldsProps {
   currentForm: any;
   selectedExamType: boolean;
   setPassportPreview: (value: string | null) => void;
   passportPreview: string | null;
   fileError: string | null;
-  validateFile: (file: File, fieldName: string) => void;
+  validateFile: (file: File, fieldName: string, title?: string) => void;
   selectedExam: any;
   attachments: any[];
-  setAttachments: (attachments: any[]) => void;
+  setAttachments: React.Dispatch<React.SetStateAction<any[]>>;
   attachmentUrl: string | null;
   onEmailBlur?: () => void;
   onFullNameBlur?: () => void;
@@ -152,40 +153,40 @@ export function AktFeilds(props: AktsFieldsProps) {
     );
   };
 
-  const updateAttachmentFile = async (id: string, file: File | null) => {
-    
-    if (!file) {
-      setAttachments(
-        attachments.map((att: any) =>
-          att.id === id ? { ...att, file: null, attachmentUrl: "" } : att
+ const updateAttachmentFile = async (id: string, file: File | null) => {
+  if (!file) {
+    setAttachments(prev =>
+      prev.map(att =>
+        att.id === id ? { ...att, file: null, attachmentUrl: "" } : att
+      )
+    );
+    return;
+  }
+
+  // pehle file set karo (for preview, etc.)
+  setAttachments(prev =>
+    prev.map(att => (att.id === id ? { ...att, file } : att))
+  );
+
+  try {
+    // file ko validate karo
+    const attachment = attachments.find(att => att.id === id);
+
+    const url = await validateFile(file, "attachment", attachment?.title);
+
+   
+      // ✅ URL mil gaya → direct state update
+      setAttachments(prev =>
+        prev.map(att =>
+          att.id === id ? { ...att, attachmentUrl: url, file } : att
         )
       );
+  
+  } catch (err) {
+    console.error("Error validating file:", err);
+  }
+};
 
-      return;
-    }else if (file) {
-      setAttachments(
-          attachments.map((att: any) =>
-            att.id === id ? { ...att, file } : att
-          )
-        );
-      }
-
-    try {
-      const url = await validateFile(file, "attachment");
-
-      if (typeof url === "string") {
-        setAttachments(
-          attachments.map((att: any) =>
-            att.id === id ? { ...att, attachmentUrl: url, file } : att
-          )
-        );
-      } else {
-        console.warn("validateFile returned no URL—attachment not updated");
-      }
-    } catch (err) {
-      console.error("Error validating file:", err);
-    }
-  };
 
 
 console.log("Rendering AktFeilds with attachments:", attachments);
@@ -331,7 +332,7 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                         accept="image/png, image/jpeg, image/jpg"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            validateFile(e.target.files[0], "passport-image");
+                            validateFile(e.target.files[0], "attachment", "Passport Image");
                           }
                         }}
                       />
@@ -1123,7 +1124,7 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                 name="examinationCenter"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormControl>
+                    <FormControl aria-required="true">
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {selectedExam?.location
                           ? selectedExam.location.split(', ').map((location: string) => (
