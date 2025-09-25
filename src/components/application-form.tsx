@@ -559,16 +559,18 @@ export function ApplicationForm() {
           clinicalExperienceCountry: data.countryOfExperience,
           registrationAuthority: data.registrationAuthority,
           registrationNumber: data.registrationNumber,
-          registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
+          registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString() : "",
           usualForename: data.fullName.split(' ')[0] || "",
           gender: "MALE", // Default, could be added to form
           previousAKTAttempts: (data as AktsFormValues).previousAktsAttempts || 0,
           graduatingSchoolName: (data as AktsFormValues).schoolName || "",
           graduatingSchoolLocation: (data as AktsFormValues).schoolLocation || "",
-          dateOfQualification: (data as AktsFormValues).QualificationDate || "",
+          dateOfQualification: (data as AktsFormValues).QualificationDate ? new Date((data as AktsFormValues).QualificationDate ).toISOString() : "",
           aktEligibility: "A", // Default, could be mapped from eligibility fields
           examinationCenterPreference: (data as AktsFormValues).examinationCenter || "",
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
+          date: new Date().toISOString(),
+          examType: examDto?.type || "AKT",
           "shouldSubmit": true,
           // notes: ""
         };
@@ -758,10 +760,12 @@ export function ApplicationForm() {
       setIsSubmitting(false);
     }
   }
-  // console.log("Attachments:", attachments);
+  console.log("Attachments:", attachments);
   const validateFile = async (file: File, inputId: string) => {
     // List of input IDs that require validation
     const validateThese = ["passport-image"];
+console.log("validateFile called with:", file );
+console.log("validate inputID:", inputId);
 
     // Reset error
     setFileError(null);
@@ -829,6 +833,8 @@ export function ApplicationForm() {
     if (selectedExamType && inputId === "attachment") {
       // For AKT attachments, find the attachment with the matching file
       const attachment = attachments.find((att: any) => att.file === file);
+      console.log("Found attachment for filename:", attachment);
+      
       if (attachment && attachment.title) {
         fileName = attachment.title;
       }
@@ -916,7 +922,7 @@ export function ApplicationForm() {
 
     return true;
   };
-  console.error("validateFile:", validateFile);
+  // console.error("validateFile:", validateFile);
 
   useEffect(() => {
     // Cleanup function to revoke object URLs when component unmounts

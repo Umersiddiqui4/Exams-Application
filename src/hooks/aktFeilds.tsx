@@ -153,6 +153,7 @@ export function AktFeilds(props: AktsFieldsProps) {
   };
 
   const updateAttachmentFile = async (id: string, file: File | null) => {
+    
     if (!file) {
       setAttachments(
         attachments.map((att: any) =>
@@ -161,7 +162,13 @@ export function AktFeilds(props: AktsFieldsProps) {
       );
 
       return;
-    }
+    }else if (file) {
+      setAttachments(
+          attachments.map((att: any) =>
+            att.id === id ? { ...att, file } : att
+          )
+        );
+      }
 
     try {
       const url = await validateFile(file, "attachment");
@@ -169,7 +176,7 @@ export function AktFeilds(props: AktsFieldsProps) {
       if (typeof url === "string") {
         setAttachments(
           attachments.map((att: any) =>
-            att.id === id ? { ...att, attachmentUrl: url } : att
+            att.id === id ? { ...att, attachmentUrl: url, file } : att
           )
         );
       } else {
@@ -181,6 +188,7 @@ export function AktFeilds(props: AktsFieldsProps) {
   };
 
 
+console.log("Rendering AktFeilds with attachments:", attachments);
 
   return (
     <div>
