@@ -332,7 +332,7 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                         accept="image/png, image/jpeg, image/jpg"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            validateFile(e.target.files[0], "attachment", "Passport Image");
+                            validateFile(e.target.files[0], "attachment", "passport-image");
                           }
                         }}
                       />

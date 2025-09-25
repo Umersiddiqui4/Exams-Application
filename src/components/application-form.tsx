@@ -829,6 +829,11 @@ export function ApplicationForm() {
         setAttachmentUrl(localPreviewUrl);
         break;
     }
+    switch (title) {
+      case "passport-image":
+        setPassportPreview(localPreviewUrl)
+         break;
+    }
 
     // Check if application is created
     if (!applicationId) {
