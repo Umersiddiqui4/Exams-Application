@@ -758,7 +758,7 @@ export function ApplicationForm() {
             });
         },
       }).then(() => {
-        setTimeout(() => window.location.reload(), 2000);
+        setTimeout(() => window.location.href = "https://mrcgpintsouthasia.org/", 2000);
       });
     } catch (err) {
       console.error("Submission error:", err);
