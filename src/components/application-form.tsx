@@ -354,7 +354,7 @@ export function ApplicationForm() {
             // For OSCE applications, use standard titles for all file types
             switch (inputId) {
               case "passport-image":
-                fileName = "passport size image";
+                fileName = "passport-image";
                 break;
               case "medical-license":
                 fileName = "medical license";
@@ -852,7 +852,7 @@ export function ApplicationForm() {
       // For OSCE applications, use standard titles for all file types
       switch (inputId) {
         case "passport-image":
-          fileName = "passport size image";
+          fileName = "passport-image";
           break;
         case "medical-license":
           fileName = "medical license";
