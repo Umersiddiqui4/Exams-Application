@@ -253,7 +253,6 @@ export function ApplicationForm() {
     params.examId,
     applicationCreateTime,
     triggerApplicationCheck,
-    values.fullName
   ]);
 
   useEffect(() => {
@@ -266,7 +265,6 @@ export function ApplicationForm() {
         const fullNameFilled = values.fullName && values.fullName.trim() !== '';
 
         if (emailValid && fullNameFilled) {
-          setApplicationCreateTime(true);
           if (prevValuesRef.current) {
             // Check if any other field changed
             const otherFieldsChanged = Object.keys(values).some(key => {
