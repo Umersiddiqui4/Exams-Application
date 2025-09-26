@@ -1112,6 +1112,8 @@ export function ApplicationForm() {
                     </>
                   )}
                 </PDFDownloadLink>
+
+                {/* // pdf completed // */}
                 <PDFDownloadLink
                   id="pdf-download-preview-link"
                   document={
@@ -1122,12 +1124,14 @@ export function ApplicationForm() {
                       />
                     ) : (
                       <ApplicationPDFCompleteAktPreview
-                        data={currentForm.getValues()}
+                        data={aktsForm.getValues()}
                         image={attachments}
                         images={pdfImages}
                       />
                     )
                   }
+
+                  
                   fileName="MRCGP_Application_Form.pdf"
                   className="hidden"
                 >

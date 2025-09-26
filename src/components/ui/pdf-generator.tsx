@@ -1261,6 +1261,8 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
   );
 };
 export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
+  console.log("PDF DATA:", data, images,);
+  
   return (
     <Document>
       {/* Main application form page */}
@@ -1390,12 +1392,7 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
               <Text style={styles.resumeSectionTitle}>EXPERIENCE</Text>
             </View>
             <View style={styles.resumeBody}>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Date of passing Part 1:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.dateOfPassingPart1 || "Not provided"}
-                </Text>
-              </View>
+             
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Previous AKT attempts:</Text>
                 <Text style={styles.fieldValue}>
@@ -1464,14 +1461,14 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
               <Text style={styles.resumeSectionTitle}>EXAM DETAILS</Text>
             </View>
             <View style={styles.resumeBody}>
-              <View style={styles.fieldRow}>
+              {/* <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Exam Name:</Text>
                 <Text style={styles.fieldValue}>
                   {data.examName || "Not provided"}
                 </Text>
-              </View>
+              </View> */}
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Examination Center:</Text>
+                <Text style={styles.fieldLabel}>Examination preference:</Text>
                 <Text style={styles.fieldValue}>
                   {data.examinationCenter || "Not provided"}
                 </Text>
@@ -1487,41 +1484,7 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
             </View>
           </View>
 
-          {/* OSCE Session Preferences */}
-          <View style={styles.resumeSection}>
-            <View style={styles.resumeHeader}>
-              <Text style={styles.resumeSectionTitle}>
-                OSCE SESSION PREFERENCES
-              </Text>
-            </View>
-            <View style={styles.resumeBody}>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 1:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate1 && data.preferenceDate1 !== " "
-                    ? format(new Date(data.preferenceDate1), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 2:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate2 && data.preferenceDate2 !== " "
-                    ? format(new Date(data.preferenceDate2), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 3:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate3 && data.preferenceDate3 !== " "
-                    ? format(new Date(data.preferenceDate3), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
+         
           {/* Attachments Summary
           {data.attachments && data.attachments.length > 0 && (
             <View style={styles.resumeSection}>
@@ -1603,49 +1566,6 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
                 <Text style={styles.fieldLabel}>Candidate Statement C:</Text>
                 <Text style={styles.fieldValue}>
                   {data.candidateStatementC ? "✓ Agreed" : "✗ Not agreed"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Agreement */}
-          <View style={styles.resumeSection}>
-            <View style={styles.resumeHeader}>
-              <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
-            </View>
-            <View style={styles.resumeBody}>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Applicant Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.applicantName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Agreement Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Agreement Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementDate
-                    ? format(new Date(data.agreementDate), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Submitted Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.submittedDate
-                    ? format(new Date(data.submittedDate), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Status:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.status || "Pending"}
                 </Text>
               </View>
             </View>
@@ -1733,7 +1653,7 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
                 {attachment.title || `Attachment ${index + 1}`}
               </Text>
               <Image
-                src={attachment.attachmentUrl || "/placeholder.svg"}
+                src={attachment.file || "/placeholder.svg"}
                 style={styles.documentPageImage}
               />
               <View style={styles.documentPageFooter}>
@@ -1756,6 +1676,8 @@ export const ApplicationPDFCompleteAktPreview = ({
   image,
   images,
 }: any) => {
+  console.log("PDF DATA:", data, images, image);
+  
   return (
     <Document>
       {/* Main application form page */}
@@ -1889,12 +1811,6 @@ export const ApplicationPDFCompleteAktPreview = ({
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Date of passing Part 1:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.dateOfPassingPart1 || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Previous AKT attempts:</Text>
                 <Text style={styles.fieldValue}>
                   {data.previousAktsAttempts || "Not provided"}
@@ -1985,41 +1901,6 @@ export const ApplicationPDFCompleteAktPreview = ({
             </View>
           </View>
 
-          {/* OSCE Session Preferences */}
-          <View style={styles.resumeSection}>
-            <View style={styles.resumeHeader}>
-              <Text style={styles.resumeSectionTitle}>
-                OSCE SESSION PREFERENCES
-              </Text>
-            </View>
-            <View style={styles.resumeBody}>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 1:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate1 && data.preferenceDate1 !== " "
-                    ? format(new Date(data.preferenceDate1), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 2:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate2 && data.preferenceDate2 !== " "
-                    ? format(new Date(data.preferenceDate2), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 3:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate3 && data.preferenceDate3 !== " "
-                    ? format(new Date(data.preferenceDate3), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
           {/* Eligibility Statements */}
           <View style={styles.resumeSection}>
             <View style={styles.resumeHeader}>
@@ -2062,49 +1943,6 @@ export const ApplicationPDFCompleteAktPreview = ({
                 <Text style={styles.fieldLabel}>Candidate Statement C:</Text>
                 <Text style={styles.fieldValue}>
                   {data.candidateStatementC ? "✓ Agreed" : "✗ Not agreed"}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Agreement */}
-          <View style={styles.resumeSection}>
-            <View style={styles.resumeHeader}>
-              <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
-            </View>
-            <View style={styles.resumeBody}>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Applicant Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.applicantName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Agreement Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Agreement Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementDate
-                    ? format(new Date(data.agreementDate), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Submitted Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.submittedDate
-                    ? format(new Date(data.submittedDate), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Status:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.status || "Pending"}
                 </Text>
               </View>
             </View>
@@ -2195,7 +2033,7 @@ export const ApplicationPDFCompleteAktPreview = ({
                 {attachment.title || `Attachment ${index + 1}`}
               </Text>
               <Image
-                src={attachment.attachmentUrl || "/placeholder.svg"}
+                src={attachment.file || "/placeholder.svg"}
                 style={styles.documentPageImagePrev}
               />
               <View style={styles.documentPageFooter}>
