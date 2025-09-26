@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Menu, ClipboardList, CheckCircle, XCircle, FileText, Eye } from "lucide-react"
+import { Menu, ClipboardList, CheckCircle, XCircle, FileText, Eye, Clock } from "lucide-react"
 
 import { Button } from "../components/ui/button"
 import { useMobile } from "../hooks/use-mobile"
@@ -80,7 +80,7 @@ export function Dashboard() {
           <Tabs defaultValue="applications" className="w-full">
             <TabsContent value="applications">
               <div className="text-3xl p-3">All Batch Status</div>
-              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
+              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 mb-6">
                 <StatusCard
                   title="Total Requests"
                   value={stats.approved + stats.rejected + stats.submitted + stats.underReview}
@@ -121,6 +121,14 @@ export function Dashboard() {
                   active={activeFilter === "totalUnderReview"}
                   icon={Eye}
                 />
+                <StatusCard
+                  title="Waiting Requests"
+                  value={stats.pending}
+                  color="bg-yellow-600 dark:bg-yellow-700"
+                  onClick={() => setActiveFilter("totalWaiting")}
+                  active={activeFilter === "totalWaiting"}
+                  icon={Clock}
+                />
               </div>
 
               {/* Current Exam Status Section */}
@@ -130,7 +138,7 @@ export function Dashboard() {
                   {currentExam.examTitle}
                 </div>
               )}
-              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
+              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 mb-6">
                 <StatusCard
                   title="Total Requests"
                   value={currentExam.approved + currentExam.rejected + currentExam.submitted + currentExam.underReview}
@@ -170,6 +178,14 @@ export function Dashboard() {
                   onClick={() => setActiveFilter("currentUnderReview")}
                   active={activeFilter === "currentUnderReview"}
                   icon={Eye}
+                />
+                <StatusCard
+                  title="Waiting Requests"
+                  value={currentExam.pending}
+                  color="bg-yellow-600 dark:bg-yellow-700"
+                  onClick={() => setActiveFilter("currentWaiting")}
+                  active={activeFilter === "currentWaiting"}
+                  icon={Clock}
                 />
               </div>
             </TabsContent>
