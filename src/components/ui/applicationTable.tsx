@@ -87,8 +87,23 @@ export default function ApplicationTable() {
     
           return (
             <div className="flex space-x-2">
-              {(status === "SUBMITTED" || status === "UNDER_REVIEW") && (
+               <Button key={id}
+              onClick={() => handlePdfGenerate(row)}
+              disabled={generatingIds.has(id)}
+              className="bg-red-400 hover:bg-red-200 text-white dark:bg-red-900 dark:hover:bg-blue-900/50 dark:text-white border-blue-200 dark:border-blue-800"
+            >
+              {generatingIds.has(id) ? (
                 <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                status === "SUBMITTED" ? "Review" : "Get PDF"
+              )}
+            </Button>
+            {(status === "SUBMITTED" || status === "UNDER_REVIEW") && (
+              <>
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -111,20 +126,7 @@ export default function ApplicationTable() {
               )}
     
     
-              <Button key={id}
-                onClick={() => handlePdfGenerate(row)}
-                disabled={generatingIds.has(id)}
-                className="bg-red-400 hover:bg-red-200 text-white dark:bg-red-900 dark:hover:bg-blue-900/50 dark:text-white border-blue-200 dark:border-blue-800"
-              >
-                {generatingIds.has(id) ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  status === "SUBMITTED" ? "Review" : "Get PDF"
-                )}
-              </Button>
+             
             </div>
           );
         },
