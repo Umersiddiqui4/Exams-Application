@@ -9,20 +9,20 @@ export default function NotFound() {
           <img
             src="/logo.png"
             alt="MRCGP[INT] South Asia Logo"
-            width={220}
-            height={120}
+            width={280}
+            height={180}
             className="h-auto"
           />
         </div>
 
-        <Card className="w-full p-8 shadow-sm bg-blue-900">
-          <div className="text-center space-y-4">
+        <Card className="w-full p-8 shadow-sm bg-[#5c347d]">
+          <div className="text-center text-white space-y-4">
             <h1 className="text-3xl font-semibold text-white-800">Oops!</h1>
             <p className="text-lg text-white-600">No Exam found.</p>
           </div>
         </Card>
 
-        <footer className="mt-8 text-center text-sm text-gray-500">
+        <footer  className="text-center text-sm text-gray-500 flex justify-center w-full left-0  items-center absolute bottom-10 m-auto">
           <p>
             © {new Date().getFullYear()} MRCGP[INT] South Asia. All rights
             reserved.
