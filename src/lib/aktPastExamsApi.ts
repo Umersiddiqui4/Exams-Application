@@ -22,7 +22,7 @@ export async function createAktPastExam(payload: CreateAktPastExamDto): Promise<
 }
 
 export async function listAktPastExams(): Promise<AktPastExam[]> {
-	return apiRequest<AktPastExam[]>("/api/v1/akt-past-exams?page=1&take=20", "GET");
+	return apiRequest<AktPastExam[]>("/api/v1/akt-past-exams?page=1&take=100&q=AKT", "GET");
 }
 
 export async function getAktPastExam(id: string): Promise<AktPastExam> {
