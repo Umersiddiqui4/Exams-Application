@@ -194,12 +194,14 @@ const getAvailableDatesForField = (
           </AccordionTrigger>
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
-              {/* Candidate ID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex justify-center md:justify-start flex-col space-y-4">
+                  {/* Candidate ID */}
                <FormField
                   control={currentForm.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
+                    <FormItem className="col-span-1 md:col-span-1">
                       <FormLabel>
                         E-mail {" "}<span className="text-red-500">*</span>
                       </FormLabel>
@@ -230,38 +232,29 @@ const getAvailableDatesForField = (
                     </FormItem>
                   )}
                 />
-              <FormField
+
+<FormField
                 control={currentForm.control}
-                name="candidateId"
+                name="fullName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">
-                      Candidate ID{" "}
-                      {!selectedExamType && (
-                        <span className="text-red-500">*</span>
-                      )}
-                      {selectedExamType && (
-                        <span className="text-slate-500">
-                          (Optional for AKTs)
-                        </span>
-                      )}
+                      Full name as you would like it to appear on record{" "}
+                      <span className="text-red-500">*</span>
                     </FormLabel>
-                    <FormDescription>
-                      Please quote it in all correspondence.
-                    </FormDescription>
                     <FormControl>
                       <Input
-                        placeholder="e.g. 1234567"
+                        placeholder="Enter Full Name"
                         {...field}
-                        maxLength={7}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value.length <= 7) {
-                            field.onChange(value);
+                        onBlur={(e) => {
+                          // Trigger application creation check when full name loses focus
+                          const fullNameValue = e.target.value.trim();
+                          if (fullNameValue && !currentForm.formState.errors.fullName) {
+                            onFullNameBlur();
                           }
                         }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.candidateId
+                          currentForm.formState.errors.fullName
                             ? "border-red-500 dark:border-red-700"
                             : ""
                         }`}
@@ -271,10 +264,11 @@ const getAvailableDatesForField = (
                   </FormItem>
                 )}
               />
-
-              {/* Passport Image */}
+                </div>
+              
+                {/* Passport Image */}
               <div className="space-y-2">
-                <FormLabel className="text-base font-medium">
+                <FormLabel >
                   Passport Size image:
                 </FormLabel>
                 <div className="flex items-center justify-center w-full">
@@ -338,30 +332,44 @@ const getAvailableDatesForField = (
                 )}
               </div>
 
-              {/* Full Name */}
+                 {/* Full Name */}
 
+              
+
+              
+              </div>
               <FormField
                 control={currentForm.control}
-                name="fullName"
+                name="candidateId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">
-                      Full name as you would like it to appear on record{" "}
-                      <span className="text-red-500">*</span>
+                      Candidate ID{" "}
+                      {!selectedExamType && (
+                        <span className="text-red-500">*</span>
+                      )}
+                      {selectedExamType && (
+                        <span className="text-slate-500">
+                          (Optional for AKTs)
+                        </span>
+                      )}
                     </FormLabel>
+                    <FormDescription>
+                      Please quote it in all correspondence.
+                    </FormDescription>
                     <FormControl>
                       <Input
-                        placeholder="Enter Full Name"
+                        placeholder="e.g. 1234567"
                         {...field}
-                        onBlur={(e) => {
-                          // Trigger application creation check when full name loses focus
-                          const fullNameValue = e.target.value.trim();
-                          if (fullNameValue && !currentForm.formState.errors.fullName) {
-                            onFullNameBlur();
+                        maxLength={7}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.length <= 7) {
+                            field.onChange(value);
                           }
                         }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.fullName
+                          currentForm.formState.errors.candidateId
                             ? "border-red-500 dark:border-red-700"
                             : ""
                         }`}
@@ -371,6 +379,10 @@ const getAvailableDatesForField = (
                   </FormItem>
                 )}
               />
+
+              
+
+             
 
               {/* Residential Address */}
               <div className="space-y-4">
