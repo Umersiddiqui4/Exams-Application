@@ -351,6 +351,8 @@ export default function ApplicationTable() {
       };
 
       const ApplicationPDF = ({ data }: any) => {
+        console.log("Generating PDF for data:", data);
+        
         return (
           <Document>
             {/* Main application form page */}
@@ -362,13 +364,13 @@ export default function ApplicationTable() {
                   <div className="text-center">
                     <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
                     <Text style={styles.subtitle}>
-                      Part 2 (OSCE) Examination Application
+                      {data.examOccurrence.type === "AKT" ? "AKT Examination Application" : "Part 2 (OSCE)} Examination Application"}
                     </Text>
                   </div>
                 </View>
                 {(() => {
                   const passportAttachment = data.attachments?.find((att: any) =>
-                    att.category === 'application_photo' && att.base64Data
+                    att.fileName === 'passport-image' && att.base64Data
                   );
                   return passportAttachment ? (
                     <Image
