@@ -41,20 +41,8 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useAktPastExams } from "@/lib/useAktPastExams";
 
-const part1ExamDates = [
-  "AKT - November 2024",
-  "AKT - May 2024",
-  "AKT - November 2023",
-  "AKT - May 2023",
-  "AKT - November 2022",
-  "AKT - June 2022",
-  "AKT - January 2022",
-  "AKT - June 2021",
-  "AKT - September 2020",
-  "AKT - November 2019",
-  "AKT - May 2019",
-];
 
 
 interface OsceFieldsProps {
@@ -104,6 +92,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
   const [phone, setPhone] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const { items: aktPastExams, loadState: aktLoadState } = useAktPastExams();
 
 
 
@@ -626,15 +615,21 @@ const getAvailableDatesForField = (
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                          {part1ExamDates.map((date) => (
-                            <SelectItem
-                              key={date}
-                              value={date}
-                              className="dark:text-slate-200 dark:focus:bg-slate-700"
-                            >
-                              {date}
+                          {aktLoadState === "loading" ? (
+                            <SelectItem value="loading" disabled>
+                              Loading...
                             </SelectItem>
-                          ))}
+                          ) : (
+                            aktPastExams.slice().reverse().map((exam) => (
+                              <SelectItem
+                                key={exam.id}
+                                value={exam.name}
+                                className="dark:text-slate-200 dark:focus:bg-slate-700"
+                              >
+                                {exam.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
