@@ -1012,14 +1012,17 @@ export function ApplicationForm() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
               <div className="flex justify-start items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
                   <img src="/icon.png" alt="404" />
                 </div>
+                <div className="">
                 <span>APPLICATION FORM</span>
-              </div>
               <CardDescription className="text-slate-500 dark:text-slate-400">
                 For the South Asia MRCGP [INT.] Part 2 (OSCE) Examination
               </CardDescription>
+
+                </div>
+              </div>
             </CardTitle>
             <div className="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-md text-indigo-700 dark:text-indigo-300 font-medium text-sm">
               {selectedExam
