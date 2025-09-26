@@ -684,10 +684,10 @@ export default function ApplicationTable() {
               <Page key={attachment.id} size="A4" style={styles.page}>
                 <View style={styles.documentPage}>
                   <Text style={styles.documentPageTitle}>
-                    {attachment.category === 'application_photo' ? 'Passport Photo' :
-                     attachment.category === 'application_other' && attachment.fileName.toLowerCase().includes('medical_license') ? 'Medical License' :
-                     attachment.category === 'application_other' && attachment.fileName.toLowerCase().includes('part_1_passing_email') ? 'Part 1 Passing Email' :
-                     attachment.category === 'application_other' && attachment.fileName.toLowerCase().includes('passport_bio_page') ? 'Passport Bio Page' :
+                    {attachment.fileName === 'passport-image' ? 'Passport Photo' :
+                     attachment.fileName === 'medical_license' && attachment.fileName.toLowerCase().includes('medical_license') ? 'Medical License' :
+                     attachment.fileName === 'part1-email' && attachment.fileName.toLowerCase().includes('part_1_passing_email') ? 'Part 1 Passing Email' :
+                     attachment.fileName === 'passport_bio_page' && attachment.fileName.toLowerCase().includes('passport_bio_page') ? 'Passport Bio Page' :
                      attachment.category === 'application_signature' ? 'Signature' :
                      `Attachment ${index + 1}`}
                   </Text>
