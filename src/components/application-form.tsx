@@ -157,7 +157,6 @@ export function ApplicationForm() {
       setSelectedExamType(true);
     }
   }, [examDto]);
-  const values = currentForm.getValues();
 
   // Auto-create application when fullname and email have values or when email blur triggers check
   useEffect(() => {
