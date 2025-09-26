@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
-import { listApplications } from './applicationsApi';
 import { listExamOccurrences } from './examOccurrencesApi';
+import { apiRequest } from './apiClient';
+
+interface StatisticsResponse {
+  totalApplications: number;
+  approvedApplications: number;
+  rejectedApplications: number;
+  submittedApplications: number;
+  inReviewApplications: number;
+  waitingApplications: number;
+}
 
 export interface DashboardStats {
   total: number;
@@ -49,56 +58,32 @@ export function useDashboardData(): DashboardData {
 
         // Get the most recent exam occurrence
         const currentExamOccurrence = examOccurrences?.data?.[0];
+
+        // Fetch statistics for all applications
+        const allStatsResponse = await apiRequest<StatisticsResponse>('/api/v1/applications/statistics', 'GET', undefined, { baseUrl: 'https://mrcgp-api.omnifics.io' });
+        const allStats = allStatsResponse as StatisticsResponse;
+
+        const allAppsStats: DashboardStats = {
+          total: allStats.approvedApplications + allStats.rejectedApplications + allStats.submittedApplications + allStats.inReviewApplications,
+          approved: allStats.approvedApplications,
+          rejected: allStats.rejectedApplications,
+          submitted: allStats.submittedApplications,
+          underReview: allStats.inReviewApplications,
+          pending: allStats.waitingApplications,
+        };
+
         if (currentExamOccurrence) {
-          // Fetch all applications
-          const allAppsResponse = await listApplications();
-          const allApplications = allAppsResponse.data;
+          // Fetch statistics for current exam
+          const statsResponse = await apiRequest<StatisticsResponse>(`/api/v1/applications/statistics?examOccurrenceId=${currentExamOccurrence.id}`, 'GET', undefined, { baseUrl: 'https://mrcgp-api.omnifics.io' });
+          const stats = statsResponse as StatisticsResponse;
 
-          // Fetch applications for current exam
-          const currentExamAppsResponse = await listApplications(currentExamOccurrence.id);
-          const currentExamApplications = currentExamAppsResponse.data;
-          
-
-          // Helper function to count applications by status
-          const countApplications = (applications: any[]): DashboardStats => {
-            return applications.reduce((acc: DashboardStats, app: any) => {
-              acc.total++;
-              const status = app.status?.toLowerCase();
-
-              switch (status) {
-                case 'pending':
-                case 'waiting':
-                  acc.pending++;
-                  break;
-                case 'approved':
-                  acc.approved++;
-                  break;
-                case 'rejected':
-                  acc.rejected++;
-                  break;
-                case 'submitted':
-                  acc.submitted++;
-                  break;
-                case 'under_review':
-                case 'under review':
-                  acc.underReview++;
-                  break;
-              }
-
-              return acc;
-            }, {
-              total: 0,
-              pending: 0,
-              approved: 0,
-              rejected: 0,
-              submitted: 0,
-              underReview: 0,
-            });
-          };
-
-          const allAppsStats = countApplications(allApplications);
           const currentExamStats: CurrentExamStats = {
-            ...countApplications(currentExamApplications),
+            total: stats.approvedApplications + stats.rejectedApplications + stats.submittedApplications + stats.inReviewApplications,
+            approved: stats.approvedApplications,
+            rejected: stats.rejectedApplications,
+            submitted: stats.submittedApplications,
+            underReview: stats.inReviewApplications,
+            pending: stats.waitingApplications,
             examTitle: currentExamOccurrence.title,
             examId: currentExamOccurrence.id,
           };
@@ -108,13 +93,8 @@ export function useDashboardData(): DashboardData {
             currentExam: currentExamStats,
           });
         } else {
-          // If no exam occurrences, just fetch all applications
-          const response = await listApplications();
-          const applications = response.data;
-          const counts = countApplications(applications);
-
           setData({
-            allApplications: counts,
+            allApplications: allAppsStats,
             currentExam: {
               total: 0,
               pending: 0,
@@ -134,41 +114,4 @@ export function useDashboardData(): DashboardData {
   }, []);
 
   return data;
-}
-
-// Helper function to count applications by status
-function countApplications(applications: any[]): DashboardStats {
-  return applications.reduce((acc: DashboardStats, app: any) => {
-    acc.total++;
-    const status = app.status?.toLowerCase();
-
-    switch (status) {
-      case 'pending':
-      case 'waiting':
-        acc.pending++;
-        break;
-      case 'approved':
-        acc.approved++;
-        break;
-      case 'rejected':
-        acc.rejected++;
-        break;
-      case 'submitted':
-        acc.submitted++;
-        break;
-      case 'under_review':
-      case 'under review':
-        acc.underReview++;
-        break;
-    }
-
-    return acc;
-  }, {
-    total: 0,
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-    submitted: 0,
-    underReview: 0,
-  });
 }
