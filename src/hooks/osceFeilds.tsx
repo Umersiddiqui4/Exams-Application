@@ -50,7 +50,7 @@ interface OsceFieldsProps {
   selectedExamType: boolean;
   setPassportPreview: (value: string | null) => void;
   passportPreview: string | null;
-  fileError: string | null;
+  fileErrors: { [key: string]: string };
   validateFile: (file: File, fieldName: string) => void;
   warning: boolean;
   selectedExam: any;
@@ -73,7 +73,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
     selectedExamType,
     setPassportPreview,
     passportPreview,
-    fileError,
+    fileErrors,
     validateFile,
     warning,
     selectedExam,
@@ -311,7 +311,7 @@ const getAvailableDatesForField = (
                           or drag and drop
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          JPG, JPEG, PNG, GIF and WebP (MAX. 10MB)
+                          JPG, JPEG, PNG, GIF and WebP (MAX. 3MB)
                         </p>
                       </div>
                       <input
@@ -328,8 +328,8 @@ const getAvailableDatesForField = (
                     </label>
                   )}
                 </div>
-                {fileError && (
-                  <p className="text-sm text-red-500 mt-1">{fileError}</p>
+                {fileErrors["PASSPORT IMAGE"] && (
+                  <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT IMAGE"]}</p>
                 )}
               </div>
 
@@ -1162,6 +1162,9 @@ const getAvailableDatesForField = (
                         Valid Medical license {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
+                      {fileErrors["MEDICAL LICENSE"] && (
+                        <p className="text-sm text-red-500">{fileErrors["MEDICAL LICENSE"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {medicalLicensePreview ? (
                           <div className="relative w-full">
@@ -1242,6 +1245,9 @@ const getAvailableDatesForField = (
                       <FormLabel>
                         Part I passing email
                       </FormLabel>
+                      {fileErrors["PART1 EMAIL"] && (
+                        <p className="text-sm text-red-500">{fileErrors["PART1 EMAIL"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {part1EmailPreview ? (
                           <div className="relative w-full">
@@ -1324,6 +1330,9 @@ const getAvailableDatesForField = (
                         Passport bio Page {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
+                      {fileErrors["PASSPORT BIO"] && (
+                        <p className="text-sm text-red-500">{fileErrors["PASSPORT BIO"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {passportBioPreview ? (
                           <div className="relative w-full">
@@ -1405,6 +1414,9 @@ const getAvailableDatesForField = (
                         Signature {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
+                      {fileErrors["SIGNATURE"] && (
+                        <p className="text-sm text-red-500">{fileErrors["SIGNATURE"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {signaturePreview ? (
                           <div className="relative w-full">

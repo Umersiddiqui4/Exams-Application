@@ -29,7 +29,7 @@ export function useFilePreview(): PreviewResult {
 
     const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-      setError("File size exceeds 10MB limit. Please choose a smaller file.")
+      setError("File size exceeds 3MB limit. Please choose a smaller file.")
       return false
     }
 

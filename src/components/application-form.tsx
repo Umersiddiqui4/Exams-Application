@@ -57,7 +57,7 @@ export type Attachment = {
 
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileErrors, setFileErrors] = useState<{ [key: string]: string }>({});
   const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -397,13 +397,22 @@ export function ApplicationForm() {
             const data = await response.json();
             const newFileId = data.id; // Capture the new file ID
             // const serverUrl = data.url; // Capture server URL from response
-
+      
             // Store the new file ID for future deletions
             setUploadedFileIds(prev => ({
               ...prev,
               [inputId]: newFileId
             }));
-
+      
+            // Clear any previous errors and show success
+            // setFileError(null);
+            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+            toast({
+              title: "File Uploaded Successfully",
+              description: `${fieldName} has been uploaded successfully.`,
+              variant: "default",
+            });
+      
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
@@ -771,34 +780,91 @@ export function ApplicationForm() {
     }
   }
 
-  const validateFile = async (file: File, inputId: string, title?: string ) => {
+  const validateFile = async (file: File, inputId: string, title?: string, attachmentId?: string) => {
     // List of input IDs that require validation
     const validateThese = ["passport-image"];
-   
-    // Reset error
-    setFileError(null);
+
+    let fieldName: string;
+    if (attachmentId) {
+      // For attachments, use attachment ID for unique error key
+      fieldName = `attachment-${attachmentId}`;
+    } else {
+      fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+    }
+
+    // Reset error for this field
+    setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
 
     // Only validate if inputId is in the validation list
     if (validateThese.includes(inputId)) {
       // Check file type
       const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
       if (!validTypes.includes(file.type)) {
-        setFileError(
-          `Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.`
-        );
+        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.` }));
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
+        // Clear the preview on validation error
+        if (title === "passport-image") {
+          // AKT passport image
+          setPassportPreview(null);
+        } else {
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              break;
+            case "attachment":
+              setAttachmentUrl(null);
+              break;
+          }
+        }
         return false;
       }
 
       // Check file size (10MB = 10 * 1024 * 1024 bytes)
-      const maxSize = 10 * 1024 * 1024;
+      const maxSize = 3 * 1024 * 1024;
       if (file.size > maxSize) {
-        setFileError(
-          `File size exceeds 10MB limit. Please choose a smaller file.`
-        );
+        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: File size exceeds 3MB limit. Please choose a smaller file.` }));
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
+        // Clear the preview on validation error
+        if (title === "passport-image") {
+          // AKT passport image
+          setPassportPreview(null);
+        } else {
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              break;
+            case "attachment":
+              setAttachmentUrl(null);
+              break;
+          }
+        }
         return false;
       }
     }
@@ -807,37 +873,37 @@ export function ApplicationForm() {
     const localPreviewUrl = URL.createObjectURL(file);
 
     // Set immediate preview with local URL
-    switch (inputId) {
-      case "passport-image":
-        setPassportPreview(localPreviewUrl);
-        break;
-      case "medical-license":
-        setMedicalLicensePreview(localPreviewUrl);
-        break;
-      case "part1-email":
-        setPart1EmailPreview(localPreviewUrl);
-        break;
-      case "passport-bio":
-        setPassportBioPreview(localPreviewUrl);
-        break;
-      case "signature":
-        setSignaturePreview(localPreviewUrl);
-        break;
-      case "attachment":
-        setAttachmentUrl(localPreviewUrl);
-        break;
-    }
-    switch (title) {
-      case "passport-image":
-        setPassportPreview(localPreviewUrl)
-         break;
+    if (title === "passport-image") {
+      // AKT passport image
+      setPassportPreview(localPreviewUrl);
+    } else {
+      switch (inputId) {
+        case "passport-image":
+          setPassportPreview(localPreviewUrl);
+          break;
+        case "medical-license":
+          setMedicalLicensePreview(localPreviewUrl);
+          break;
+        case "part1-email":
+          setPart1EmailPreview(localPreviewUrl);
+          break;
+        case "passport-bio":
+          setPassportBioPreview(localPreviewUrl);
+          break;
+        case "signature":
+          setSignaturePreview(localPreviewUrl);
+          break;
+        case "attachment":
+          setAttachmentUrl(localPreviewUrl);
+          break;
+      }
     }
 
     // Check if application is created
     if (!applicationId) {
       // Queue the file for upload once application is created
       setPendingUploads(prev => [...prev, { file, inputId, title, localPreviewUrl }]);
-      setFileError(null); // Clear any previous errors
+      setFileErrors(prev => ({ ...prev, [fieldName]: '' })); // Clear any previous errors
       return true; // Return true to indicate file is accepted but queued
     }
     console.log("Proceeding to upload file:", file);
@@ -916,7 +982,56 @@ export function ApplicationForm() {
       });
 
       if (!response.ok) {
-        setFileError("Upload failed. Please try again.");
+        const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+        let errorMessage = `${fieldName}: Upload failed. Please try again.`;
+        try {
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.message) {
+            errorMessage = `${fieldName}: Upload failed: ${errorData.message}`;
+          } else if (response.status === 413) {
+            errorMessage = `${fieldName}: File is too large. Please choose a smaller file.`;
+          } else if (response.status === 415) {
+            errorMessage = `${fieldName}: File type not supported. Please use JPG, PNG, GIF, or WebP.`;
+          } else if (response.status >= 500) {
+            errorMessage = `${fieldName}: Server error. Please try again later.`;
+          }
+        } catch (e) {
+          // Keep default message if parsing fails
+        }
+        setFileErrors(prev => ({ ...prev, [fieldName]: errorMessage }));
+
+        // Clear the preview image on upload error
+        if (title === "passport-image") {
+          // AKT passport image
+          setPassportPreview(null);
+        } else {
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              break;
+            case "attachment":
+              setAttachmentUrl(null);
+              break;
+          }
+        }
+
+        toast({
+          title: "File Upload Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
         return false;
       }
 
@@ -930,9 +1045,48 @@ export function ApplicationForm() {
         [inputId]: newFileId
       }));
 
+      // Clear any previous errors for this field
+      setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
+
       // Keep the local preview URL, don't replace with server URL
     } catch (error) {
-      setFileError("Upload failed. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Network error occurred";
+      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+      const fullErrorMessage = `${fieldName}: Upload failed: ${errorMessage}. Please check your connection and try again.`;
+      setFileErrors(prev => ({ ...prev, [fieldName]: fullErrorMessage }));
+
+      // Clear the preview image on any error
+      if (title === "passport-image") {
+        // AKT passport image
+        setPassportPreview(null);
+      } else {
+        switch (inputId) {
+          case "passport-image":
+            setPassportPreview(null);
+            break;
+          case "medical-license":
+            setMedicalLicensePreview(null);
+            break;
+          case "part1-email":
+            setPart1EmailPreview(null);
+            break;
+          case "passport-bio":
+            setPassportBioPreview(null);
+            break;
+          case "signature":
+            setSignaturePreview(null);
+            break;
+          case "attachment":
+            setAttachmentUrl(null);
+            break;
+        }
+      }
+
+      toast({
+        title: "File Upload Failed",
+        description: fullErrorMessage,
+        variant: "destructive",
+      });
       return false;
     }
 
@@ -1051,7 +1205,7 @@ export function ApplicationForm() {
                   selectedExamType={selectedExamType}
                   setPassportPreview={setPassportPreview}
                   passportPreview={passportPreview}
-                  fileError={fileError}
+                  fileErrors={fileErrors}
                   validateFile={validateFile}
                   warning={warning}
                   setMedicalLicensePreview={setMedicalLicensePreview}
@@ -1073,7 +1227,7 @@ export function ApplicationForm() {
                   selectedExamType={selectedExamType}
                   setPassportPreview={setPassportPreview}
                   passportPreview={passportPreview}
-                  fileError={fileError}
+                  fileErrors={fileErrors}
                   validateFile={validateFile}
                   selectedExam={selectedExam}
                   attachmentUrl={attachmentUrl}
