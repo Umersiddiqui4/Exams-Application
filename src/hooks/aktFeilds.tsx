@@ -200,11 +200,6 @@ export function AktFeilds(props: AktsFieldsProps) {
     console.error("Error validating file:", err);
   }
 };
-
-
-
-console.log("Rendering AktFeilds with attachments:", attachments);
-
   return (
     <div>
       <Accordion

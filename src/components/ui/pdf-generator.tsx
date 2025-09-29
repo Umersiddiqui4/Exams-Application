@@ -1261,8 +1261,6 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
   );
 };
 export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
-  console.log("PDF DATA:", data, images,);
-  
   return (
     <Document>
       {/* Main application form page */}
@@ -1676,8 +1674,6 @@ export const ApplicationPDFCompleteAktPreview = ({
   image,
   images,
 }: any) => {
-  console.log("PDF DATA:", data, images, image);
-  
   return (
     <Document>
       {/* Main application form page */}

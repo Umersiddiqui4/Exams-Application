@@ -383,7 +383,6 @@ export function ApplicationForm() {
           // Determine filename based on exam type and input
 
           let fileName = file.name;
-          console.log("Uploading file:", file.name);
 
           if (selectedExamType && inputId === "attachment") {
 
@@ -507,8 +506,6 @@ export function ApplicationForm() {
         if (!deleteResponse.ok) {
           console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
         } else {
-          console.log(`Successfully deleted existing file ${existingFileId} for ${inputId}`);
-          // Remove from uploadedFileIds
           setUploadedFileIds(prev => {
             const newState = { ...prev };
             delete newState[inputId];
@@ -948,7 +945,6 @@ export function ApplicationForm() {
       setFileErrors(prev => ({ ...prev, [fieldName]: '' })); // Clear any previous errors
       return true; // Return true to indicate file is accepted but queued
     }
-    console.log("Proceeding to upload file:", file);
 
     // Determine filename based on exam type and input
     let fileName = file.name;
@@ -1413,7 +1409,7 @@ export function ApplicationForm() {
                     "Application Already Exists - Change Email"
                   ) : isEligible === false ? (
                     "Not Eligible to Submit"
-                  ) : (
+                          ) : (
                     "Submit"
                   )}
                 </Button>
