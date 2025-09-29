@@ -52,11 +52,12 @@ import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
 
 export default function ApplicationTable() {
-
-      const [activeFilter, setActiveFilter] = useState<string>("all");
+      const searchQuery = "";
+      const activeFilter = "all";
+      // const [activeFilter, setActiveFilter] = useState<string>("all");
       const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all");
       const [isExporting, setIsExporting] = useState(false);
-      const [searchQuery, setSearchQuery] = useState<string>("");
+      // const [searchQuery, setSearchQuery] = useState<string>("");
      const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
       const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
       const [includeWaitingList, setIncludeWaitingList] = useState(true);
@@ -71,10 +72,10 @@ export default function ApplicationTable() {
       );
 
       useEffect(() => {
-       const currentExamOccurrence: any = examOccurrences[0];
-       if(currentExamOccurrence && currentExamOccurrence.id) {
-       setSelectedExamOccurrence(currentExamOccurrence.id.toString());
-       }
+        const currentExamOccurrence: any = examOccurrences[0];
+        if(currentExamOccurrence && currentExamOccurrence.id) {
+        setSelectedExamOccurrence(currentExamOccurrence.id.toString());
+        }
       }, [examOccurrences]);
 
 
@@ -916,37 +917,37 @@ export default function ApplicationTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("all")}
+                  /* onClick={() => setActiveFilter("all")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("SUBMITTED")}
+                  /* onClick={() => setActiveFilter("SUBMITTED")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Submitted
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("UNDER_REVIEW")}
+                  /* onClick={() => setActiveFilter("UNDER_REVIEW")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Under Review
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("APPROVED")}
+                  /* onClick={() => setActiveFilter("APPROVED")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("REJECTED")}
+                  /* onClick={() => setActiveFilter("REJECTED")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("waiting")}
+                  /* onClick={() => setActiveFilter("waiting")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Waiting
@@ -1031,8 +1032,9 @@ export default function ApplicationTable() {
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    // value={searchQuery}
+
+                    /* onChange={(e) => setSearchQuery(e.target.value)} */
                   />
                 </div>
               </div>
@@ -1073,7 +1075,7 @@ export default function ApplicationTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setActiveFilter("all")}
+                    /* onClick={() => setActiveFilter("all")} */
                     className="ml-4 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
                   >
                     Clear Filter
