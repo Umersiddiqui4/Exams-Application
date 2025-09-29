@@ -1159,7 +1159,7 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Valid Medical license: (Use .png or .jpg only){" "}
+                        Valid Medical license {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <div className="flex items-center justify-center w-full">
@@ -1206,14 +1206,17 @@ const getAvailableDatesForField = (
                             }
                           >
                             <div
-                              className={`flex flex-col items-center justify-center pt-5 pb-6 `}
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
                             >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
                                 <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG, PNG, GIF and WebP
+                                </p>
                               </p>
                             </div>
                             <input
@@ -1237,7 +1240,7 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Part I passing email: (Use .png or .jpg only)
+                        Part I passing email
                       </FormLabel>
                       <div className="flex items-center justify-center w-full">
                         {part1EmailPreview ? (
@@ -1279,13 +1282,18 @@ const getAvailableDatesForField = (
                               "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 "
                             }
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
+                            >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                <span className="font-semibold">
+                                <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG, PNG, GIF and WebP
+                                </p>
                               </p>
                             </div>
                             <input
@@ -1313,7 +1321,7 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Passport bio Page (Valid): (Use .png or .jpg only){" "}
+                        Passport bio Page {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <div className="flex items-center justify-center w-full">
@@ -1359,13 +1367,18 @@ const getAvailableDatesForField = (
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
+                            >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                <span className="font-semibold">
+                                <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG, PNG, GIF and WebP
+                                </p>
                               </p>
                             </div>
                             <input
@@ -1389,7 +1402,7 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Signature: (Use .png or .jpg only){" "}
+                        Signature {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <div className="flex items-center justify-center w-full">
@@ -1429,13 +1442,18 @@ const getAvailableDatesForField = (
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                             <div
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
+                            >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                <span className="font-semibold">
+                                <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG, PNG, GIF and WebP
+                                </p>
                               </p>
                             </div>
                             <input
