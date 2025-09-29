@@ -305,9 +305,14 @@ const getAvailableDatesForField = (
                   ) : (
                     <label
                       htmlFor="passport-image"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      className={
+                              warning ||
+                              currentForm.formState.errors.passportImage
+                                ? "border-red-500 flex flex-col items-center justify-center w-full h- border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                : "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"}
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        
                         <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
                         <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
                           <span className="font-semibold">Click to upload</span>{" "}
@@ -321,7 +326,6 @@ const getAvailableDatesForField = (
                         id="passport-image"
                         type="file"
                         className="hidden"
-                        required
                         accept="image/jpeg, image/jpg, image/png"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
@@ -1501,12 +1505,15 @@ const getAvailableDatesForField = (
                       name="agreementName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full name: </FormLabel>
+                          <FormLabel>Full name:{" "}<span className="text-red-500">*</span> </FormLabel>
                           <FormControl>
                             <Input
                               placeholder="Enter Full name"
                               {...field}
-                              className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500`}
+                              className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
+                          currentForm.formState.errors.agreementName
+                            ? "border-red-500 dark:border-red-700"
+                            : ""}`}
                             />
                           </FormControl>
                           <FormMessage />

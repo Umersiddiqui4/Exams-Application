@@ -572,7 +572,8 @@ export function ApplicationForm() {
         if (
           signaturePreview === null ||
           medicalLicensePreview === null ||
-          passportBioPreview === null
+          passportBioPreview === null ||
+          passportPreview === null 
         ) {
           setWarning(true);
           setIsSubmitting(false);
