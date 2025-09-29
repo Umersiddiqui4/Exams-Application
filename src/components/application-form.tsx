@@ -8,6 +8,7 @@ import { CardDescription } from "@/components/ui/card";
 import { CardTitle } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -1030,6 +1031,13 @@ export function ApplicationForm() {
         </CardHeader>
 
         <CardContent className="p-6">
+          {examOccurrence && selectedExam && examOccurrence.applicationsCount === selectedExam.applicationsLimit && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
+              <AlertDescription className="text-amber-800 dark:text-amber-200 font-medium">
+                Please Note: All regular seats for this exam have been filled. Your application has been placed on the waiting list.
+              </AlertDescription>
+            </Alert>
+          )}
           <Form {...currentForm}>
             <form
               onSubmit={currentForm.handleSubmit(onSubmit)}
