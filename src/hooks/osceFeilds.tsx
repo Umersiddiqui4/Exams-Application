@@ -1020,10 +1020,10 @@ const getAvailableDatesForField = (
               </div>
 
               <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-100 dark:border-amber-800">
-                <h4 className="font-medium text-amber-800 dark:text-amber-300 mb-2">
+                <h4 className="font-medium mb-2">
                   PLEASE NOTE
                 </h4>
-                <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-300">
+                <ul className="list-disc list-inside space-y-2 text-sm">
                   <li>
                     The number of seats are limited and slots will be allocated
                     on the "First Come First Served" basis.
