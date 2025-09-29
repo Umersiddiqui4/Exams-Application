@@ -51,14 +51,15 @@ interface AktsFieldsProps {
   selectedExamType: boolean;
   setPassportPreview: (value: string | null) => void;
   passportPreview: string | null;
-  fileError: string | null;
-  validateFile: (file: File, fieldName: string, title?: string) => void;
+  fileErrors: { [key: string]: string };
+  validateFile: (file: File, fieldName: string, title?: string, attachmentId?: string) => void;
   selectedExam: any;
   attachments: any[];
   setAttachments: React.Dispatch<React.SetStateAction<any[]>>;
   attachmentUrl: string | null;
   onEmailBlur?: () => void;
   onFullNameBlur?: () => void;
+  onCandidateIdBlur: (candidateId: string) => void;
 }
 
 
@@ -71,25 +72,38 @@ export function AktFeilds(props: AktsFieldsProps) {
     selectedExamType,
     setPassportPreview,
     passportPreview,
-    fileError,
+    fileErrors,
     validateFile,
     selectedExam,
     setAttachments,
     attachments,
     onEmailBlur,
     onFullNameBlur,
+    onCandidateIdBlur,
   } = props;
 
-  const [phone, setPhone] = useState<string | undefined>();
-  const [error, setError] = useState<string | null>(null);
+  const [whatsappPhone, setWhatsappPhone] = useState<string | undefined>();
+  const [emergencyPhone, setEmergencyPhone] = useState<string | undefined>();
+  const [whatsappError, setWhatsappError] = useState<string | null>(null);
+  const [emergencyError, setEmergencyError] = useState<string | null>(null);
 
-  const handleBlury = () => {
-    if (!phone) {
-      setError("Phone number is required");
-    } else if (!isValidPhoneNumber(phone)) {
-      setError("Invalid phone number");
+  const handleWhatsappBlur = () => {
+    if (!whatsappPhone) {
+      setWhatsappError("Phone number is required");
+    } else if (!isValidPhoneNumber(whatsappPhone)) {
+      setWhatsappError("Invalid phone number");
     } else {
-      setError(null);
+      setWhatsappError(null);
+    }
+  };
+
+  const handleEmergencyBlur = () => {
+    if (!emergencyPhone) {
+      setEmergencyError("Phone number is required");
+    } else if (!isValidPhoneNumber(emergencyPhone)) {
+      setEmergencyError("Invalid phone number");
+    } else {
+      setEmergencyError(null);
     }
   };
 
@@ -172,7 +186,7 @@ export function AktFeilds(props: AktsFieldsProps) {
     // file ko validate karo
     const attachment = attachments.find(att => att.id === id);
 
-    const url = await validateFile(file, "attachment", attachment?.title);
+    const url = await validateFile(file, "attachment", attachment?.title, attachment?.id);
 
    
       // ✅ URL mil gaya → direct state update
@@ -267,6 +281,12 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                             field.onChange(value);
                           }
                         }}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value) {
+                            onCandidateIdBlur(value);
+                          }
+                        }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                           currentForm.formState.errors.candidateId
                             ? "border-red-500 dark:border-red-700"
@@ -322,14 +342,14 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                           or drag and drop
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          PNG, JPG (MAX. 2MB)
+                          JPG, JPEG, PNG, GIF, WebP (MAX. )
                         </p>
                       </div>
                       <input
                         id="passport-image"
                         type="file"
                         className="hidden"
-                        accept="image/png, image/jpeg, image/jpg"
+                        accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             validateFile(e.target.files[0], "attachment", "passport-image");
@@ -339,8 +359,8 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                     </label>
                   )}
                 </div>
-                {fileError && (
-                  <p className="text-sm text-red-500 mt-1">{fileError}</p>
+                {fileErrors["PASSPORT IMAGE"] && (
+                  <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT IMAGE"]}</p>
                 )}
               </div>
               <FormField
@@ -648,18 +668,18 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                             international
                             countryCallingCodeEditable={true}
                             value={field.value}
-                            onBlur={handleBlury}
+                            onBlur={handleEmergencyBlur}
                             onChange={(value) => {
                               field.onChange(value);
-                              setPhone(value);
+                              setEmergencyPhone(value);
                             }}
                             className="flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </FormControl>
                       <FormMessage>
-                        {error && (
-                          <span className="text-sm text-red-500">{error}</span>
+                        {emergencyError && (
+                          <span className="text-sm text-red-500">{emergencyError}</span>
                         )}
                       </FormMessage>
                     </FormItem>
@@ -679,7 +699,7 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                       <FormControl>
                         <div
                           className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.whatsapp
+                            currentForm.formState.errors.emergencyContact
                               ? "border-red-500 dark:border-red-700"
                               : ""
                           }`}
@@ -688,18 +708,18 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                             international
                             countryCallingCodeEditable={true}
                             value={field.value}
-                            onBlur={handleBlury}
+                            onBlur={handleWhatsappBlur}
                             onChange={(value) => {
                               field.onChange(value);
-                              setPhone(value);
+                              setWhatsappPhone(value);
                             }}
                             className="flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </FormControl>
                       <FormMessage>
-                        {error && (
-                          <span className="text-sm text-red-500">{error}</span>
+                        {whatsappError && (
+                          <span className="text-sm text-red-500">{whatsappError}</span>
                         )}
                       </FormMessage>
                     </FormItem>
@@ -1340,66 +1360,72 @@ console.log("Rendering AktFeilds with attachments:", attachments);
 
               <div className="space-y-3">
                 {attachments.map((attachment: any) => (
-                  <div
-                    key={attachment.id}
-                    className="flex flex-col sm:flex-row gap-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800"
-                  >
-                    <div className="flex-1">
-                      <Label
-                        htmlFor={`title-${attachment.id}`}
-                        className="text-sm font-medium"
-                      >
-                        Title
-                      </Label>
-                      <Input
-                        id={`title-${attachment.id}`}
-                        placeholder="Enter document title"
-                        value={attachment.title}
-                        onChange={(e) =>
-                          updateAttachmentTitle(attachment.id, e.target.value)
-                        }
-                        className="mt-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-600"
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <Label
-                        htmlFor={`file-${attachment.id}`}
-                        className="text-sm font-medium"
-                      >
-                        Upload Document
-                      </Label>
-                      <div className="mt-1 relative">
+                  <>
+                    <div
+                      key={attachment.id}
+                      className="flex flex-col sm:flex-row gap-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800"
+                    >
+                      <div className="flex-1">
+                        <Label
+                          htmlFor={`title-${attachment.id}`}
+                          className="text-sm font-medium"
+                        >
+                          Title
+                        </Label>
                         <Input
-                          id={`file-${attachment.id}`}
-                          type="file"
-                          accept=".pdf,.webp,.jpg,.jpeg,.png,.gif"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            updateAttachmentFile(attachment.id, file);
-                          }}
-                          className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-600 flex justify-center items-center  file:text-sm"
+                          id={`title-${attachment.id}`}
+                          placeholder="Enter document title"
+                          value={attachment.title}
+                          onChange={(e) =>
+                            updateAttachmentTitle(attachment.id, e.target.value)
+                          }
+                          className="mt-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-600"
                         />
-                        {attachment.file && (
-                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            Selected: {attachment.file.name}
-                          </p>
-                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <Label
+                          htmlFor={`file-${attachment.id}`}
+                          className="text-sm font-medium"
+                        >
+                          Upload Document
+                        </Label>
+                        <div className="mt-1 relative">
+                          <Input
+                            id={`file-${attachment.id}`}
+                            type="file"
+                            accept=".pdf,.webp,.jpg,.jpeg,.png,.gif"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              updateAttachmentFile(attachment.id, file);
+                            }}
+                            className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-600 flex justify-center items-center  file:text-sm"
+                          />
+                          {fileErrors[`attachment-${attachment.id}`] ? (
+                            <p className="text-xs text-red-500 mt-1">
+                              {fileErrors[`attachment-${attachment.id}`]}
+                            </p>
+                          ) : attachment.file ? (
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Selected: {attachment.file.name}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeAttachment(attachment.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="flex items-end">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeAttachment(attachment.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  </>
                 ))}
               </div>
             </div>

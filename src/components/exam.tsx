@@ -903,7 +903,7 @@ const selectStyles = {
                     <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300 space-y-1">
                       {exam.examSlots?.map((slot: any) => (
                         <div key={slot.slotNumber}>
-                          Slot {slot.slotNumber}: {slot.startDate?.substring(0,10)} - {slot.description}
+                          Slot {slot.slotNumber}: {slot.startDate?.substring(0,10)}
                         </div>
                       )) || <div>No slots</div>}
                     </div>

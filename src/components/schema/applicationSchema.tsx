@@ -79,7 +79,7 @@ const formSchema = z.object({
     .string()
     .length(7, "Candidate ID must be exactly 7 numbers")
     .regex(/^\d+$/, "Candidate ID must contain only numbers"),
-  passportImage: z.any().optional(),
+  passportImage: z.any(),
   fullName: z.string().min(2, "Full name is required"),
 
   // Address
@@ -125,7 +125,7 @@ const formSchema = z.object({
   signature: z.any(),
 
   // Agreement
-  agreementName: z.string().optional(),
+  agreementName: z.string().min(2, "Full name is required"),
   agreementDate: z.date({
     required_error: "Date is required",
   }),
@@ -153,8 +153,8 @@ export const formDefaultValues: FormValues = {
   whatsapp: "+923001234567",
   emergencyContact: "+923001234568",
   email: "",
-  dateOfPassingPart1: "AKT - November 2024",
-  previousOsceAttempts: "1",
+  dateOfPassingPart1: "",
+  previousOsceAttempts: "",
   countryOfExperience: "Pakistan",
   countryOfOrigin: "Pakistan",
   registrationAuthority: "Pakistan Medical Council",

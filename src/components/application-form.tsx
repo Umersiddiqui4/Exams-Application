@@ -8,6 +8,7 @@ import { CardDescription } from "@/components/ui/card";
 import { CardTitle } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,7 +57,7 @@ export type Attachment = {
 
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileErrors, setFileErrors] = useState<{ [key: string]: string }>({});
   const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -83,6 +84,7 @@ export function ApplicationForm() {
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const [applicationExists, setApplicationExists] = useState(false);
   const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
+  const [isEligible, setIsEligible] = useState<boolean | null>(null); // null = not checked, true = eligible, false = not eligible
   const params = useParams();
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -299,6 +301,46 @@ export function ApplicationForm() {
     setTriggerApplicationCheck(true);
   };
 
+  // Function to check candidate eligibility
+  const handleCandidateIdBlur = async (candidateId: string) => {
+    if (!candidateId || candidateId.trim() === "") return;
+
+    try {
+      const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications/can-apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          candidateId: candidateId.trim(),
+          examOccurrenceId: params.examId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.canApply) {
+        // Candidate is eligible
+        setIsEligible(true);
+      } else {
+        // Candidate is not eligible
+        setIsEligible(false);
+        toast({
+          title: "Eligibility Check Failed",
+          description: data.reason || "You are not eligible to submit the application.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Eligibility check error:", error);
+      toast({
+        title: "Eligibility Check Error",
+        description: "Unable to verify eligibility. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // ✅ Reset form errors when switching exam types
   useEffect(() => {
     if (selectedExamType) {
@@ -396,13 +438,22 @@ export function ApplicationForm() {
             const data = await response.json();
             const newFileId = data.id; // Capture the new file ID
             // const serverUrl = data.url; // Capture server URL from response
-
+      
             // Store the new file ID for future deletions
             setUploadedFileIds(prev => ({
               ...prev,
               [inputId]: newFileId
             }));
-
+      
+            // Clear any previous errors and show success
+            // setFileError(null);
+            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+            toast({
+              title: "File Uploaded Successfully",
+              description: `${fieldName} has been uploaded successfully.`,
+              variant: "default",
+            });
+      
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
@@ -516,7 +567,8 @@ export function ApplicationForm() {
         if (
           signaturePreview === null ||
           medicalLicensePreview === null ||
-          passportBioPreview === null
+          passportBioPreview === null ||
+          passportPreview === null 
         ) {
           setWarning(true);
           setIsSubmitting(false);
@@ -655,7 +707,7 @@ export function ApplicationForm() {
           console.warn(`Confirmation attempt ${confirmationAttempts} failed:`, error);
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
-            const errorMessage = `Application confirmation failed after ${maxConfirmationAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`;
+            const errorMessage = `${error instanceof Error ? error.message : 'Unknown error'}`;
 
             toast({
               title: "Application Submission Failed",
@@ -770,34 +822,91 @@ export function ApplicationForm() {
     }
   }
 
-  const validateFile = async (file: File, inputId: string, title?: string ) => {
+  const validateFile = async (file: File, inputId: string, title?: string, attachmentId?: string) => {
     // List of input IDs that require validation
     const validateThese = ["passport-image"];
-   
-    // Reset error
-    setFileError(null);
+
+    let fieldName: string;
+    if (attachmentId) {
+      // For attachments, use attachment ID for unique error key
+      fieldName = `attachment-${attachmentId}`;
+    } else {
+      fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+    }
+
+    // Reset error for this field
+    setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
 
     // Only validate if inputId is in the validation list
     if (validateThese.includes(inputId)) {
       // Check file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
       if (!validTypes.includes(file.type)) {
-        setFileError(
-          `Invalid file format. Only PNG and JPG formats are supported.`
-        );
+        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.` }));
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
+        // Clear the preview on validation error
+        if (title === "passport-image") {
+          // AKT passport image
+          setPassportPreview(null);
+        } else {
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              break;
+            case "attachment":
+              setAttachmentUrl(null);
+              break;
+          }
+        }
         return false;
       }
 
-      // Check file size (2MB = 2 * 1024 * 1024 bytes)
-      const maxSize = 10 * 1024 * 1024;
+      // Check file size (10MB = 10 * 1024 * 1024 bytes)
+      const maxSize = 3 * 1024 * 1024;
       if (file.size > maxSize) {
-        setFileError(
-          `File size exceeds 2MB limit. Please choose a smaller file.`
-        );
+        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: File size exceeds 3MB limit. Please choose a smaller file.` }));
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
+        // Clear the preview on validation error
+        if (title === "passport-image") {
+          // AKT passport image
+          setPassportPreview(null);
+        } else {
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              break;
+            case "attachment":
+              setAttachmentUrl(null);
+              break;
+          }
+        }
         return false;
       }
     }
@@ -806,37 +915,37 @@ export function ApplicationForm() {
     const localPreviewUrl = URL.createObjectURL(file);
 
     // Set immediate preview with local URL
-    switch (inputId) {
-      case "passport-image":
-        setPassportPreview(localPreviewUrl);
-        break;
-      case "medical-license":
-        setMedicalLicensePreview(localPreviewUrl);
-        break;
-      case "part1-email":
-        setPart1EmailPreview(localPreviewUrl);
-        break;
-      case "passport-bio":
-        setPassportBioPreview(localPreviewUrl);
-        break;
-      case "signature":
-        setSignaturePreview(localPreviewUrl);
-        break;
-      case "attachment":
-        setAttachmentUrl(localPreviewUrl);
-        break;
-    }
-    switch (title) {
-      case "passport-image":
-        setPassportPreview(localPreviewUrl)
-         break;
+    if (title === "passport-image") {
+      // AKT passport image
+      setPassportPreview(localPreviewUrl);
+    } else {
+      switch (inputId) {
+        case "passport-image":
+          setPassportPreview(localPreviewUrl);
+          break;
+        case "medical-license":
+          setMedicalLicensePreview(localPreviewUrl);
+          break;
+        case "part1-email":
+          setPart1EmailPreview(localPreviewUrl);
+          break;
+        case "passport-bio":
+          setPassportBioPreview(localPreviewUrl);
+          break;
+        case "signature":
+          setSignaturePreview(localPreviewUrl);
+          break;
+        case "attachment":
+          setAttachmentUrl(localPreviewUrl);
+          break;
+      }
     }
 
     // Check if application is created
     if (!applicationId) {
       // Queue the file for upload once application is created
       setPendingUploads(prev => [...prev, { file, inputId, title, localPreviewUrl }]);
-      setFileError(null); // Clear any previous errors
+      setFileErrors(prev => ({ ...prev, [fieldName]: '' })); // Clear any previous errors
       return true; // Return true to indicate file is accepted but queued
     }
     console.log("Proceeding to upload file:", file);
@@ -915,7 +1024,56 @@ export function ApplicationForm() {
       });
 
       if (!response.ok) {
-        setFileError("Upload failed. Please try again.");
+        const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+        let errorMessage = `${fieldName}: Upload failed. Please try again.`;
+        try {
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.message) {
+            errorMessage = `${fieldName}: Upload failed: ${errorData.message}`;
+          } else if (response.status === 413) {
+            errorMessage = `${fieldName}: File is too large. Please choose a smaller file.`;
+          } else if (response.status === 415) {
+            errorMessage = `${fieldName}: File type not supported. Please use JPG, PNG, GIF, or WebP.`;
+          } else if (response.status >= 500) {
+            errorMessage = `${fieldName}: Server error. Please try again later.`;
+          }
+        } catch (e) {
+          // Keep default message if parsing fails
+        }
+        setFileErrors(prev => ({ ...prev, [fieldName]: errorMessage }));
+
+        // Clear the preview image on upload error
+        if (title === "passport-image") {
+          // AKT passport image
+          setPassportPreview(null);
+        } else {
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              break;
+            case "attachment":
+              setAttachmentUrl(null);
+              break;
+          }
+        }
+
+        toast({
+          title: "File Upload Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
         return false;
       }
 
@@ -929,9 +1087,48 @@ export function ApplicationForm() {
         [inputId]: newFileId
       }));
 
+      // Clear any previous errors for this field
+      setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
+
       // Keep the local preview URL, don't replace with server URL
     } catch (error) {
-      setFileError("Upload failed. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Network error occurred";
+      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+      const fullErrorMessage = `${fieldName}: Upload failed: ${errorMessage}. Please check your connection and try again.`;
+      setFileErrors(prev => ({ ...prev, [fieldName]: fullErrorMessage }));
+
+      // Clear the preview image on any error
+      if (title === "passport-image") {
+        // AKT passport image
+        setPassportPreview(null);
+      } else {
+        switch (inputId) {
+          case "passport-image":
+            setPassportPreview(null);
+            break;
+          case "medical-license":
+            setMedicalLicensePreview(null);
+            break;
+          case "part1-email":
+            setPart1EmailPreview(null);
+            break;
+          case "passport-bio":
+            setPassportBioPreview(null);
+            break;
+          case "signature":
+            setSignaturePreview(null);
+            break;
+          case "attachment":
+            setAttachmentUrl(null);
+            break;
+        }
+      }
+
+      toast({
+        title: "File Upload Failed",
+        description: fullErrorMessage,
+        variant: "destructive",
+      });
       return false;
     }
 
@@ -968,6 +1165,13 @@ export function ApplicationForm() {
   useEffect(() => {
     if (candidateId && candidateId.length > 7) {
       currentForm.setValue("candidateId", "");
+    }
+  }, [candidateId]);
+
+  // Reset eligibility when candidate ID changes
+  useEffect(() => {
+    if (isEligible !== null) {
+      setIsEligible(null);
     }
   }, [candidateId]);
 
@@ -1009,7 +1213,7 @@ export function ApplicationForm() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
               <div className="flex justify-start items-center gap-2">
-                <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
+                <div className="w-18 h-18 sm:h-20 sm:w-20 rounded-fullflex items-center justify-center">
                   <img src="/icon.png" alt="404" />
                 </div>
                 <div className="">
@@ -1030,6 +1234,13 @@ export function ApplicationForm() {
         </CardHeader>
 
         <CardContent className="p-6">
+          {examOccurrence && selectedExam && examOccurrence.applicationsCount === selectedExam.applicationsLimit && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
+              <AlertDescription className="text-amber-800 dark:text-amber-200 font-medium">
+                Please Note: All regular seats for this exam have been filled. Your application has been placed on the waiting list.
+              </AlertDescription>
+            </Alert>
+          )}
           <Form {...currentForm}>
             <form
               onSubmit={currentForm.handleSubmit(onSubmit)}
@@ -1043,7 +1254,7 @@ export function ApplicationForm() {
                   selectedExamType={selectedExamType}
                   setPassportPreview={setPassportPreview}
                   passportPreview={passportPreview}
-                  fileError={fileError}
+                  fileErrors={fileErrors}
                   validateFile={validateFile}
                   warning={warning}
                   setMedicalLicensePreview={setMedicalLicensePreview}
@@ -1058,6 +1269,7 @@ export function ApplicationForm() {
                   deleteUploadedFile={deleteUploadedFile}
                   onEmailBlur={handleEmailBlur}
                   onFullNameBlur={handleFullNameBlur}
+                  onCandidateIdBlur={handleCandidateIdBlur}
                 />
               ) : (
                 <AktFeilds
@@ -1065,7 +1277,7 @@ export function ApplicationForm() {
                   selectedExamType={selectedExamType}
                   setPassportPreview={setPassportPreview}
                   passportPreview={passportPreview}
-                  fileError={fileError}
+                  fileErrors={fileErrors}
                   validateFile={validateFile}
                   selectedExam={selectedExam}
                   attachmentUrl={attachmentUrl}
@@ -1073,6 +1285,7 @@ export function ApplicationForm() {
                   setAttachments={setAttachments}
                   onEmailBlur={handleEmailBlur}
                   onFullNameBlur={handleFullNameBlur}
+                  onCandidateIdBlur={handleCandidateIdBlur}
                 />
               )}
 
@@ -1188,7 +1401,7 @@ export function ApplicationForm() {
                 ></Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || applicationExists}
+                  disabled={isSubmitting || applicationExists || isEligible === false}
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
@@ -1198,6 +1411,8 @@ export function ApplicationForm() {
                     </>
                   ) : applicationExists ? (
                     "Application Already Exists - Change Email"
+                  ) : isEligible === false ? (
+                    "Not Eligible to Submit"
                   ) : (
                     "Submit"
                   )}

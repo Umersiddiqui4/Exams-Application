@@ -21,15 +21,15 @@ export function useFilePreview(): PreviewResult {
   const validateAndSet = (file: File): boolean => {
     setError(null)
 
-    const validTypes = ["image/jpeg", "image/jpg", "image/png"]
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]
     if (!validTypes.includes(file.type)) {
       setError("Invalid file format. Only PNG and JPG formats are supported.")
       return false
     }
 
-    const maxSize = 2 * 1024 * 1024
+    const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-      setError("File size exceeds 2MB limit. Please choose a smaller file.")
+      setError("File size exceeds 3MB limit. Please choose a smaller file.")
       return false
     }
 

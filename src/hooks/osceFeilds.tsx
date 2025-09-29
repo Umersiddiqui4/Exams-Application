@@ -50,7 +50,7 @@ interface OsceFieldsProps {
   selectedExamType: boolean;
   setPassportPreview: (value: string | null) => void;
   passportPreview: string | null;
-  fileError: string | null;
+  fileErrors: { [key: string]: string };
   validateFile: (file: File, fieldName: string) => void;
   warning: boolean;
   selectedExam: any;
@@ -65,6 +65,7 @@ interface OsceFieldsProps {
   deleteUploadedFile: (inputId: string) => Promise<void>;
   onEmailBlur: () => void;
   onFullNameBlur: () => void;
+  onCandidateIdBlur: (candidateId: string) => void;
 }
 
 export function OsceFeilds(props: OsceFieldsProps) {
@@ -73,7 +74,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
     selectedExamType,
     setPassportPreview,
     passportPreview,
-    fileError,
+    fileErrors,
     validateFile,
     warning,
     selectedExam,
@@ -88,21 +89,34 @@ export function OsceFeilds(props: OsceFieldsProps) {
     deleteUploadedFile,
     onEmailBlur,
     onFullNameBlur,
+    onCandidateIdBlur,
   } = props;
-  const [phone, setPhone] = useState<string | undefined>();
-  const [error, setError] = useState<string | null>(null);
+  const [whatsappPhone, setWhatsappPhone] = useState<string | undefined>();
+  const [emergencyPhone, setEmergencyPhone] = useState<string | undefined>();
+  const [whatsappError, setWhatsappError] = useState<string | null>(null);
+  const [emergencyError, setEmergencyError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const { items: aktPastExams, loadState: aktLoadState } = useAktPastExams();
 
 
 
-  const handleBlury = () => {
-    if (!phone) {
-      setError("Phone number is required");
-    } else if (!isValidPhoneNumber(phone)) {
-      setError("Invalid phone number");
+  const handleWhatsappBlur = () => {
+    if (!whatsappPhone) {
+      setWhatsappError("Phone number is required");
+    } else if (!isValidPhoneNumber(whatsappPhone)) {
+      setWhatsappError("Invalid phone number");
     } else {
-      setError(null);
+      setWhatsappError(null);
+    }
+  };
+
+  const handleEmergencyBlur = () => {
+    if (!emergencyPhone) {
+      setEmergencyError("Phone number is required");
+    } else if (!isValidPhoneNumber(emergencyPhone)) {
+      setEmergencyError("Invalid phone number");
+    } else {
+      setEmergencyError(null);
     }
   };
 
@@ -258,7 +272,8 @@ const getAvailableDatesForField = (
                 {/* Passport Image */}
               <div className="space-y-2">
                 <FormLabel >
-                  Passport Size image:
+                  Passport size image:{" "}
+                  <span className="text-red-500">*</span>
                 </FormLabel>
                 <div className="flex items-center justify-center w-full">
                   {passportPreview ? (
@@ -290,23 +305,28 @@ const getAvailableDatesForField = (
                   ) : (
                     <label
                       htmlFor="passport-image"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      className={
+                              warning ||
+                              currentForm.formState.errors.passportImage
+                                ? "border-red-500 flex flex-col items-center justify-center w-full h- border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                : "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"}
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        
                         <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
                         <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
                           <span className="font-semibold">Click to upload</span>{" "}
                           or drag and drop
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          PNG, JPG (MAX. 2MB)
+                          JPG, JPEG and png (MAX. 3MB)
                         </p>
                       </div>
                       <input
                         id="passport-image"
                         type="file"
                         className="hidden"
-                        accept="image/png, image/jpeg, image/jpg"
+                        accept="image/jpeg, image/jpg, image/png"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             validateFile(e.target.files[0], "passport-image");
@@ -316,8 +336,8 @@ const getAvailableDatesForField = (
                     </label>
                   )}
                 </div>
-                {fileError && (
-                  <p className="text-sm text-red-500 mt-1">{fileError}</p>
+                {fileErrors["PASSPORT IMAGE"] && (
+                  <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT IMAGE"]}</p>
                 )}
               </div>
 
@@ -355,6 +375,12 @@ const getAvailableDatesForField = (
                           const value = e.target.value;
                           if (value.length <= 7) {
                             field.onChange(value);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value) {
+                            onCandidateIdBlur(value);
                           }
                         }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
@@ -527,18 +553,18 @@ const getAvailableDatesForField = (
                             international
                             countryCallingCodeEditable={true}
                             value={field.value}
-                            onBlur={handleBlury}
+                            onBlur={handleEmergencyBlur}
                             onChange={(value) => {
                               field.onChange(value);
-                              setPhone(value);
+                              setEmergencyPhone(value);
                             }}
                             className="flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </FormControl>
                       <FormMessage>
-                        {error && (
-                          <span className="text-sm text-red-500">{error}</span>
+                        {emergencyError && (
+                          <span className="text-sm text-red-500">{emergencyError}</span>
                         )}
                       </FormMessage>
                     </FormItem>
@@ -558,7 +584,7 @@ const getAvailableDatesForField = (
                       <FormControl>
                         <div
                           className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.whatsapp
+                            currentForm.formState.errors.emergencyContact
                               ? "border-red-500 dark:border-red-700"
                               : ""
                           }`}
@@ -567,18 +593,18 @@ const getAvailableDatesForField = (
                             international
                             countryCallingCodeEditable={true}
                             value={field.value}
-                            onBlur={handleBlury}
+                            onBlur={handleWhatsappBlur}
                             onChange={(value) => {
                               field.onChange(value);
-                              setPhone(value);
+                              setWhatsappPhone(value);
                             }}
                             className="flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </FormControl>
                       <FormMessage>
-                        {error && (
-                          <span className="text-sm text-red-500">{error}</span>
+                        {whatsappError && (
+                          <span className="text-sm text-red-500">{whatsappError}</span>
                         )}
                       </FormMessage>
                     </FormItem>
@@ -906,7 +932,7 @@ const getAvailableDatesForField = (
                   name="preferenceDate1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preference Date 1</FormLabel>
+                      <FormLabel>Preference date 1</FormLabel>
                       <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger
@@ -941,7 +967,7 @@ const getAvailableDatesForField = (
                   name="preferenceDate2"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preference Date 2</FormLabel>
+                      <FormLabel>Preference date 2</FormLabel>
                       <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger
@@ -976,7 +1002,7 @@ const getAvailableDatesForField = (
                   name="preferenceDate3"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preference Date 3</FormLabel>
+                      <FormLabel>Preference date 3</FormLabel>
                       <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger
@@ -1008,10 +1034,10 @@ const getAvailableDatesForField = (
               </div>
 
               <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-100 dark:border-amber-800">
-                <h4 className="font-medium text-amber-800 dark:text-amber-300 mb-2">
+                <h4 className="font-medium mb-2">
                   PLEASE NOTE
                 </h4>
-                <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-300">
+                <ul className="list-disc list-inside space-y-2 text-sm">
                   <li>
                     The number of seats are limited and slots will be allocated
                     on the "First Come First Served" basis.
@@ -1147,9 +1173,12 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Valid Medical license: (Use .png or .jpg only){" "}
+                        Valid medical license {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
+                      {fileErrors["MEDICAL LICENSE"] && (
+                        <p className="text-sm text-red-500">{fileErrors["MEDICAL LICENSE"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {medicalLicensePreview ? (
                           <div className="relative w-full">
@@ -1194,21 +1223,24 @@ const getAvailableDatesForField = (
                             }
                           >
                             <div
-                              className={`flex flex-col items-center justify-center pt-5 pb-6 `}
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
                             >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
                                 <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG and png (MAX. 3MB)
+                                </p>
                               </p>
                             </div>
                             <input
                               id="medical-license"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1225,8 +1257,11 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Part I passing email: (Use .png or .jpg only)
+                        Part I passing email
                       </FormLabel>
+                      {fileErrors["PART1 EMAIL"] && (
+                        <p className="text-sm text-red-500">{fileErrors["PART1 EMAIL"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {part1EmailPreview ? (
                           <div className="relative w-full">
@@ -1267,20 +1302,25 @@ const getAvailableDatesForField = (
                               "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 "
                             }
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
+                            >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                <span className="font-semibold">
+                                <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG and png (MAX. 3MB)
+                                </p>
                               </p>
                             </div>
                             <input
                               id="part1-email"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1301,9 +1341,12 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Passport bio Page (Valid): (Use .png or .jpg only){" "}
+                        Passport bio page {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
+                      {fileErrors["PASSPORT BIO"] && (
+                        <p className="text-sm text-red-500">{fileErrors["PASSPORT BIO"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {passportBioPreview ? (
                           <div className="relative w-full">
@@ -1347,20 +1390,25 @@ const getAvailableDatesForField = (
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
+                            >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                <span className="font-semibold">
+                                <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG and png (MAX. 3MB)
+                                </p>
                               </p>
                             </div>
                             <input
                               id="passport-bio"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1377,9 +1425,12 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Signature: (Use .png or .jpg only){" "}
+                        Signature {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
+                      {fileErrors["SIGNATURE"] && (
+                        <p className="text-sm text-red-500">{fileErrors["SIGNATURE"]}</p>
+                      )}
                       <div className="flex items-center justify-center w-full">
                         {signaturePreview ? (
                           <div className="relative w-full">
@@ -1417,20 +1468,25 @@ const getAvailableDatesForField = (
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                             <div
+                              className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
+                            >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
                               <p className="text-xs text-slate-500 dark:text-slate-400">
-                                <span className="font-semibold">
+                                <span className={`font-semibold`}>
                                   Click to upload
                                 </span>{" "}
-                                or drag and drop
+                                <br></br>
+                                <p>
+                                JPG, JPEG and png (MAX. 3MB)
+                                </p>
                               </p>
                             </div>
                             <input
                               id="signature"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(e.target.files[0], "signature");
@@ -1449,12 +1505,15 @@ const getAvailableDatesForField = (
                       name="agreementName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full name: </FormLabel>
+                          <FormLabel>Full name:{" "}<span className="text-red-500">*</span> </FormLabel>
                           <FormControl>
                             <Input
                               placeholder="Enter Full name"
                               {...field}
-                              className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500`}
+                              className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
+                          currentForm.formState.errors.agreementName
+                            ? "border-red-500 dark:border-red-700"
+                            : ""}`}
                             />
                           </FormControl>
                           <FormMessage />

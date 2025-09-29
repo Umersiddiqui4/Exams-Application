@@ -82,7 +82,7 @@ export function Dashboard() {
               <div className="text-3xl p-3">All Batch Status</div>
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 mb-6">
                 <StatusCard
-                  title="Total Requests"
+                  title="Total Applications"
                   value={stats.approved + stats.rejected + stats.submitted + stats.underReview}
                   color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("totalAll")}
@@ -90,7 +90,7 @@ export function Dashboard() {
                   icon={ClipboardList}
                 />
                 <StatusCard
-                  title="Approved Requests"
+                  title="Approved Applications"
                   value={stats.approved}
                   color="bg-green-600 dark:bg-green-700"
                   onClick={() => setActiveFilter("totalApproved")}
@@ -98,7 +98,7 @@ export function Dashboard() {
                   icon={CheckCircle}
                 />
                 <StatusCard
-                  title="Rejected Requests"
+                  title="Rejected Applications"
                   value={stats.rejected}
                   color="bg-red-600 dark:bg-red-700"
                   onClick={() => setActiveFilter("totalRejected")}
@@ -106,7 +106,7 @@ export function Dashboard() {
                   icon={XCircle}
                 />
                 <StatusCard
-                  title="Submitted Requests"
+                  title="Submitted Applications"
                   value={stats.submitted}
                   color="bg-blue-600 dark:bg-blue-700"
                   onClick={() => setActiveFilter("totalSubmitted")}
@@ -114,7 +114,7 @@ export function Dashboard() {
                   icon={FileText}
                 />
                 <StatusCard
-                  title="Under Review Requests"
+                  title="Under Review Applications"
                   value={stats.underReview}
                   color="bg-purple-600 dark:bg-purple-700"
                   onClick={() => setActiveFilter("totalUnderReview")}
@@ -122,7 +122,7 @@ export function Dashboard() {
                   icon={Eye}
                 />
                 <StatusCard
-                  title="Waiting Requests"
+                  title="Waiting Applications"
                   value={stats.pending}
                   color="bg-yellow-600 dark:bg-yellow-700"
                   onClick={() => setActiveFilter("totalWaiting")}
@@ -140,7 +140,7 @@ export function Dashboard() {
               )}
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 mb-6">
                 <StatusCard
-                  title="Total Requests"
+                  title="Total Applications"
                   value={currentExam.approved + currentExam.rejected + currentExam.submitted + currentExam.underReview}
                   color="bg-[#5c347d] dark:bg-[#3b1f52]"
                   onClick={() => setActiveFilter("currentTotal")}
@@ -148,7 +148,7 @@ export function Dashboard() {
                   icon={ClipboardList}
                 />
                 <StatusCard
-                  title="Approved Requests"
+                  title="Approved Applications"
                   value={currentExam.approved}
                   color="bg-green-600 dark:bg-green-700"
                   onClick={() => setActiveFilter("currentApproved")}
@@ -156,7 +156,7 @@ export function Dashboard() {
                   icon={CheckCircle}
                 />
                 <StatusCard
-                  title="Rejected Requests"
+                  title="Rejected Applications"
                   value={currentExam.rejected}
                   color="bg-red-600 dark:bg-red-700"
                   onClick={() => setActiveFilter("currentRejected")}
@@ -164,7 +164,7 @@ export function Dashboard() {
                   icon={XCircle}
                 />
                 <StatusCard
-                  title="Submitted Requests"
+                  title="Submitted Applications"
                   value={currentExam.submitted}
                   color="bg-blue-600 dark:bg-blue-700"
                   onClick={() => setActiveFilter("currentSubmitted")}
@@ -172,7 +172,7 @@ export function Dashboard() {
                   icon={FileText}
                 />
                 <StatusCard
-                  title="Under Review Requests"
+                  title="Under Review Applications"
                   value={currentExam.underReview}
                   color="bg-purple-600 dark:bg-purple-700"
                   onClick={() => setActiveFilter("currentUnderReview")}
@@ -180,7 +180,7 @@ export function Dashboard() {
                   icon={Eye}
                 />
                 <StatusCard
-                  title="Waiting Requests"
+                  title="Waiting Applications"
                   value={currentExam.pending}
                   color="bg-yellow-600 dark:bg-yellow-700"
                   onClick={() => setActiveFilter("currentWaiting")}
