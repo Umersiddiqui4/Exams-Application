@@ -322,11 +322,6 @@ export function ApplicationForm() {
       if (data.canApply) {
         // Candidate is eligible
         setIsEligible(true);
-        toast({
-          title: "Eligibility Check Passed",
-          description: "You are eligible to submit the application.",
-          variant: "default",
-        });
       } else {
         // Candidate is not eligible
         setIsEligible(false);
