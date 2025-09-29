@@ -84,6 +84,7 @@ export function ApplicationForm() {
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const [applicationExists, setApplicationExists] = useState(false);
   const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
+  const [isEligible, setIsEligible] = useState<boolean | null>(null); // null = not checked, true = eligible, false = not eligible
   const params = useParams();
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -298,6 +299,51 @@ export function ApplicationForm() {
   // Function to trigger application creation check for full name
   const handleFullNameBlur = () => {
     setTriggerApplicationCheck(true);
+  };
+
+  // Function to check candidate eligibility
+  const handleCandidateIdBlur = async (candidateId: string) => {
+    if (!candidateId || candidateId.trim() === "") return;
+
+    try {
+      const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications/can-apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          candidateId: candidateId.trim(),
+          examOccurrenceId: params.examId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.canApply) {
+        // Candidate is eligible
+        setIsEligible(true);
+        toast({
+          title: "Eligibility Check Passed",
+          description: "You are eligible to submit the application.",
+          variant: "default",
+        });
+      } else {
+        // Candidate is not eligible
+        setIsEligible(false);
+        toast({
+          title: "Eligibility Check Failed",
+          description: data.reason || "You are not eligible to submit the application.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Eligibility check error:", error);
+      toast({
+        title: "Eligibility Check Error",
+        description: "Unable to verify eligibility. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // ✅ Reset form errors when switching exam types
@@ -1126,6 +1172,13 @@ export function ApplicationForm() {
     }
   }, [candidateId]);
 
+  // Reset eligibility when candidate ID changes
+  useEffect(() => {
+    if (isEligible !== null) {
+      setIsEligible(null);
+    }
+  }, [candidateId]);
+
   function test() {
     setTimeout(() => {
       const pdfBlob = document.getElementById("pdf-download-preview-link");
@@ -1220,6 +1273,7 @@ export function ApplicationForm() {
                   deleteUploadedFile={deleteUploadedFile}
                   onEmailBlur={handleEmailBlur}
                   onFullNameBlur={handleFullNameBlur}
+                  onCandidateIdBlur={handleCandidateIdBlur}
                 />
               ) : (
                 <AktFeilds
@@ -1235,6 +1289,7 @@ export function ApplicationForm() {
                   setAttachments={setAttachments}
                   onEmailBlur={handleEmailBlur}
                   onFullNameBlur={handleFullNameBlur}
+                  onCandidateIdBlur={handleCandidateIdBlur}
                 />
               )}
 
@@ -1350,7 +1405,7 @@ export function ApplicationForm() {
                 ></Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || applicationExists}
+                  disabled={isSubmitting || applicationExists || isEligible === false}
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
@@ -1360,6 +1415,8 @@ export function ApplicationForm() {
                     </>
                   ) : applicationExists ? (
                     "Application Already Exists - Change Email"
+                  ) : isEligible === false ? (
+                    "Not Eligible to Submit"
                   ) : (
                     "Submit"
                   )}

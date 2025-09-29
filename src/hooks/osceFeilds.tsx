@@ -65,6 +65,7 @@ interface OsceFieldsProps {
   deleteUploadedFile: (inputId: string) => Promise<void>;
   onEmailBlur: () => void;
   onFullNameBlur: () => void;
+  onCandidateIdBlur: (candidateId: string) => void;
 }
 
 export function OsceFeilds(props: OsceFieldsProps) {
@@ -88,6 +89,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
     deleteUploadedFile,
     onEmailBlur,
     onFullNameBlur,
+    onCandidateIdBlur,
   } = props;
   const [whatsappPhone, setWhatsappPhone] = useState<string | undefined>();
   const [emergencyPhone, setEmergencyPhone] = useState<string | undefined>();
@@ -367,6 +369,12 @@ const getAvailableDatesForField = (
                           const value = e.target.value;
                           if (value.length <= 7) {
                             field.onChange(value);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value) {
+                            onCandidateIdBlur(value);
                           }
                         }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${

@@ -59,6 +59,7 @@ interface AktsFieldsProps {
   attachmentUrl: string | null;
   onEmailBlur?: () => void;
   onFullNameBlur?: () => void;
+  onCandidateIdBlur: (candidateId: string) => void;
 }
 
 
@@ -78,6 +79,7 @@ export function AktFeilds(props: AktsFieldsProps) {
     attachments,
     onEmailBlur,
     onFullNameBlur,
+    onCandidateIdBlur,
   } = props;
 
   const [whatsappPhone, setWhatsappPhone] = useState<string | undefined>();
@@ -277,6 +279,12 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                           const value = e.target.value;
                           if (value.length <= 7) {
                             field.onChange(value);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value) {
+                            onCandidateIdBlur(value);
                           }
                         }}
                         className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
