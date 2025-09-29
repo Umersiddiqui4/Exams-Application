@@ -334,14 +334,14 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                           or drag and drop
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          PNG, JPG (MAX. 2MB)
+                          JPG, JPEG, PNG, GIF, WebP (MAX. 10MB)
                         </p>
                       </div>
                       <input
                         id="passport-image"
                         type="file"
                         className="hidden"
-                        accept="image/png, image/jpeg, image/jpg"
+                        accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             validateFile(e.target.files[0], "attachment", "passport-image");

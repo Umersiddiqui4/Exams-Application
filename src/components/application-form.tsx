@@ -781,21 +781,21 @@ export function ApplicationForm() {
     // Only validate if inputId is in the validation list
     if (validateThese.includes(inputId)) {
       // Check file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
       if (!validTypes.includes(file.type)) {
         setFileError(
-          `Invalid file format. Only PNG and JPG formats are supported.`
+          `Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.`
         );
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
         return false;
       }
 
-      // Check file size (2MB = 2 * 1024 * 1024 bytes)
+      // Check file size (10MB = 10 * 1024 * 1024 bytes)
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
         setFileError(
-          `File size exceeds 2MB limit. Please choose a smaller file.`
+          `File size exceeds 10MB limit. Please choose a smaller file.`
         );
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";

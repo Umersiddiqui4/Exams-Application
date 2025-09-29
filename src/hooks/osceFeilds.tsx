@@ -311,14 +311,14 @@ const getAvailableDatesForField = (
                           or drag and drop
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          PNG, JPG (MAX. 2MB)
+                          JPG, JPEG, PNG, GIF and WebP (MAX. 10MB)
                         </p>
                       </div>
                       <input
                         id="passport-image"
                         type="file"
                         className="hidden"
-                        accept="image/png, image/jpeg, image/jpg"
+                        accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             validateFile(e.target.files[0], "passport-image");
@@ -1220,7 +1220,7 @@ const getAvailableDatesForField = (
                               id="medical-license"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1292,7 +1292,7 @@ const getAvailableDatesForField = (
                               id="part1-email"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1372,7 +1372,7 @@ const getAvailableDatesForField = (
                               id="passport-bio"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1442,7 +1442,7 @@ const getAvailableDatesForField = (
                               id="signature"
                               type="file"
                               className="hidden"
-                              accept="image/png, image/jpeg, image/jpg"
+                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(e.target.files[0], "signature");
