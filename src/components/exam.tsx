@@ -17,7 +17,7 @@ import { useToast } from "./ui/use-toast"
 import { createExamOccurrence } from "@/lib/examOccurrencesApi"
 import { useExamOccurrences } from "@/lib/useExamOccurrences"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { GraduationCap, BookOpen } from "lucide-react"
+import { GraduationCap } from "lucide-react"
 import CreatableSelect from "react-select/creatable"
 import { useExams } from "@/lib/useExam"
 interface DateRange {
