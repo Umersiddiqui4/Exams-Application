@@ -1213,7 +1213,7 @@ export function ApplicationForm() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
               <div className="flex justify-start items-center gap-2">
-                <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
+                <div className="w-18 h-18 sm:h-20 sm:w-20 rounded-fullflex items-center justify-center">
                   <img src="/icon.png" alt="404" />
                 </div>
                 <div className="">
