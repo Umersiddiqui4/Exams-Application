@@ -272,7 +272,8 @@ const getAvailableDatesForField = (
                 {/* Passport Image */}
               <div className="space-y-2">
                 <FormLabel >
-                  Passport Size image:
+                  Passport size image:{" "}
+                  <span className="text-red-500">*</span>
                 </FormLabel>
                 <div className="flex items-center justify-center w-full">
                   {passportPreview ? (
@@ -313,14 +314,15 @@ const getAvailableDatesForField = (
                           or drag and drop
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          JPG, JPEG, PNG, GIF and WebP (MAX. 3MB)
+                          JPG, JPEG and png (MAX. 3MB)
                         </p>
                       </div>
                       <input
                         id="passport-image"
                         type="file"
                         className="hidden"
-                        accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
+                        required
+                        accept="image/jpeg, image/jpg, image/png"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             validateFile(e.target.files[0], "passport-image");
@@ -926,7 +928,7 @@ const getAvailableDatesForField = (
                   name="preferenceDate1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preference Date 1</FormLabel>
+                      <FormLabel>Preference date 1</FormLabel>
                       <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger
@@ -961,7 +963,7 @@ const getAvailableDatesForField = (
                   name="preferenceDate2"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preference Date 2</FormLabel>
+                      <FormLabel>Preference date 2</FormLabel>
                       <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger
@@ -996,7 +998,7 @@ const getAvailableDatesForField = (
                   name="preferenceDate3"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preference Date 3</FormLabel>
+                      <FormLabel>Preference date 3</FormLabel>
                       <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger
@@ -1167,7 +1169,7 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Valid Medical license {" "}
+                        Valid medical license {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       {fileErrors["MEDICAL LICENSE"] && (
@@ -1226,7 +1228,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG, PNG, GIF and WebP
+                                JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1234,7 +1236,7 @@ const getAvailableDatesForField = (
                               id="medical-license"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1306,7 +1308,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG, PNG, GIF and WebP
+                                JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1314,7 +1316,7 @@ const getAvailableDatesForField = (
                               id="part1-email"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1335,7 +1337,7 @@ const getAvailableDatesForField = (
 
                     <div className="space-y-2">
                       <FormLabel>
-                        Passport bio Page {" "}
+                        Passport bio page {" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       {fileErrors["PASSPORT BIO"] && (
@@ -1394,7 +1396,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG, PNG, GIF and WebP
+                                JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1402,7 +1404,7 @@ const getAvailableDatesForField = (
                               id="passport-bio"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1472,7 +1474,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG, PNG, GIF and WebP
+                                JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1480,7 +1482,7 @@ const getAvailableDatesForField = (
                               id="signature"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(e.target.files[0], "signature");
