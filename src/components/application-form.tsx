@@ -665,7 +665,7 @@ export function ApplicationForm() {
           console.warn(`Confirmation attempt ${confirmationAttempts} failed:`, error);
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
-            const errorMessage = `Application confirmation failed after ${maxConfirmationAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`;
+            const errorMessage = `${error instanceof Error ? error.message : 'Unknown error'}`;
 
             toast({
               title: "Application Submission Failed",
