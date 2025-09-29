@@ -84,8 +84,7 @@ export function LoginForm() {
       toast({ title: 'Login Successful', description: `Welcome back, ${res.data.user.firstName}!` });
       navigate("/");
     } catch (err: any) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      dispatch(loginFailure({ message, type: 'general' }));
+      dispatch(loginFailure({ message:'Invalid email or password', type: 'general' }));
     }
   };
 
