@@ -22,7 +22,7 @@ export function StatusCard({ title, value, color, onClick, active = false, icon:
       )}
       onClick={onClick}
     >
-      <div className="flex items-center space-x-3">
+      <div className="flex items-start space-x-3">
         {Icon && (
           <div className="bg-white/20 dark:bg-black/20 p-2 rounded-full">
             <Icon className="h-5 w-5 text-white" />
