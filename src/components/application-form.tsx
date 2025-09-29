@@ -688,13 +688,6 @@ export function ApplicationForm() {
           if (!confirmationResponse.ok) {
             const errorData = await confirmationResponse.json().catch(() => ({}));
             const errorMessage = errorData.message || `Application confirmation failed: ${confirmationResponse.status} ${confirmationResponse.statusText}`;
-
-            toast({
-              title: "Application Submission Failed",
-              description: errorMessage,
-              variant: "destructive",
-            });
-
             throw new Error(errorMessage);
           }
 
@@ -705,13 +698,6 @@ export function ApplicationForm() {
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
             const errorMessage = `${error instanceof Error ? error.message : 'Unknown error'}`;
-
-            toast({
-              title: "Application Submission Failed",
-              description: errorMessage,
-              variant: "destructive",
-            });
-
             throw new Error(errorMessage);
           }
 
