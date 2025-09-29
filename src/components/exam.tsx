@@ -519,7 +519,7 @@ const selectStyles = {
                       onValueChange={(value) => handleExamTypeChange(value as "OSCE" | "AKTs")}
                       className="w-full"
                     >
-                      <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100 dark:bg-slate-800">
+                      <TabsList className="grid w-full grid-cols-1 mb-6 bg-slate-100 dark:bg-slate-800">
                         <TabsTrigger
                           value="OSCE"
                           className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
@@ -527,13 +527,13 @@ const selectStyles = {
                           <GraduationCap className="h-4 w-4" />
                           <span>OSCE Exam</span>
                         </TabsTrigger>
-                        <TabsTrigger
+                        {/* <TabsTrigger
                           value="AKTs"
                           className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
                         >
                           <BookOpen className="h-4 w-4" />
                           <span>AKTs Exam</span>
-                        </TabsTrigger>
+                        </TabsTrigger> */}
                       </TabsList>
                       <TabsContent value="OSCE">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
