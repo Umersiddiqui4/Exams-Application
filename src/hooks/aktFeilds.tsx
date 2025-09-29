@@ -80,16 +80,28 @@ export function AktFeilds(props: AktsFieldsProps) {
     onFullNameBlur,
   } = props;
 
-  const [phone, setPhone] = useState<string | undefined>();
-  const [error, setError] = useState<string | null>(null);
+  const [whatsappPhone, setWhatsappPhone] = useState<string | undefined>();
+  const [emergencyPhone, setEmergencyPhone] = useState<string | undefined>();
+  const [whatsappError, setWhatsappError] = useState<string | null>(null);
+  const [emergencyError, setEmergencyError] = useState<string | null>(null);
 
-  const handleBlury = () => {
-    if (!phone) {
-      setError("Phone number is required");
-    } else if (!isValidPhoneNumber(phone)) {
-      setError("Invalid phone number");
+  const handleWhatsappBlur = () => {
+    if (!whatsappPhone) {
+      setWhatsappError("Phone number is required");
+    } else if (!isValidPhoneNumber(whatsappPhone)) {
+      setWhatsappError("Invalid phone number");
     } else {
-      setError(null);
+      setWhatsappError(null);
+    }
+  };
+
+  const handleEmergencyBlur = () => {
+    if (!emergencyPhone) {
+      setEmergencyError("Phone number is required");
+    } else if (!isValidPhoneNumber(emergencyPhone)) {
+      setEmergencyError("Invalid phone number");
+    } else {
+      setEmergencyError(null);
     }
   };
 
@@ -648,18 +660,18 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                             international
                             countryCallingCodeEditable={true}
                             value={field.value}
-                            onBlur={handleBlury}
+                            onBlur={handleEmergencyBlur}
                             onChange={(value) => {
                               field.onChange(value);
-                              setPhone(value);
+                              setEmergencyPhone(value);
                             }}
                             className="flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </FormControl>
                       <FormMessage>
-                        {error && (
-                          <span className="text-sm text-red-500">{error}</span>
+                        {emergencyError && (
+                          <span className="text-sm text-red-500">{emergencyError}</span>
                         )}
                       </FormMessage>
                     </FormItem>
@@ -679,7 +691,7 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                       <FormControl>
                         <div
                           className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.whatsapp
+                            currentForm.formState.errors.emergencyContact
                               ? "border-red-500 dark:border-red-700"
                               : ""
                           }`}
@@ -688,18 +700,18 @@ console.log("Rendering AktFeilds with attachments:", attachments);
                             international
                             countryCallingCodeEditable={true}
                             value={field.value}
-                            onBlur={handleBlury}
+                            onBlur={handleWhatsappBlur}
                             onChange={(value) => {
                               field.onChange(value);
-                              setPhone(value);
+                              setWhatsappPhone(value);
                             }}
                             className="flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </FormControl>
                       <FormMessage>
-                        {error && (
-                          <span className="text-sm text-red-500">{error}</span>
+                        {whatsappError && (
+                          <span className="text-sm text-red-500">{whatsappError}</span>
                         )}
                       </FormMessage>
                     </FormItem>
