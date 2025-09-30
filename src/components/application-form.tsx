@@ -364,6 +364,9 @@ export function ApplicationForm() {
     if (applicationId && pendingUploads.length > 0) {
       const processPendingUploads = async () => {
         for (const { file, inputId, title } of pendingUploads) {
+          // Check if file is PDF
+          const isPdf = file.type === 'application/pdf';
+
           // Delete existing file if it exists
           const existingFileId = uploadedFileIds[inputId];
           if (existingFileId) {
@@ -381,16 +384,13 @@ export function ApplicationForm() {
           }
 
           // Determine filename based on exam type and input
-
           let fileName = file.name;
 
           if (selectedExamType && inputId === "attachment") {
-
             // For AKT attachments, find the attachment with the matching file
-    if (title) {
-      fileName = title; // ✅ direct use karo
-    }
-
+            if (title) {
+              fileName = title; // ✅ direct use karo
+            }
           } else if (!selectedExamType) {
             // For OSCE applications, use standard titles for all file types
             switch (inputId) {
@@ -414,20 +414,40 @@ export function ApplicationForm() {
             }
           }
 
-          // Upload to API
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('examOccurrenceId', params.examId as string);
-          formData.append('entityType', 'application');
-          formData.append('entityId', applicationId as string);
-          formData.append('category', getCategory(inputId));
-          formData.append('fileName', fileName);
+          // Upload to API based on file type
+          let response;
 
-          try {
-            const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+          if (isPdf) {
+            // PDF upload using document API - send file with API body
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('examOccurrenceId', params.examId as string);
+            formData.append('entityType', 'user');
+            formData.append('entityId', applicationId as string);
+            formData.append('category', 'user_profile');
+            formData.append('fileName', fileName || file.name);
+
+            response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
               method: 'POST',
               body: formData
             });
+          } else {
+            // Image upload using existing API
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('examOccurrenceId', params.examId as string);
+            formData.append('entityType', 'application');
+            formData.append('entityId', applicationId as string);
+            formData.append('category', getCategory(inputId));
+            formData.append('fileName', fileName);
+
+            response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+              method: 'POST',
+              body: formData
+            });
+          }
+
+          try {
 
             if (!response.ok) {
               console.error(`Upload failed for ${inputId}`);
@@ -456,12 +476,18 @@ export function ApplicationForm() {
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
+            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+            toast({
+              title: "File Upload Failed",
+              description: `${fieldName} upload failed. Please try again.`,
+              variant: "destructive",
+            });
           }
         }
         // Clear pending uploads after processing
         setPendingUploads([]);
       };
-
+    
       processPendingUploads();
     }
   }, [applicationId, pendingUploads, params.examId]);
@@ -820,42 +846,47 @@ export function ApplicationForm() {
     // Reset error for this field
     setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
 
-    // Only validate if inputId is in the validation list
-    if (validateThese.includes(inputId)) {
-      // Check file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-      if (!validTypes.includes(file.type)) {
-        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.` }));
-        const fileInput = document.getElementById(inputId) as HTMLInputElement;
-        if (fileInput) fileInput.value = "";
-        // Clear the preview on validation error
-        if (title === "passport-image") {
-          // AKT passport image
-          setPassportPreview(null);
-        } else {
-          switch (inputId) {
-            case "passport-image":
-              setPassportPreview(null);
-              break;
-            case "medical-license":
-              setMedicalLicensePreview(null);
-              break;
-            case "part1-email":
-              setPart1EmailPreview(null);
-              break;
-            case "passport-bio":
-              setPassportBioPreview(null);
-              break;
-            case "signature":
-              setSignaturePreview(null);
-              break;
-            case "attachment":
-              setAttachmentUrl(null);
-              break;
+    // Check if file is PDF
+    const isPdf = file.type === 'application/pdf';
+
+    // Only validate if inputId is in the validation list or if it's a PDF
+    if (validateThese.includes(inputId) || isPdf) {
+      // Check file type for images
+      if (!isPdf) {
+        const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+        const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+        if (!validTypes.includes(file.type)) {
+          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.` }));
+          const fileInput = document.getElementById(inputId) as HTMLInputElement;
+          if (fileInput) fileInput.value = "";
+          // Clear the preview on validation error
+          if (title === "passport-image") {
+            // AKT passport image
+            setPassportPreview(null);
+          } else {
+            switch (inputId) {
+              case "passport-image":
+                setPassportPreview(null);
+                break;
+              case "medical-license":
+                setMedicalLicensePreview(null);
+                break;
+              case "part1-email":
+                setPart1EmailPreview(null);
+                break;
+              case "passport-bio":
+                setPassportBioPreview(null);
+                break;
+              case "signature":
+                setSignaturePreview(null);
+                break;
+              case "attachment":
+                setAttachmentUrl(null);
+                break;
+            }
           }
+          return false;
         }
-        return false;
       }
 
       // Check file size (10MB = 10 * 1024 * 1024 bytes)
@@ -983,27 +1014,47 @@ export function ApplicationForm() {
       }
     }
 
-    // Upload to API
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('examOccurrenceId', params.examId as string);
-    formData.append('entityType', 'application');
-    formData.append('entityId', applicationId as string);
-    formData.append('category', getCategory(inputId));
-    const matchedAttachment = attachments.find(
-      (att: any) => att.file === file || att.id === inputId
-    );
+    // Upload to API based on file type
+    let response;
 
-    // File name preference: attachment title > computed fileName > actual file name
-    const finalFileName = matchedAttachment?.title || fileName || file.name;
+    if (isPdf) {
+      // PDF upload using document API - send file with API body
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('examOccurrenceId', params.examId as string);
+      formData.append('entityType', 'user');
+      formData.append('entityId', applicationId as string);
+      formData.append('category', 'user_profile');
+      formData.append('fileName', fileName || file.name);
 
-    formData.append('fileName', finalFileName);
-
-    try {
-      const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+      response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
         method: 'POST',
         body: formData
       });
+    } else {
+      // Image upload using existing API
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('examOccurrenceId', params.examId as string);
+      formData.append('entityType', 'application');
+      formData.append('entityId', applicationId as string);
+      formData.append('category', getCategory(inputId));
+      const matchedAttachment = attachments.find(
+        (att: any) => att.file === file || att.id === inputId
+      );
+
+      // File name preference: attachment title > computed fileName > actual file name
+      const finalFileName = matchedAttachment?.title || fileName || file.name;
+
+      formData.append('fileName', finalFileName);
+
+      response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+        method: 'POST',
+        body: formData
+      });
+    }
+
+    try {
 
       if (!response.ok) {
         const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
@@ -1052,7 +1103,7 @@ export function ApplicationForm() {
         }
 
         toast({
-          title: "File Upload Failed",
+          title: isPdf ? "PDF Upload Failed" : "File Upload Failed",
           description: errorMessage,
           variant: "destructive",
         });
@@ -1071,6 +1122,21 @@ export function ApplicationForm() {
 
       // Clear any previous errors for this field
       setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
+
+      // Show success message for PDF uploads
+      if (isPdf) {
+        toast({
+          title: "PDF Uploaded Successfully",
+          description: `${fieldName} PDF has been uploaded successfully.`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "File Uploaded Successfully",
+          description: `${fieldName} has been uploaded successfully.`,
+          variant: "default",
+        });
+      }
 
       // Keep the local preview URL, don't replace with server URL
     } catch (error) {

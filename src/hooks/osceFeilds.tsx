@@ -1240,7 +1240,7 @@ const getAvailableDatesForField = (
                               id="medical-license"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1320,7 +1320,7 @@ const getAvailableDatesForField = (
                               id="part1-email"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1408,7 +1408,7 @@ const getAvailableDatesForField = (
                               id="passport-bio"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1486,7 +1486,7 @@ const getAvailableDatesForField = (
                               id="signature"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(e.target.files[0], "signature");
