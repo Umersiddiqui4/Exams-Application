@@ -422,9 +422,9 @@ export function ApplicationForm() {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('examOccurrenceId', params.examId as string);
-            formData.append('entityType', 'user');
+            formData.append('entityType', 'application');
             formData.append('entityId', applicationId as string);
-            formData.append('category', 'user_profile');
+            formData.append('category', 'application_other');
             formData.append('fileName', fileName || file.name);
 
             response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
@@ -1022,9 +1022,9 @@ export function ApplicationForm() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('examOccurrenceId', params.examId as string);
-      formData.append('entityType', 'user');
+      formData.append('entityType', 'application');
       formData.append('entityId', applicationId as string);
-      formData.append('category', 'user_profile');
+      formData.append('category', 'application_other');
       formData.append('fileName', fileName || file.name);
 
       response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
