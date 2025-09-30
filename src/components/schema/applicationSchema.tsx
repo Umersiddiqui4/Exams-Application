@@ -65,9 +65,7 @@ const aktsFormSchema = z.object({
 
   // Agreement
   agreementName: z.string().optional(),
-  agreementDate: z.date({
-    required_error: "Date is required",
-  }),
+  agreementDate: z.date().optional(),
   attachments: z.array(z.any()).optional()
 })
 
@@ -125,10 +123,8 @@ const formSchema = z.object({
   signature: z.any(),
 
   // Agreement
-  agreementName: z.string().min(2, "Full name is required"),
-  agreementDate: z.date({
-    required_error: "Date is required",
-  }),
+  agreementName: z.string().optional(),
+  agreementDate: z.date().optional(),
   termsAgreed: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions",
   }),
@@ -167,7 +163,6 @@ export const formDefaultValues: FormValues = {
   medicalLicense: undefined,
   passportBioPage: undefined,
   signature: undefined,
-  agreementName: "John Doe",
   agreementDate: new Date(),
   termsAgreed: true,
 };
