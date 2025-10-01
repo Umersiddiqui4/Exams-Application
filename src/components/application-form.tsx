@@ -71,6 +71,10 @@ export function ApplicationForm() {
     "https://pbs.twimg.com/media/FlZ2oDPakAAGGor.jpg"
   );
   const [signaturePreview, setSignaturePreview] = useState<string | null>("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREb9M5D4J58j_78uhZNxsLXUXNMuFuF2RWTg&s");
+  const [signatureIsPdf, setSignatureIsPdf] = useState<boolean | null>(null);
+  const [medicalLicenseIsPdf, setMedicalLicenseIsPdf] = useState<boolean | null>(null);
+  const [part1EmailIsPdf, setPart1EmailIsPdf] = useState<boolean | null>(null);
+  const [passportBioIsPdf, setPassportBioIsPdf] = useState<boolean | null>(null);
   const [pdfGenerating] = useState(false);
   const [warning, setWarning] = useState(false);
   const [examOccurrence, setExamOccurrence] = useState<Availability | null>(null);
@@ -853,10 +857,10 @@ export function ApplicationForm() {
     if (validateThese.includes(inputId) || isPdf) {
       // Check file type for images
       if (!isPdf) {
-        const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+        const validTypes = ["image/jpeg", "image/jpg", "image/png" ];
         const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
         if (!validTypes.includes(file.type)) {
-          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.` }));
+          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG and PNG formats are supported.` }));
           const fileInput = document.getElementById(inputId) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
           // Clear the preview on validation error
@@ -870,21 +874,35 @@ export function ApplicationForm() {
                 break;
               case "medical-license":
                 setMedicalLicensePreview(null);
+                setMedicalLicenseIsPdf(null);
                 break;
               case "part1-email":
                 setPart1EmailPreview(null);
+                setPart1EmailIsPdf(null);
                 break;
               case "passport-bio":
                 setPassportBioPreview(null);
+                setPassportBioIsPdf(null);
                 break;
               case "signature":
                 setSignaturePreview(null);
+                setSignatureIsPdf(null);
                 break;
               case "attachment":
                 setAttachmentUrl(null);
                 break;
             }
           }
+          return false;
+        }
+      } else {
+        // For PDFs, reject for passport-image
+        if (inputId === "passport-image") {
+          const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: PDF files are not allowed for this field.` }));
+          const fileInput = document.getElementById(inputId) as HTMLInputElement;
+          if (fileInput) fileInput.value = "";
+          setPassportPreview(null);
           return false;
         }
       }
@@ -906,15 +924,19 @@ export function ApplicationForm() {
               break;
             case "medical-license":
               setMedicalLicensePreview(null);
+              setMedicalLicenseIsPdf(null);
               break;
             case "part1-email":
               setPart1EmailPreview(null);
+              setPart1EmailIsPdf(null);
               break;
             case "passport-bio":
               setPassportBioPreview(null);
+              setPassportBioIsPdf(null);
               break;
             case "signature":
               setSignaturePreview(null);
+              setSignatureIsPdf(null);
               break;
             case "attachment":
               setAttachmentUrl(null);
@@ -927,7 +949,8 @@ export function ApplicationForm() {
 
     // Create local preview URL immediately
     const localPreviewUrl = URL.createObjectURL(file);
-
+    console.log("localPreviewUrl", localPreviewUrl);
+    
     // Set immediate preview with local URL
     if (title === "passport-image") {
       // AKT passport image
@@ -939,15 +962,19 @@ export function ApplicationForm() {
           break;
         case "medical-license":
           setMedicalLicensePreview(localPreviewUrl);
+          setMedicalLicenseIsPdf(isPdf);
           break;
         case "part1-email":
           setPart1EmailPreview(localPreviewUrl);
+          setPart1EmailIsPdf(isPdf);
           break;
         case "passport-bio":
           setPassportBioPreview(localPreviewUrl);
+          setPassportBioIsPdf(isPdf);
           break;
         case "signature":
           setSignaturePreview(localPreviewUrl);
+          setSignatureIsPdf(isPdf);
           break;
         case "attachment":
           setAttachmentUrl(localPreviewUrl);
@@ -1086,15 +1113,19 @@ export function ApplicationForm() {
               break;
             case "medical-license":
               setMedicalLicensePreview(null);
+              setMedicalLicenseIsPdf(null);
               break;
             case "part1-email":
               setPart1EmailPreview(null);
+              setPart1EmailIsPdf(null);
               break;
             case "passport-bio":
               setPassportBioPreview(null);
+              setPassportBioIsPdf(null);
               break;
             case "signature":
               setSignaturePreview(null);
+              setSignatureIsPdf(null);
               break;
             case "attachment":
               setAttachmentUrl(null);
@@ -1156,15 +1187,19 @@ export function ApplicationForm() {
             break;
           case "medical-license":
             setMedicalLicensePreview(null);
+            setMedicalLicenseIsPdf(null);
             break;
           case "part1-email":
             setPart1EmailPreview(null);
+            setPart1EmailIsPdf(null);
             break;
           case "passport-bio":
             setPassportBioPreview(null);
+            setPassportBioIsPdf(null);
             break;
           case "signature":
             setSignaturePreview(null);
+            setSignatureIsPdf(null);
             break;
           case "attachment":
             setAttachmentUrl(null);
@@ -1313,6 +1348,14 @@ export function ApplicationForm() {
                   passportBioPreview={passportBioPreview}
                   setSignaturePreview={setSignaturePreview}
                   signaturePreview={signaturePreview}
+                  signatureIsPdf={signatureIsPdf}
+                  setSignatureIsPdf={setSignatureIsPdf}
+                  medicalLicenseIsPdf={medicalLicenseIsPdf}
+                  setMedicalLicenseIsPdf={setMedicalLicenseIsPdf}
+                  part1EmailIsPdf={part1EmailIsPdf}
+                  setPart1EmailIsPdf={setPart1EmailIsPdf}
+                  passportBioIsPdf={passportBioIsPdf}
+                  setPassportBioIsPdf={setPassportBioIsPdf}
                   selectedExam={selectedExam}
                   deleteUploadedFile={deleteUploadedFile}
                   onEmailBlur={handleEmailBlur}
@@ -1439,9 +1482,14 @@ export function ApplicationForm() {
                         currentForm.reset();
                         setPassportPreview(null);
                         setMedicalLicensePreview(null);
+                        setMedicalLicenseIsPdf(null);
                         setPart1EmailPreview(null);
+                        setPart1EmailIsPdf(null);
                         setPassportBioPreview(null);
+                        setPassportBioIsPdf(null);
                         setSignaturePreview(null);
+                        setSignatureIsPdf(null);
+                        setSignatureIsPdf(null);
                       }
                     }, 500); // Increased timeout to ensure PDF generation completes
                   }}

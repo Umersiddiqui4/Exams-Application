@@ -62,6 +62,14 @@ interface OsceFieldsProps {
   passportBioPreview: string | null;
   setSignaturePreview: (value: string | null) => void;
   signaturePreview: string | null;
+  signatureIsPdf: boolean | null;
+  setSignatureIsPdf: (value: boolean | null) => void;
+  medicalLicenseIsPdf: boolean | null;
+  setMedicalLicenseIsPdf: (value: boolean | null) => void;
+  part1EmailIsPdf: boolean | null;
+  setPart1EmailIsPdf: (value: boolean | null) => void;
+  passportBioIsPdf: boolean | null;
+  setPassportBioIsPdf: (value: boolean | null) => void;
   deleteUploadedFile: (inputId: string) => Promise<void>;
   onEmailBlur: () => void;
   onFullNameBlur: () => void;
@@ -86,6 +94,14 @@ export function OsceFeilds(props: OsceFieldsProps) {
     passportBioPreview,
     setSignaturePreview,
     signaturePreview,
+    signatureIsPdf,
+    setSignatureIsPdf,
+    medicalLicenseIsPdf,
+    setMedicalLicenseIsPdf,
+    part1EmailIsPdf,
+    setPart1EmailIsPdf,
+    passportBioIsPdf,
+    setPassportBioIsPdf,
     deleteUploadedFile,
     onEmailBlur,
     onFullNameBlur,
@@ -1183,17 +1199,24 @@ const getAvailableDatesForField = (
                         {medicalLicensePreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={
-                                  medicalLicensePreview ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt="Medical license preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {medicalLicenseIsPdf ? (
+                                <iframe
+                                  src={medicalLicensePreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={
+                                    medicalLicensePreview ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt="Medical license preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1201,6 +1224,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("medical-license");
                                   setMedicalLicensePreview(null);
+                                  setMedicalLicenseIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "medical-license"
                                   ) as HTMLInputElement;
@@ -1240,7 +1264,7 @@ const getAvailableDatesForField = (
                               id="medical-license"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png, image/pdf"
+                              accept="image/jpeg, image/jpg, image/png"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1266,17 +1290,24 @@ const getAvailableDatesForField = (
                         {part1EmailPreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={
-                                  part1EmailPreview ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt="Part I passing email preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {part1EmailIsPdf ? (
+                                <iframe
+                                  src={part1EmailPreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={
+                                    part1EmailPreview ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt="Part I passing email preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1284,6 +1315,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("part1-email");
                                   setPart1EmailPreview(null);
+                                  setPart1EmailIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "part1-email"
                                   ) as HTMLInputElement;
@@ -1351,17 +1383,24 @@ const getAvailableDatesForField = (
                         {passportBioPreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={
-                                  passportBioPreview ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt="Passport bio page preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {passportBioIsPdf ? (
+                                <iframe
+                                  src={passportBioPreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={
+                                    passportBioPreview ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg" ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt="Passport bio page preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1369,6 +1408,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("passport-bio");
                                   setPassportBioPreview(null);
+                                  setPassportBioIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "passport-bio"
                                   ) as HTMLInputElement;
@@ -1435,11 +1475,18 @@ const getAvailableDatesForField = (
                         {signaturePreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={signaturePreview || "/placeholder.svg"}
-                                alt="Signature preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {signatureIsPdf ? (
+                                <iframe
+                                  src={signaturePreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={signaturePreview || "/placeholder.svg"}
+                                  alt="Signature preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1447,6 +1494,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("signature");
                                   setSignaturePreview(null);
+                                  setSignatureIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "signature"
                                   ) as HTMLInputElement;
