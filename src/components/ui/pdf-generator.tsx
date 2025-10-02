@@ -240,20 +240,6 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementDate
-                    ? format(data.agreementDate, "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Terms Agreed:</Text>
                 <Text style={styles.fieldValue}>
                   {data.termsAgreed ? "Yes" : "No"}
@@ -357,6 +343,9 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
 
  return image.map((imgSrc: string, pageIndex: number) => (
    <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
+       <View style={styles.watermarkContainer} fixed>
+          <Text style={styles.watermarkText}>Preview</Text>
+        </View>
      <View style={styles.documentPage}>
        <Text style={styles.documentPageTitle}>{label}</Text>
        <Image src={imgSrc} style={styles.documentPageImagePrev} />
@@ -599,20 +588,6 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementDate
-                    ? format(data.agreementDate, "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Terms Agreed:</Text>
                 <Text style={styles.fieldValue}>
                   {data.termsAgreed ? "Yes" : "No"}
@@ -686,13 +661,6 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
               </View>
             </View>
           </View>
-          {/* Footer */}
-          {/* <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                This document serves as a preview of your application for the South Asia MRCGP [INT.] Part 2 (OSCE)
-                Examination.
-              </Text>
-            </View> */}
         </View>
       </Page>
 

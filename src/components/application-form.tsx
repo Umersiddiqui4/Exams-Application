@@ -92,6 +92,7 @@ export function ApplicationForm() {
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const [applicationExists, setApplicationExists] = useState(false);
   const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
   const [isEligible, setIsEligible] = useState<boolean | null>(null); // null = not checked, true = eligible, false = not eligible
   const params = useParams();
   const dispatch = useDispatch();
@@ -1425,85 +1426,90 @@ export function ApplicationForm() {
               )}
 
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <PDFDownloadLink
-                  id="pdf-download-link"
-                  document={
-                    !selectedExamType ? (
-                      <ApplicationPDFComplete
-                        data={currentForm.getValues()}
-                        images={pdfImages}
-                      />
-                    ) : (
-                      <ApplicationPDFCompleteAkt
-                        data={currentForm.getValues()}
-                        image={attachments}
-                        images={pdfImages}
-                      />
-                    )
-                  }
-                  fileName="MRCGP_Application_Form.pdf"
-                  className="hidden"
-                >
-                  {({ loading }) => (
-                    <>
-                      {loading || pdfGenerating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Generating PDF...
-                        </>
+                {previewMode && (
+                  <PDFDownloadLink
+                    id="pdf-download-link"
+                    document={
+                      !selectedExamType ? (
+                        <ApplicationPDFComplete
+                          data={currentForm.getValues()}
+                          images={pdfImages}
+                        />
                       ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </>
-                      )}
-                    </>
-                  )}
-                </PDFDownloadLink>
+                        <ApplicationPDFCompleteAkt
+                          data={currentForm.getValues()}
+                          image={attachments}
+                          images={pdfImages}
+                        />
+                      )
+                    }
+                    fileName="MRCGP_Application_Form.pdf"
+                    className="hidden"
+                  >
+                    {({ loading }) => (
+                      <>
+                        {loading || pdfGenerating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </>
+                        )}
+                      </>
+                    )}
+                  </PDFDownloadLink>
+                )}
 
                 {/* // pdf completed // */}
-                <PDFDownloadLink
-                  id="pdf-download-preview-link"
-                  document={
-                    !selectedExamType ? (
-                      <ApplicationPDFCompletePreview
-                        data={currentForm.getValues()}
-                        images={pdfImages}
-                      />
-                    ) : (
-                      <ApplicationPDFCompleteAktPreview
-                        data={aktsForm.getValues()}
-                        image={attachments}
-                        images={pdfImages}
-                      />
-                    )
-                  }
-
-                  
-                  fileName="MRCGP_Application_Form.pdf"
-                  className="hidden"
-                >
-                  {({ loading }) => (
-                    <>
-                      {loading || pdfGenerating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Generating PDF...
-                        </>
+                {previewMode && (
+                  <PDFDownloadLink
+                    id="pdf-download-preview-link"
+                    document={
+                      !selectedExamType ? (
+                        <ApplicationPDFCompletePreview
+                          data={currentForm.getValues()}
+                          images={pdfImages}
+                        />
                       ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </>
-                      )}
-                    </>
-                  )}
-                </PDFDownloadLink>
+                        <ApplicationPDFCompleteAktPreview
+                          data={aktsForm.getValues()}
+                          image={attachments}
+                          images={pdfImages}
+                        />
+                      )
+                    }
+                    fileName="MRCGP_Application_Form.pdf"
+                    className="hidden"
+                  >
+                    {({ loading }) => (
+                      <>
+                        {loading || pdfGenerating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </>
+                        )}
+                      </>
+                    )}
+                  </PDFDownloadLink>
+                )}
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    currentForm.handleSubmit(test)();
+                    setPreviewMode(true);
+                    setTimeout(() => {
+                      currentForm.handleSubmit(test)();
+                    }, 100);
                   }}
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
                 >
