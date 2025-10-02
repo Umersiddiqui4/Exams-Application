@@ -93,6 +93,7 @@ export function ApplicationForm() {
   const [applicationExists, setApplicationExists] = useState(false);
   const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isEligible, setIsEligible] = useState<boolean | null>(null); // null = not checked, true = eligible, false = not eligible
   const params = useParams();
   const dispatch = useDispatch();
@@ -1311,7 +1312,7 @@ export function ApplicationForm() {
         const pdfUrl = pdfBlob.href;
         window.open(pdfUrl, "_blank");
       }
-    }, 200);
+    }, 1000); // Increased timeout to allow PDF generation to complete
   }
 
   if (occurrenceLoading) {
@@ -1505,16 +1506,26 @@ export function ApplicationForm() {
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={isPreviewLoading}
                   onClick={() => {
+                    setIsPreviewLoading(true);
                     setPreviewMode(true);
                     setTimeout(() => {
                       currentForm.handleSubmit(test)();
+                      // Reset loading state after PDF opens
+                      setTimeout(() => {
+                        setIsPreviewLoading(false);
+                      }, 2000); // Allow extra time for window to open
                     }, 100);
                   }}
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
+                  {isPreviewLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Eye className="h-4 w-4 mr-2" />
+                  )}
+                  {isPreviewLoading ? "Generating PDF..." : "Preview"}
                 </Button>
                 <Button
                   type="button"
