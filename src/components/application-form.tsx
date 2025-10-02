@@ -550,10 +550,11 @@ export function ApplicationForm() {
 
     if (!examOccurrence) {
       Swal.fire({
-        title: "Error",
+        title: "Notice",
         text: "Exam occurrence not loaded.",
-        icon: "error",
-        confirmButtonColor: "#6366f1",
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+        confirmButtonText: "OK"
       }).then(() => {
         window.location.href = "https://mrcgpintsouthasia.org/";
       });
@@ -590,10 +591,11 @@ export function ApplicationForm() {
 
       if (!params.examId || !selectedExam) {
         Swal.fire({
-          title: "Error",
+          title: "Notice",
           text: "Exam ID is missing or invalid. Please try again.",
-          icon: "error",
-          confirmButtonColor: "#6366f1",
+          icon: "warning",
+          confirmButtonColor: "#f59e0b",
+          confirmButtonText: "OK"
         }).then(() => {
           window.location.href = "https://mrcgpintsouthasia.org/";
         });
@@ -837,10 +839,11 @@ export function ApplicationForm() {
     } catch (err) {
       console.error("Submission error:", err);
       Swal.fire({
-        title: "Error",
+        title: "Notice",
         text: err instanceof Error ? err.message : "Something went wrong during submission.",
-        icon: "error",
-        confirmButtonColor: "#6366f1",
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+        confirmButtonText: "OK"
       }).then(() => {
         // Redirect to main MRCGP website when user clicks OK
         window.location.href = "https://mrcgpintsouthasia.org/";
