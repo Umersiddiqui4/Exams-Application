@@ -549,7 +549,14 @@ export function ApplicationForm() {
   async function onSubmit(data: AktsFormValues | FormValues) {
 
     if (!examOccurrence) {
-      alert("Exam occurrence not loaded.");
+      Swal.fire({
+        title: "Error",
+        text: "Exam occurrence not loaded.",
+        icon: "error",
+        confirmButtonColor: "#6366f1",
+      }).then(() => {
+        window.location.href = "https://mrcgpintsouthasia.org/";
+      });
       return;
     }
 
@@ -582,7 +589,14 @@ export function ApplicationForm() {
       }
 
       if (!params.examId || !selectedExam) {
-        alert("Exam ID is missing or invalid. Please try again.");
+        Swal.fire({
+          title: "Error",
+          text: "Exam ID is missing or invalid. Please try again.",
+          icon: "error",
+          confirmButtonColor: "#6366f1",
+        }).then(() => {
+          window.location.href = "https://mrcgpintsouthasia.org/";
+        });
         setIsSubmitting(false);
         return;
       }
@@ -827,6 +841,9 @@ export function ApplicationForm() {
         text: err instanceof Error ? err.message : "Something went wrong during submission.",
         icon: "error",
         confirmButtonColor: "#6366f1",
+      }).then(() => {
+        // Redirect to main MRCGP website when user clicks OK
+        window.location.href = "https://mrcgpintsouthasia.org/";
       });
     } finally {
       setIsSubmitting(false);
