@@ -474,15 +474,6 @@ export function ApplicationForm() {
               [inputId]: newFileId
             }));
       
-            // Clear any previous errors and show success
-            // setFileError(null);
-            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-            toast({
-              title: "File Uploaded Successfully",
-              description: `${fieldName} has been uploaded successfully.`,
-              variant: "default",
-            });
-      
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
@@ -1199,21 +1190,6 @@ export function ApplicationForm() {
 
       // Clear any previous errors for this field
       setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
-
-      // Show success message for PDF uploads
-      if (isPdf) {
-        toast({
-          title: "PDF Uploaded Successfully",
-          description: `${fieldName} PDF has been uploaded successfully.`,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "File Uploaded Successfully",
-          description: `${fieldName} has been uploaded successfully.`,
-          variant: "default",
-        });
-      }
 
       // Keep the local preview URL, don't replace with server URL
     } catch (error) {
