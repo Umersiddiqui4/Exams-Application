@@ -17,6 +17,7 @@ import "react-phone-number-input/style.css";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
+import { formatName } from "@/lib/utils";
 import {
   incrementApplicationsCount,
 } from "@/redux/examDataSlice";
@@ -193,7 +194,7 @@ export function ApplicationForm() {
 
           const apiEmailPayload = {
             examOccurrenceId: params.examId,
-            fullName: values.fullName,
+            fullName: formatName(values.fullName),
             email: values.email,
           };
 
