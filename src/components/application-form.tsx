@@ -44,6 +44,7 @@ import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
 import { examOccurrenceAvailability, Availability, getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
+import { pdfToImages } from "./ui/pdfToImage";
 
 
 export type Attachment = {
@@ -53,6 +54,15 @@ export type Attachment = {
   attachmentUrl?: string;
 };
 
+// utils/fileToBase64.ts (ya isi file mein component se upar)
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file); // file -> base64 string
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 
 export function ApplicationForm() {
@@ -61,16 +71,10 @@ export function ApplicationForm() {
   const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [medicalLicensePreview, setMedicalLicensePreview] = useState<
-    string | null
-  >("https://qph.cf2.quoracdn.net/main-qimg-678953c86023297f1bc61f1221e5418b-lq");
-  const [part1EmailPreview, setPart1EmailPreview] = useState<string | null>(
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Ml67pFyDUglzvcBgFNJunKwo2rApmKrPRw&s"
-  );
-  const [passportBioPreview, setPassportBioPreview] = useState<string | null>(
-    "https://pbs.twimg.com/media/FlZ2oDPakAAGGor.jpg"
-  );
-  const [signaturePreview, setSignaturePreview] = useState<string | null>("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREb9M5D4J58j_78uhZNxsLXUXNMuFuF2RWTg&s");
+  const [medicalLicensePreview, setMedicalLicensePreview] = useState<any>(null);
+  const [part1EmailPreview, setPart1EmailPreview] = useState<any>(null);
+  const [passportBioPreview, setPassportBioPreview] = useState<any>(null);
+  const [signaturePreview, setSignaturePreview] = useState<any>(null);
   const [signatureIsPdf, setSignatureIsPdf] = useState<boolean | null>(null);
   const [medicalLicenseIsPdf, setMedicalLicenseIsPdf] = useState<boolean | null>(null);
   const [part1EmailIsPdf, setPart1EmailIsPdf] = useState<boolean | null>(null);
@@ -592,10 +596,10 @@ export function ApplicationForm() {
       // Optional file validation (OSCE-only)
       if (!selectedExamType) {
         if (
-          signaturePreview === null ||
-          medicalLicensePreview === null ||
-          passportBioPreview === null ||
-          passportPreview === null 
+          !signaturePreview ||
+          !medicalLicensePreview ||
+          !passportBioPreview ||
+          !passportPreview
         ) {
           setWarning(true);
           setIsSubmitting(false);
@@ -948,7 +952,7 @@ export function ApplicationForm() {
     }
 
     // Create local preview URL immediately
-    const localPreviewUrl = URL.createObjectURL(file);
+    const localPreviewUrl = await fileToBase64(file);
     console.log("localPreviewUrl", localPreviewUrl);
     
     // Set immediate preview with local URL
@@ -961,19 +965,59 @@ export function ApplicationForm() {
           setPassportPreview(localPreviewUrl);
           break;
         case "medical-license":
-          setMedicalLicensePreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setMedicalLicensePreview(imagesArray); // array of images
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setMedicalLicensePreview([localPreviewUrl]);
+          }
           setMedicalLicenseIsPdf(isPdf);
           break;
         case "part1-email":
-          setPart1EmailPreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPart1EmailPreview(imagesArray);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setPart1EmailPreview([localPreviewUrl]);
+          }
           setPart1EmailIsPdf(isPdf);
           break;
         case "passport-bio":
-          setPassportBioPreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPassportBioPreview(imagesArray);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setPassportBioPreview([localPreviewUrl]);
+          }
           setPassportBioIsPdf(isPdf);
           break;
         case "signature":
-          setSignaturePreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setSignaturePreview(imagesArray);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setSignaturePreview([localPreviewUrl]);
+          }
           setSignatureIsPdf(isPdf);
           break;
         case "attachment":
@@ -1228,10 +1272,10 @@ export function ApplicationForm() {
     // Cleanup function to revoke object URLs when component unmounts
     return () => {
       if (passportPreview) URL.revokeObjectURL(passportPreview);
-      if (medicalLicensePreview) URL.revokeObjectURL(medicalLicensePreview);
-      if (part1EmailPreview) URL.revokeObjectURL(part1EmailPreview);
-      if (passportBioPreview) URL.revokeObjectURL(passportBioPreview);
-      if (signaturePreview) URL.revokeObjectURL(signaturePreview);
+      if (medicalLicensePreview && typeof medicalLicensePreview === 'string') URL.revokeObjectURL(medicalLicensePreview);
+      if (part1EmailPreview && typeof part1EmailPreview === 'string') URL.revokeObjectURL(part1EmailPreview);
+      if (passportBioPreview && typeof passportBioPreview === 'string') URL.revokeObjectURL(passportBioPreview);
+      if (signaturePreview && typeof signaturePreview === 'string') URL.revokeObjectURL(signaturePreview);
     };
   }, [
     passportPreview,

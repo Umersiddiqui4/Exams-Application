@@ -408,6 +408,8 @@ export default function ApplicationTable() {
   }
 
   const ApplicationPDF = ({ data }: any) => {
+    console.log("Generating PDF for data:", data);
+    
     return (
       <Document>
         {/* Main application form page */}

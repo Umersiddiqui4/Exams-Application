@@ -54,14 +54,14 @@ interface OsceFieldsProps {
   validateFile: (file: File, fieldName: string) => void;
   warning: boolean;
   selectedExam: any;
-  setMedicalLicensePreview: (value: string | null) => void;
-  medicalLicensePreview: string | null;
-  setPart1EmailPreview: (value: string | null) => void;
-  part1EmailPreview: string | null;
-  setPassportBioPreview: (value: string | null) => void;
-  passportBioPreview: string | null;
-  setSignaturePreview: (value: string | null) => void;
-  signaturePreview: string | null;
+  setMedicalLicensePreview: (value: any) => void;
+  medicalLicensePreview: any;
+  setPart1EmailPreview: (value: any) => void;
+  part1EmailPreview: any;
+  setPassportBioPreview: (value: any) => void;
+  passportBioPreview: any;
+  setSignaturePreview: (value: any) => void;
+  signaturePreview: any;
   signatureIsPdf: boolean | null;
   setSignatureIsPdf: (value: boolean | null) => void;
   medicalLicenseIsPdf: boolean | null;
@@ -94,7 +94,6 @@ export function OsceFeilds(props: OsceFieldsProps) {
     passportBioPreview,
     setSignaturePreview,
     signaturePreview,
-    signatureIsPdf,
     setSignatureIsPdf,
     medicalLicenseIsPdf,
     setMedicalLicenseIsPdf,
@@ -1199,7 +1198,7 @@ const getAvailableDatesForField = (
                         {medicalLicensePreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              {medicalLicenseIsPdf ? (
+                              {medicalLicenseIsPdf && !Array.isArray(medicalLicensePreview) ? (
                                 <iframe
                                   src={medicalLicensePreview || "/placeholder.svg"}
                                   className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
@@ -1207,10 +1206,7 @@ const getAvailableDatesForField = (
                               ) : (
                                 <img
                                   src={
-                                    medicalLicensePreview ||
-                                    "/placeholder.svg" ||
-                                    "/placeholder.svg" ||
-                                    "/placeholder.svg" ||
+                                    Array.isArray(medicalLicensePreview) ? medicalLicensePreview[0] : medicalLicensePreview ||
                                     "/placeholder.svg"
                                   }
                                   alt="Medical license preview"
@@ -1290,7 +1286,7 @@ const getAvailableDatesForField = (
                         {part1EmailPreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              {part1EmailIsPdf ? (
+                              {part1EmailIsPdf && !Array.isArray(part1EmailPreview) ? (
                                 <iframe
                                   src={part1EmailPreview || "/placeholder.svg"}
                                   className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
@@ -1298,10 +1294,7 @@ const getAvailableDatesForField = (
                               ) : (
                                 <img
                                   src={
-                                    part1EmailPreview ||
-                                    "/placeholder.svg" ||
-                                    "/placeholder.svg" ||
-                                    "/placeholder.svg" ||
+                                    Array.isArray(part1EmailPreview) ? part1EmailPreview[0] : part1EmailPreview ||
                                     "/placeholder.svg"
                                   }
                                   alt="Part I passing email preview"
@@ -1383,7 +1376,7 @@ const getAvailableDatesForField = (
                         {passportBioPreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              {passportBioIsPdf ? (
+                              {passportBioIsPdf && !Array.isArray(passportBioPreview) ? (
                                 <iframe
                                   src={passportBioPreview || "/placeholder.svg"}
                                   className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
@@ -1391,10 +1384,7 @@ const getAvailableDatesForField = (
                               ) : (
                                 <img
                                   src={
-                                    passportBioPreview ||
-                                    "/placeholder.svg" ||
-                                    "/placeholder.svg" ||
-                                    "/placeholder.svg" ||
+                                    Array.isArray(passportBioPreview) ? passportBioPreview[0] : passportBioPreview ||
                                     "/placeholder.svg"
                                   }
                                   alt="Passport bio page preview"
@@ -1475,18 +1465,11 @@ const getAvailableDatesForField = (
                         {signaturePreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              {signatureIsPdf ? (
-                                <iframe
-                                  src={signaturePreview || "/placeholder.svg"}
-                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                                />
-                              ) : (
-                                <img
-                                  src={signaturePreview || "/placeholder.svg"}
-                                  alt="Signature preview"
-                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                                />
-                              )}
+                              <img
+                                src={Array.isArray(signaturePreview) ? signaturePreview[0] : signaturePreview || "/placeholder.svg"}
+                                alt="Signature preview"
+                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                              />
                               <Button
                                 type="button"
                                 variant="outline"

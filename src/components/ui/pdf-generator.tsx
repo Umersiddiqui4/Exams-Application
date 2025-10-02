@@ -8,13 +8,10 @@ import {
   Image,
 } from "@react-pdf/renderer";
 
-const Watermark = () => (
-  <View style={styles.watermarkContainer} fixed>
-    <Text style={styles.watermarkText}>Preview</Text>
-  </View>
-);
 
 export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
+  console.log("Rendering PDF with data:", data, images);
+  
   return (
     <Document>
       {/* Main application form page */}
@@ -333,86 +330,48 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
         </View>
       </Page>
 
-      {/* Each document on its own page */}
-      {images.medicalLicense && (
-        <Page size="A4" style={styles.page}>
-          {/* Watermark */}
-          <Watermark />
 
-          <View style={styles.documentPage}>
-            <Text style={styles.documentPageTitle}>Medical License</Text>
-            <Image
-              src={images.medicalLicense || "/placeholder.svg"}
-              style={styles.documentPageImagePrev}
-            />
-            <View style={styles.documentPageFooter}>
-              <Text style={styles.documentPageFooterText}>
-                {data.fullName} - Candidate ID: {data.candidateId}
-              </Text>
-            </View>
-          </View>
-        </Page>
-      )}
+      {/* Each attachment on its own page */}
+      {images &&
+        Object.entries(images).map(([key, value], index) => {
+          const label =
+            key === "passport"
+              ? "Passport Photo"
+              : key === "medicalLicense"
+                ? "Medical License"
+                : key === "part1Email"
+                  ? "Part 1 Passing Email"
+                  : key === "passportBio"
+                    ? "Passport Bio Page"
+                    : key === "signature"
+                      ? "Signature"
+                      : `Attachment ${index + 1}`
 
-      {images.part1Email && (
-        <Page size="A4" style={styles.page}>
-          {/* Watermark */}
-          <Watermark />
+         const image: string[] = Array.isArray(value)
+   ? value
+   : value
+     ? [value]
+     : [];
 
-          <View style={styles.documentPage}>
-            <Text style={styles.documentPageTitle}>Part 1 Passing Email</Text>
-            <Image
-              src={images.part1Email || "/placeholder.svg"}
-              style={styles.documentPageImagePrev}
-            />
-            <View style={styles.documentPageFooter}>
-              <Text style={styles.documentPageFooterText}>
-                {data.fullName} - Candidate ID: {data.candidateId}
-              </Text>
-            </View>
-          </View>
-        </Page>
-      )}
+ if (image.length === 0) return null;
 
-      {images.passportBio && (
-        <Page size="A4" style={styles.page}>
-          {/* Watermark */}
-          <Watermark />
+ return image.map((imgSrc: string, pageIndex: number) => (
+   <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
+     <View style={styles.documentPage}>
+       <Text style={styles.documentPageTitle}>{label}</Text>
+       <Image src={imgSrc} style={styles.documentPageImagePrev} />
+       <View style={styles.documentPageFooter}>
+         <Text style={styles.documentPageFooterText}>
+           {data.fullName} - Candidate ID: {data.candidateId}
+         </Text>
+       </View>
+     </View>
+   </Page>
+ ));
+       })}
 
-          <View style={styles.documentPage}>
-            <Text style={styles.documentPageTitle}>Passport Bio Page</Text>
-            <Image
-              src={images.passportBio || "/placeholder.svg"}
-              style={styles.documentPageImagePrev}
-            />
-            <View style={styles.documentPageFooter}>
-              <Text style={styles.documentPageFooterText}>
-                {data.fullName} - Candidate ID: {data.candidateId}
-              </Text>
-            </View>
-          </View>
-        </Page>
-      )}
 
-      {images.signature && (
-        <Page size="A4" style={styles.page}>
-          {/* Watermark */}
-          <Watermark />
 
-          <View style={styles.documentPage}>
-            <Text style={styles.documentPageTitle}>Signature</Text>
-            <Image
-              src={images.signature || "/placeholder.svg"}
-              style={styles.documentPageImagePrev}
-            />
-            <View style={styles.documentPageFooter}>
-              <Text style={styles.documentPageFooterText}>
-                {data.fullName} - Candidate ID: {data.candidateId}
-              </Text>
-            </View>
-          </View>
-        </Page>
-      )}
     </Document>
   );
 };
@@ -738,7 +697,22 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
       </Page>
 
       {/* Each document on its own page */}
-      {images.medicalLicense && (
+      {images.medicalLicense && Array.isArray(images.medicalLicense) ? images.medicalLicense.map((img: string, index: number) => (
+        <Page key={`medical-${index}`} size="A4" style={styles.page}>
+          <View style={styles.documentPage}>
+            <Text style={styles.documentPageTitle}>Medical License</Text>
+            <Image
+              src={img || "/placeholder.svg"}
+              style={styles.documentPageImage}
+            />
+            <View style={styles.documentPageFooter}>
+              <Text style={styles.documentPageFooterText}>
+                {data.fullName} - Candidate ID: {data.candidateId}
+              </Text>
+            </View>
+          </View>
+        </Page>
+      )) : images.medicalLicense && (
         <Page size="A4" style={styles.page}>
           <View style={styles.documentPage}>
             <Text style={styles.documentPageTitle}>Medical License</Text>
@@ -755,7 +729,22 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
         </Page>
       )}
 
-      {images.part1Email && (
+      {images.part1Email && Array.isArray(images.part1Email) ? images.part1Email.map((img: string, index: number) => (
+        <Page key={`part1-${index}`} size="A4" style={styles.page}>
+          <View style={styles.documentPage}>
+            <Text style={styles.documentPageTitle}>Part 1 Passing Email</Text>
+            <Image
+              src={img || "/placeholder.svg"}
+              style={styles.documentPageImage}
+            />
+            <View style={styles.documentPageFooter}>
+              <Text style={styles.documentPageFooterText}>
+                {data.fullName} - Candidate ID: {data.candidateId}
+              </Text>
+            </View>
+          </View>
+        </Page>
+      )) : images.part1Email && (
         <Page size="A4" style={styles.page}>
           <View style={styles.documentPage}>
             <Text style={styles.documentPageTitle}>Part 1 Passing Email</Text>
@@ -772,7 +761,22 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
         </Page>
       )}
 
-      {images.passportBio && (
+      {images.passportBio && Array.isArray(images.passportBio) ? images.passportBio.map((img: string, index: number) => (
+        <Page key={`passportBio-${index}`} size="A4" style={styles.page}>
+          <View style={styles.documentPage}>
+            <Text style={styles.documentPageTitle}>Passport Bio Page</Text>
+            <Image
+              src={img || "/placeholder.svg"}
+              style={styles.documentPageImage}
+            />
+            <View style={styles.documentPageFooter}>
+              <Text style={styles.documentPageFooterText}>
+                {data.fullName} - Candidate ID: {data.candidateId}
+              </Text>
+            </View>
+          </View>
+        </Page>
+      )) : images.passportBio && (
         <Page size="A4" style={styles.page}>
           <View style={styles.documentPage}>
             <Text style={styles.documentPageTitle}>Passport Bio Page</Text>
@@ -789,7 +793,22 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
         </Page>
       )}
 
-      {images.signature && (
+      {images.signature && Array.isArray(images.signature) ? images.signature.map((img: string, index: number) => (
+        <Page key={`signature-${index}`} size="A4" style={styles.page}>
+          <View style={styles.documentPage}>
+            <Text style={styles.documentPageTitle}>Signature</Text>
+            <Image
+              src={img || "/placeholder.svg"}
+              style={styles.documentPageImage}
+            />
+            <View style={styles.documentPageFooter}>
+              <Text style={styles.documentPageFooterText}>
+                {data.fullName} - Candidate ID: {data.candidateId}
+              </Text>
+            </View>
+          </View>
+        </Page>
+      )) : images.signature && (
         <Page size="A4" style={styles.page}>
           <View style={styles.documentPage}>
             <Text style={styles.documentPageTitle}>Signature</Text>
@@ -1390,7 +1409,7 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
               <Text style={styles.resumeSectionTitle}>EXPERIENCE</Text>
             </View>
             <View style={styles.resumeBody}>
-             
+
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Previous AKT attempts:</Text>
                 <Text style={styles.fieldValue}>
@@ -1482,7 +1501,7 @@ export const ApplicationPDFCompleteAkt = ({ data, image, images }: any) => {
             </View>
           </View>
 
-         
+
           {/* Attachments Summary
           {data.attachments && data.attachments.length > 0 && (
             <View style={styles.resumeSection}>
