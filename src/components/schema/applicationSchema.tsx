@@ -1,4 +1,5 @@
 import * as z from "zod"
+import { formatName, formatAddress } from "../../lib/utils"
 
 
 
@@ -11,18 +12,18 @@ const aktsFormSchema = z.object({
     // .regex(/^\d+$/, "Candidate ID must contain only numbers")
     .optional(),
   passportImage: z.any(),
-  fullName: z.string().min(2, "Full name is required"),
+  fullName: z.string().min(2, "Full name is required").transform(formatName),
   gender: z.string().min(1, "Gender is required"),
-  schoolName: z.string().min(1, "School name is required"),
-  schoolLocation: z.string().min(1, "School location is required"),
+  schoolName: z.string().min(1, "School name is required").transform(formatAddress),
+  schoolLocation: z.string().min(1, "School location is required").transform(formatAddress),
   QualificationDate: z.string().min(1, "Qualification date is required"),
 
   // Address
-  poBox: z.string().min(1, "P.O. Box is required"),
-  district: z.string().min(1, "District is required"),
-  city: z.string().min(1, "City is required"),
-  province: z.string().min(1, "Province is required"),
-  country: z.string().min(1, "Country is required"),
+  poBox: z.string().min(1, "P.O. Box is required").transform(formatAddress),
+  district: z.string().min(1, "District is required").transform(formatAddress),
+  city: z.string().min(1, "City is required").transform(formatAddress),
+  province: z.string().min(1, "Province is required").transform(formatAddress),
+  country: z.string().min(1, "Country is required").transform(formatAddress),
 
   // Contact
   whatsapp: z.string().min(5, "WhatsApp number is required"),
@@ -34,9 +35,9 @@ const aktsFormSchema = z.object({
   previousAktsAttempts: z.string().min(1, "Number of previous AKTs attempts is required"),
 
   // Experience and License
-  countryOfExperience: z.string().min(1, "Country of experience is required"),
-  countryOfOrigin: z.string().min(1, "Country of origin is required"),
-  registrationAuthority: z.string().min(1, "Registration authority is required"),
+  countryOfExperience: z.string().min(1, "Country of experience is required").transform(formatAddress),
+  countryOfOrigin: z.string().min(1, "Country of origin is required").transform(formatAddress),
+  registrationAuthority: z.string().min(1, "Registration authority is required").transform(formatAddress),
   registrationNumber: z.string().min(1, "Registration number is required"),
   dateOfRegistration: z.date({
     required_error: "Date of registration is required",
@@ -65,9 +66,7 @@ const aktsFormSchema = z.object({
 
   // Agreement
   agreementName: z.string().optional(),
-  agreementDate: z.date({
-    required_error: "Date is required",
-  }),
+  agreementDate: z.date().optional(),
   attachments: z.array(z.any()).optional()
 })
 
@@ -80,14 +79,14 @@ const formSchema = z.object({
     .length(7, "Candidate ID must be exactly 7 numbers")
     .regex(/^\d+$/, "Candidate ID must contain only numbers"),
   passportImage: z.any(),
-  fullName: z.string().min(2, "Full name is required"),
+  fullName: z.string().min(2, "Full name is required").transform(formatName),
 
   // Address
-  poBox: z.string().min(1, "P.O. Box is required"),
-  district: z.string().min(1, "District is required"),
-  city: z.string().min(1, "City is required"),
-  province: z.string().min(1, "Province is required"),
-  country: z.string().min(1, "Country is required"),
+  poBox: z.string().min(1, "P.O. Box is required").transform(formatAddress),
+  district: z.string().min(1, "District is required").transform(formatAddress),
+  city: z.string().min(1, "City is required").transform(formatAddress),
+  province: z.string().min(1, "Province is required").transform(formatAddress),
+  country: z.string().min(1, "Country is required").transform(formatAddress),
 
   // Contact
   whatsapp: z.string().min(5, "WhatsApp number is required"),
@@ -103,11 +102,12 @@ const formSchema = z.object({
     .min(1, "Number of previous OSCE attempts is required"),
 
   // Experience and License
-  countryOfExperience: z.string().min(1, "Country of experience is required"),
-  countryOfOrigin: z.string().min(1, "Country of origin is required"),
+  countryOfExperience: z.string().min(1, "Country of experience is required").transform(formatAddress),
+  countryOfOrigin: z.string().min(1, "Country of origin is required").transform(formatAddress),
   registrationAuthority: z
     .string()
-    .min(1, "Registration authority is required"),
+    .min(1, "Registration authority is required")
+    .transform(formatAddress),
   registrationNumber: z.string().min(1, "Registration number is required"),
   dateOfRegistration: z.date({
     required_error: "Date of registration is required",
@@ -125,10 +125,8 @@ const formSchema = z.object({
   signature: z.any(),
 
   // Agreement
-  agreementName: z.string().min(2, "Full name is required"),
-  agreementDate: z.date({
-    required_error: "Date is required",
-  }),
+  agreementName: z.string().optional(),
+  agreementDate: z.date().optional(),
   termsAgreed: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions",
   }),
@@ -167,7 +165,6 @@ export const formDefaultValues: FormValues = {
   medicalLicense: undefined,
   passportBioPage: undefined,
   signature: undefined,
-  agreementName: "John Doe",
   agreementDate: new Date(),
   termsAgreed: true,
 };

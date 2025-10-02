@@ -54,14 +54,22 @@ interface OsceFieldsProps {
   validateFile: (file: File, fieldName: string) => void;
   warning: boolean;
   selectedExam: any;
-  setMedicalLicensePreview: (value: string | null) => void;
-  medicalLicensePreview: string | null;
-  setPart1EmailPreview: (value: string | null) => void;
-  part1EmailPreview: string | null;
-  setPassportBioPreview: (value: string | null) => void;
-  passportBioPreview: string | null;
-  setSignaturePreview: (value: string | null) => void;
-  signaturePreview: string | null;
+  setMedicalLicensePreview: (value: any) => void;
+  medicalLicensePreview: any;
+  setPart1EmailPreview: (value: any) => void;
+  part1EmailPreview: any;
+  setPassportBioPreview: (value: any) => void;
+  passportBioPreview: any;
+  setSignaturePreview: (value: any) => void;
+  signaturePreview: any;
+  signatureIsPdf: boolean | null;
+  setSignatureIsPdf: (value: boolean | null) => void;
+  medicalLicenseIsPdf: boolean | null;
+  setMedicalLicenseIsPdf: (value: boolean | null) => void;
+  part1EmailIsPdf: boolean | null;
+  setPart1EmailIsPdf: (value: boolean | null) => void;
+  passportBioIsPdf: boolean | null;
+  setPassportBioIsPdf: (value: boolean | null) => void;
   deleteUploadedFile: (inputId: string) => Promise<void>;
   onEmailBlur: () => void;
   onFullNameBlur: () => void;
@@ -86,6 +94,13 @@ export function OsceFeilds(props: OsceFieldsProps) {
     passportBioPreview,
     setSignaturePreview,
     signaturePreview,
+    setSignatureIsPdf,
+    medicalLicenseIsPdf,
+    setMedicalLicenseIsPdf,
+    part1EmailIsPdf,
+    setPart1EmailIsPdf,
+    passportBioIsPdf,
+    setPassportBioIsPdf,
     deleteUploadedFile,
     onEmailBlur,
     onFullNameBlur,
@@ -1183,17 +1198,21 @@ const getAvailableDatesForField = (
                         {medicalLicensePreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={
-                                  medicalLicensePreview ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt="Medical license preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {medicalLicenseIsPdf && !Array.isArray(medicalLicensePreview) ? (
+                                <iframe
+                                  src={medicalLicensePreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={
+                                    Array.isArray(medicalLicensePreview) ? medicalLicensePreview[0] : medicalLicensePreview ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt="Medical license preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1201,6 +1220,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("medical-license");
                                   setMedicalLicensePreview(null);
+                                  setMedicalLicenseIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "medical-license"
                                   ) as HTMLInputElement;
@@ -1266,17 +1286,21 @@ const getAvailableDatesForField = (
                         {part1EmailPreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={
-                                  part1EmailPreview ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt="Part I passing email preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {part1EmailIsPdf && !Array.isArray(part1EmailPreview) ? (
+                                <iframe
+                                  src={part1EmailPreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={
+                                    Array.isArray(part1EmailPreview) ? part1EmailPreview[0] : part1EmailPreview ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt="Part I passing email preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1284,6 +1308,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("part1-email");
                                   setPart1EmailPreview(null);
+                                  setPart1EmailIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "part1-email"
                                   ) as HTMLInputElement;
@@ -1320,7 +1345,7 @@ const getAvailableDatesForField = (
                               id="part1-email"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1351,17 +1376,21 @@ const getAvailableDatesForField = (
                         {passportBioPreview ? (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
-                              <img
-                                src={
-                                  passportBioPreview ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg" ||
-                                  "/placeholder.svg"
-                                }
-                                alt="Passport bio page preview"
-                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                              />
+                              {passportBioIsPdf && !Array.isArray(passportBioPreview) ? (
+                                <iframe
+                                  src={passportBioPreview || "/placeholder.svg"}
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <img
+                                  src={
+                                    Array.isArray(passportBioPreview) ? passportBioPreview[0] : passportBioPreview ||
+                                    "/placeholder.svg"
+                                  }
+                                  alt="Passport bio page preview"
+                                  className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                                />
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -1369,6 +1398,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("passport-bio");
                                   setPassportBioPreview(null);
+                                  setPassportBioIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "passport-bio"
                                   ) as HTMLInputElement;
@@ -1408,7 +1438,7 @@ const getAvailableDatesForField = (
                               id="passport-bio"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(
@@ -1436,7 +1466,7 @@ const getAvailableDatesForField = (
                           <div className="relative w-full">
                             <div className="flex flex-col items-center">
                               <img
-                                src={signaturePreview || "/placeholder.svg"}
+                                src={Array.isArray(signaturePreview) ? signaturePreview[0] : signaturePreview || "/placeholder.svg"}
                                 alt="Signature preview"
                                 className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
                               />
@@ -1447,6 +1477,7 @@ const getAvailableDatesForField = (
                                 onClick={async () => {
                                   await deleteUploadedFile("signature");
                                   setSignaturePreview(null);
+                                  setSignatureIsPdf(null);
                                   const fileInput = document.getElementById(
                                     "signature"
                                   ) as HTMLInputElement;
@@ -1486,7 +1517,7 @@ const getAvailableDatesForField = (
                               id="signature"
                               type="file"
                               className="hidden"
-                              accept="image/jpeg, image/jpg, image/png"
+                              accept="image/jpeg, image/jpg, image/png, image/pdf"
                               onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                   validateFile(e.target.files[0], "signature");
@@ -1499,75 +1530,7 @@ const getAvailableDatesForField = (
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={currentForm.control}
-                      name="agreementName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full name:{" "}<span className="text-red-500">*</span> </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter Full name"
-                              {...field}
-                              className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.agreementName
-                            ? "border-red-500 dark:border-red-700"
-                            : ""}`}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={currentForm.control}
-                      name="agreementDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>
-                            Date: <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value
-                                    ? format(field.value, "PPP")
-                                    : format(new Date(), "PPP")}
-                                  <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0 dark:bg-slate-800 dark:border-slate-700"
-                              align="start"
-                            >
-                              <CalendarComponent
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date > new Date() ||
-                                  date < new Date("1900-01-01")
-                                }
-                                initialFocus
-                                className="dark:bg-slate-800"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                
                 </div>
               </div>
             </AccordionContent>

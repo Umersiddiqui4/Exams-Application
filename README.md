@@ -33,7 +33,8 @@ A modern, secure, and feature-rich examination management system built with Reac
 - **TypeScript** for type safety
 - **Redux Toolkit** for state management
 - **React Router** for navigation
-- **Form Validation** with React Hook Form
+- **Form Validation** with React Hook Form and Zod
+- **Automatic Data Formatting** for names and addresses
 - **File Upload** and preview functionality
 - **Data Tables** with sorting and filtering
 
@@ -81,7 +82,8 @@ Exams-Application/
 │   ├── redux/              # State management
 │   ├── lib/                # Utilities and helpers
 │   │   ├── browserDetection.ts # Browser compatibility
-│   │   └── chromeVersionUpdater.ts # Version management
+│   │   ├── chromeVersionUpdater.ts # Version management
+│   │   └── utils.ts # Data formatting utilities
 │   └── hooks/              # Custom React hooks
 ├── public/                 # Static assets
 └── docs/                   # Documentation
@@ -126,6 +128,39 @@ The application automatically detects and validates:
 - Take secure online exams
 - Real-time progress tracking
 - Automatic submission
+
+## 📝 Data Formatting
+
+The application automatically formats user input data to ensure consistency and proper presentation:
+
+### Name Formatting
+- **Input**: Users can type names in any format (uppercase, lowercase, mixed case, extra spaces)
+- **Output**: Automatically converted to proper case (first letter of each word capitalized)
+- **Example**: `"MUHAMMAD RAJAB RAZA"` → `"Muhammad Rajab Raza"`
+
+### Address Formatting
+- **Input**: Address fields can be entered in any format
+- **Output**: First word capitalized, rest in lowercase
+- **Example**: `"123 MAIN STREET"` → `"123 main street"`
+
+### Fields That Get Formatted
+- **Names**: `fullName`
+- **Addresses**: `poBox`, `district`, `city`, `province`, `country`
+- **School Information**: `schoolName`, `schoolLocation`
+- **Countries**: `countryOfExperience`, `countryOfOrigin`
+- **Authority**: `registrationAuthority`
+
+### How It Works
+1. **User Input**: Users type data in any format
+2. **Automatic Formatting**: Data is formatted during form validation using Zod transforms
+3. **API Upload**: Formatted data is sent to the API in the correct format
+4. **Consistent Output**: All data is stored and displayed consistently
+
+### Benefits
+- **Consistency**: All data follows the same formatting rules
+- **User-Friendly**: Users don't need to worry about formatting
+- **Data Quality**: Ensures clean, properly formatted data in the database
+- **Professional Appearance**: Consistent formatting in reports and displays
 
 ## 🛠️ Development
 
@@ -284,6 +319,9 @@ A: Check browser console for errors. Ensure you're using the demo credentials: `
 **Q: Application looks broken on mobile**
 A: The application is responsive. Try refreshing the page or clearing browser cache.
 
+**Q: Do I need to format my name and address data?**
+A: No! The application automatically formats names and addresses. You can type in any format (uppercase, lowercase, mixed case) and it will be properly formatted when submitted.
+
 ### Getting Help
 - Check the [documentation](./docs/)
 - Review [browser requirements](#browser-requirements)
@@ -297,6 +335,8 @@ A: The application is responsive. Try refreshing the page or clearing browser ca
 - ✅ Enhanced security with Chrome-only access
 - ✅ Improved responsive design
 - ✅ Added comprehensive documentation
+- ✅ Implemented automatic data formatting for names and addresses
+- ✅ Enhanced form validation with Zod transforms
 
 ### Upcoming Features
 - 🔄 Multi-language support
@@ -308,4 +348,4 @@ A: The application is responsive. Try refreshing the page or clearing browser ca
 
 **Built with ❤️ using React, TypeScript, and modern web technologies**
 
-**Live Demo**: [https://frontend-demo.mrcgpintsouthasia.net/](https://frontend-demo.mrcgpintsouthasia.net/)
+**Live Demo**: [https://frontend-demo.mrcgpintsouthasia.net/](https://frontend-demo.mrcgpintsouthasia.net/)# mrcgp-frontend

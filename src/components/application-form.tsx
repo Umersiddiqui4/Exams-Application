@@ -17,6 +17,7 @@ import "react-phone-number-input/style.css";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
+import { formatName } from "@/lib/utils";
 import {
   incrementApplicationsCount,
 } from "@/redux/examDataSlice";
@@ -44,6 +45,7 @@ import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
 import { examOccurrenceAvailability, Availability, getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
+import { pdfToImages } from "./ui/pdfToImage";
 
 
 export type Attachment = {
@@ -53,6 +55,15 @@ export type Attachment = {
   attachmentUrl?: string;
 };
 
+// utils/fileToBase64.ts (ya isi file mein component se upar)
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file); // file -> base64 string
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 
 export function ApplicationForm() {
@@ -61,16 +72,14 @@ export function ApplicationForm() {
   const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [medicalLicensePreview, setMedicalLicensePreview] = useState<
-    string | null
-  >("https://qph.cf2.quoracdn.net/main-qimg-678953c86023297f1bc61f1221e5418b-lq");
-  const [part1EmailPreview, setPart1EmailPreview] = useState<string | null>(
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Ml67pFyDUglzvcBgFNJunKwo2rApmKrPRw&s"
-  );
-  const [passportBioPreview, setPassportBioPreview] = useState<string | null>(
-    "https://pbs.twimg.com/media/FlZ2oDPakAAGGor.jpg"
-  );
-  const [signaturePreview, setSignaturePreview] = useState<string | null>("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREb9M5D4J58j_78uhZNxsLXUXNMuFuF2RWTg&s");
+  const [medicalLicensePreview, setMedicalLicensePreview] = useState<any>(null);
+  const [part1EmailPreview, setPart1EmailPreview] = useState<any>(null);
+  const [passportBioPreview, setPassportBioPreview] = useState<any>(null);
+  const [signaturePreview, setSignaturePreview] = useState<any>(null);
+  const [signatureIsPdf, setSignatureIsPdf] = useState<boolean | null>(null);
+  const [medicalLicenseIsPdf, setMedicalLicenseIsPdf] = useState<boolean | null>(null);
+  const [part1EmailIsPdf, setPart1EmailIsPdf] = useState<boolean | null>(null);
+  const [passportBioIsPdf, setPassportBioIsPdf] = useState<boolean | null>(null);
   const [pdfGenerating] = useState(false);
   const [warning, setWarning] = useState(false);
   const [examOccurrence, setExamOccurrence] = useState<Availability | null>(null);
@@ -84,6 +93,8 @@ export function ApplicationForm() {
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const [applicationExists, setApplicationExists] = useState(false);
   const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isEligible, setIsEligible] = useState<boolean | null>(null); // null = not checked, true = eligible, false = not eligible
   const params = useParams();
   const dispatch = useDispatch();
@@ -183,7 +194,7 @@ export function ApplicationForm() {
 
           const apiEmailPayload = {
             examOccurrenceId: params.examId,
-            fullName: values.fullName,
+            fullName: formatName(values.fullName),
             email: values.email,
           };
 
@@ -364,6 +375,9 @@ export function ApplicationForm() {
     if (applicationId && pendingUploads.length > 0) {
       const processPendingUploads = async () => {
         for (const { file, inputId, title } of pendingUploads) {
+          // Check if file is PDF
+          const isPdf = file.type === 'application/pdf';
+
           // Delete existing file if it exists
           const existingFileId = uploadedFileIds[inputId];
           if (existingFileId) {
@@ -381,16 +395,13 @@ export function ApplicationForm() {
           }
 
           // Determine filename based on exam type and input
-
           let fileName = file.name;
 
           if (selectedExamType && inputId === "attachment") {
-
             // For AKT attachments, find the attachment with the matching file
-    if (title) {
-      fileName = title; // ✅ direct use karo
-    }
-
+            if (title) {
+              fileName = title; // ✅ direct use karo
+            }
           } else if (!selectedExamType) {
             // For OSCE applications, use standard titles for all file types
             switch (inputId) {
@@ -414,20 +425,40 @@ export function ApplicationForm() {
             }
           }
 
-          // Upload to API
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('examOccurrenceId', params.examId as string);
-          formData.append('entityType', 'application');
-          formData.append('entityId', applicationId as string);
-          formData.append('category', getCategory(inputId));
-          formData.append('fileName', fileName);
+          // Upload to API based on file type
+          let response;
 
-          try {
-            const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+          if (isPdf) {
+            // PDF upload using document API - send file with API body
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('examOccurrenceId', params.examId as string);
+            formData.append('entityType', 'application');
+            formData.append('entityId', applicationId as string);
+            formData.append('category', 'application_other');
+            formData.append('fileName', fileName || file.name);
+
+            response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
               method: 'POST',
               body: formData
             });
+          } else {
+            // Image upload using existing API
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('examOccurrenceId', params.examId as string);
+            formData.append('entityType', 'application');
+            formData.append('entityId', applicationId as string);
+            formData.append('category', getCategory(inputId));
+            formData.append('fileName', fileName);
+
+            response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+              method: 'POST',
+              body: formData
+            });
+          }
+
+          try {
 
             if (!response.ok) {
               console.error(`Upload failed for ${inputId}`);
@@ -444,24 +475,21 @@ export function ApplicationForm() {
               [inputId]: newFileId
             }));
       
-            // Clear any previous errors and show success
-            // setFileError(null);
-            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-            toast({
-              title: "File Uploaded Successfully",
-              description: `${fieldName} has been uploaded successfully.`,
-              variant: "default",
-            });
-      
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
+            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+            toast({
+              title: "File Upload Failed",
+              description: `${fieldName} upload failed. Please try again.`,
+              variant: "destructive",
+            });
           }
         }
         // Clear pending uploads after processing
         setPendingUploads([]);
       };
-
+    
       processPendingUploads();
     }
   }, [applicationId, pendingUploads, params.examId]);
@@ -521,7 +549,15 @@ export function ApplicationForm() {
   async function onSubmit(data: AktsFormValues | FormValues) {
 
     if (!examOccurrence) {
-      alert("Exam occurrence not loaded.");
+      Swal.fire({
+        title: "Notice",
+        text: "Exam occurrence not loaded.",
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+        confirmButtonText: "OK"
+      }).then(() => {
+        window.location.href = "https://mrcgpintsouthasia.org/";
+      });
       return;
     }
 
@@ -554,7 +590,15 @@ export function ApplicationForm() {
       }
 
       if (!params.examId || !selectedExam) {
-        alert("Exam ID is missing or invalid. Please try again.");
+        Swal.fire({
+          title: "Notice",
+          text: "Exam ID is missing or invalid. Please try again.",
+          icon: "warning",
+          confirmButtonColor: "#f59e0b",
+          confirmButtonText: "OK"
+        }).then(() => {
+          window.location.href = "https://mrcgpintsouthasia.org/";
+        });
         setIsSubmitting(false);
         return;
       }
@@ -562,10 +606,10 @@ export function ApplicationForm() {
       // Optional file validation (OSCE-only)
       if (!selectedExamType) {
         if (
-          signaturePreview === null ||
-          medicalLicensePreview === null ||
-          passportBioPreview === null ||
-          passportPreview === null 
+          !signaturePreview ||
+          !medicalLicensePreview ||
+          !passportBioPreview ||
+          !passportPreview
         ) {
           setWarning(true);
           setIsSubmitting(false);
@@ -795,10 +839,14 @@ export function ApplicationForm() {
     } catch (err) {
       console.error("Submission error:", err);
       Swal.fire({
-        title: "Error",
+        title: "Notice",
         text: err instanceof Error ? err.message : "Something went wrong during submission.",
-        icon: "error",
-        confirmButtonColor: "#6366f1",
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+        confirmButtonText: "OK"
+      }).then(() => {
+        // Redirect to main MRCGP website when user clicks OK
+        window.location.href = "https://mrcgpintsouthasia.org/";
       });
     } finally {
       setIsSubmitting(false);
@@ -820,42 +868,61 @@ export function ApplicationForm() {
     // Reset error for this field
     setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
 
-    // Only validate if inputId is in the validation list
-    if (validateThese.includes(inputId)) {
-      // Check file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-      if (!validTypes.includes(file.type)) {
-        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.` }));
-        const fileInput = document.getElementById(inputId) as HTMLInputElement;
-        if (fileInput) fileInput.value = "";
-        // Clear the preview on validation error
-        if (title === "passport-image") {
-          // AKT passport image
-          setPassportPreview(null);
-        } else {
-          switch (inputId) {
-            case "passport-image":
-              setPassportPreview(null);
-              break;
-            case "medical-license":
-              setMedicalLicensePreview(null);
-              break;
-            case "part1-email":
-              setPart1EmailPreview(null);
-              break;
-            case "passport-bio":
-              setPassportBioPreview(null);
-              break;
-            case "signature":
-              setSignaturePreview(null);
-              break;
-            case "attachment":
-              setAttachmentUrl(null);
-              break;
+    // Check if file is PDF
+    const isPdf = file.type === 'application/pdf';
+
+    // Only validate if inputId is in the validation list or if it's a PDF
+    if (validateThese.includes(inputId) || isPdf) {
+      // Check file type for images
+      if (!isPdf) {
+        const validTypes = ["image/jpeg", "image/jpg", "image/png" ];
+        const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+        if (!validTypes.includes(file.type)) {
+          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG and PNG formats are supported.` }));
+          const fileInput = document.getElementById(inputId) as HTMLInputElement;
+          if (fileInput) fileInput.value = "";
+          // Clear the preview on validation error
+          if (title === "passport-image") {
+            // AKT passport image
+            setPassportPreview(null);
+          } else {
+            switch (inputId) {
+              case "passport-image":
+                setPassportPreview(null);
+                break;
+              case "medical-license":
+                setMedicalLicensePreview(null);
+                setMedicalLicenseIsPdf(null);
+                break;
+              case "part1-email":
+                setPart1EmailPreview(null);
+                setPart1EmailIsPdf(null);
+                break;
+              case "passport-bio":
+                setPassportBioPreview(null);
+                setPassportBioIsPdf(null);
+                break;
+              case "signature":
+                setSignaturePreview(null);
+                setSignatureIsPdf(null);
+                break;
+              case "attachment":
+                setAttachmentUrl(null);
+                break;
+            }
           }
+          return false;
         }
-        return false;
+      } else {
+        // For PDFs, reject for passport-image
+        if (inputId === "passport-image") {
+          const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: PDF files are not allowed for this field.` }));
+          const fileInput = document.getElementById(inputId) as HTMLInputElement;
+          if (fileInput) fileInput.value = "";
+          setPassportPreview(null);
+          return false;
+        }
       }
 
       // Check file size (10MB = 10 * 1024 * 1024 bytes)
@@ -875,15 +942,19 @@ export function ApplicationForm() {
               break;
             case "medical-license":
               setMedicalLicensePreview(null);
+              setMedicalLicenseIsPdf(null);
               break;
             case "part1-email":
               setPart1EmailPreview(null);
+              setPart1EmailIsPdf(null);
               break;
             case "passport-bio":
               setPassportBioPreview(null);
+              setPassportBioIsPdf(null);
               break;
             case "signature":
               setSignaturePreview(null);
+              setSignatureIsPdf(null);
               break;
             case "attachment":
               setAttachmentUrl(null);
@@ -895,8 +966,9 @@ export function ApplicationForm() {
     }
 
     // Create local preview URL immediately
-    const localPreviewUrl = URL.createObjectURL(file);
-
+    const localPreviewUrl = await fileToBase64(file);
+    console.log("localPreviewUrl", localPreviewUrl);
+    
     // Set immediate preview with local URL
     if (title === "passport-image") {
       // AKT passport image
@@ -907,16 +979,60 @@ export function ApplicationForm() {
           setPassportPreview(localPreviewUrl);
           break;
         case "medical-license":
-          setMedicalLicensePreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setMedicalLicensePreview(imagesArray); // array of images
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setMedicalLicensePreview([localPreviewUrl]);
+          }
+          setMedicalLicenseIsPdf(isPdf);
           break;
         case "part1-email":
-          setPart1EmailPreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPart1EmailPreview(imagesArray);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setPart1EmailPreview([localPreviewUrl]);
+          }
+          setPart1EmailIsPdf(isPdf);
           break;
         case "passport-bio":
-          setPassportBioPreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPassportBioPreview(imagesArray);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setPassportBioPreview([localPreviewUrl]);
+          }
+          setPassportBioIsPdf(isPdf);
           break;
         case "signature":
-          setSignaturePreview(localPreviewUrl);
+          if (isPdf) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setSignaturePreview(imagesArray);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setSignaturePreview([localPreviewUrl]);
+          }
+          setSignatureIsPdf(isPdf);
           break;
         case "attachment":
           setAttachmentUrl(localPreviewUrl);
@@ -983,27 +1099,47 @@ export function ApplicationForm() {
       }
     }
 
-    // Upload to API
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('examOccurrenceId', params.examId as string);
-    formData.append('entityType', 'application');
-    formData.append('entityId', applicationId as string);
-    formData.append('category', getCategory(inputId));
-    const matchedAttachment = attachments.find(
-      (att: any) => att.file === file || att.id === inputId
-    );
+    // Upload to API based on file type
+    let response;
 
-    // File name preference: attachment title > computed fileName > actual file name
-    const finalFileName = matchedAttachment?.title || fileName || file.name;
+    if (isPdf) {
+      // PDF upload using document API - send file with API body
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('examOccurrenceId', params.examId as string);
+      formData.append('entityType', 'application');
+      formData.append('entityId', applicationId as string);
+      formData.append('category', 'application_other');
+      formData.append('fileName', fileName || file.name);
 
-    formData.append('fileName', finalFileName);
-
-    try {
-      const response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+      response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
         method: 'POST',
         body: formData
       });
+    } else {
+      // Image upload using existing API
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('examOccurrenceId', params.examId as string);
+      formData.append('entityType', 'application');
+      formData.append('entityId', applicationId as string);
+      formData.append('category', getCategory(inputId));
+      const matchedAttachment = attachments.find(
+        (att: any) => att.file === file || att.id === inputId
+      );
+
+      // File name preference: attachment title > computed fileName > actual file name
+      const finalFileName = matchedAttachment?.title || fileName || file.name;
+
+      formData.append('fileName', finalFileName);
+
+      response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
+        method: 'POST',
+        body: formData
+      });
+    }
+
+    try {
 
       if (!response.ok) {
         const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
@@ -1035,15 +1171,19 @@ export function ApplicationForm() {
               break;
             case "medical-license":
               setMedicalLicensePreview(null);
+              setMedicalLicenseIsPdf(null);
               break;
             case "part1-email":
               setPart1EmailPreview(null);
+              setPart1EmailIsPdf(null);
               break;
             case "passport-bio":
               setPassportBioPreview(null);
+              setPassportBioIsPdf(null);
               break;
             case "signature":
               setSignaturePreview(null);
+              setSignatureIsPdf(null);
               break;
             case "attachment":
               setAttachmentUrl(null);
@@ -1052,7 +1192,7 @@ export function ApplicationForm() {
         }
 
         toast({
-          title: "File Upload Failed",
+          title: isPdf ? "PDF Upload Failed" : "File Upload Failed",
           description: errorMessage,
           variant: "destructive",
         });
@@ -1090,15 +1230,19 @@ export function ApplicationForm() {
             break;
           case "medical-license":
             setMedicalLicensePreview(null);
+            setMedicalLicenseIsPdf(null);
             break;
           case "part1-email":
             setPart1EmailPreview(null);
+            setPart1EmailIsPdf(null);
             break;
           case "passport-bio":
             setPassportBioPreview(null);
+            setPassportBioIsPdf(null);
             break;
           case "signature":
             setSignaturePreview(null);
+            setSignatureIsPdf(null);
             break;
           case "attachment":
             setAttachmentUrl(null);
@@ -1127,10 +1271,10 @@ export function ApplicationForm() {
     // Cleanup function to revoke object URLs when component unmounts
     return () => {
       if (passportPreview) URL.revokeObjectURL(passportPreview);
-      if (medicalLicensePreview) URL.revokeObjectURL(medicalLicensePreview);
-      if (part1EmailPreview) URL.revokeObjectURL(part1EmailPreview);
-      if (passportBioPreview) URL.revokeObjectURL(passportBioPreview);
-      if (signaturePreview) URL.revokeObjectURL(signaturePreview);
+      if (medicalLicensePreview && typeof medicalLicensePreview === 'string') URL.revokeObjectURL(medicalLicensePreview);
+      if (part1EmailPreview && typeof part1EmailPreview === 'string') URL.revokeObjectURL(part1EmailPreview);
+      if (passportBioPreview && typeof passportBioPreview === 'string') URL.revokeObjectURL(passportBioPreview);
+      if (signaturePreview && typeof signaturePreview === 'string') URL.revokeObjectURL(signaturePreview);
     };
   }, [
     passportPreview,
@@ -1165,7 +1309,7 @@ export function ApplicationForm() {
         const pdfUrl = pdfBlob.href;
         window.open(pdfUrl, "_blank");
       }
-    }, 200);
+    }, 1000); // Increased timeout to allow PDF generation to complete
   }
 
   if (occurrenceLoading) {
@@ -1247,6 +1391,14 @@ export function ApplicationForm() {
                   passportBioPreview={passportBioPreview}
                   setSignaturePreview={setSignaturePreview}
                   signaturePreview={signaturePreview}
+                  signatureIsPdf={signatureIsPdf}
+                  setSignatureIsPdf={setSignatureIsPdf}
+                  medicalLicenseIsPdf={medicalLicenseIsPdf}
+                  setMedicalLicenseIsPdf={setMedicalLicenseIsPdf}
+                  part1EmailIsPdf={part1EmailIsPdf}
+                  setPart1EmailIsPdf={setPart1EmailIsPdf}
+                  passportBioIsPdf={passportBioIsPdf}
+                  setPassportBioIsPdf={setPassportBioIsPdf}
                   selectedExam={selectedExam}
                   deleteUploadedFile={deleteUploadedFile}
                   onEmailBlur={handleEmailBlur}
@@ -1272,90 +1424,105 @@ export function ApplicationForm() {
               )}
 
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <PDFDownloadLink
-                  id="pdf-download-link"
-                  document={
-                    !selectedExamType ? (
-                      <ApplicationPDFComplete
-                        data={currentForm.getValues()}
-                        images={pdfImages}
-                      />
-                    ) : (
-                      <ApplicationPDFCompleteAkt
-                        data={currentForm.getValues()}
-                        image={attachments}
-                        images={pdfImages}
-                      />
-                    )
-                  }
-                  fileName="MRCGP_Application_Form.pdf"
-                  className="hidden"
-                >
-                  {({ loading }) => (
-                    <>
-                      {loading || pdfGenerating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Generating PDF...
-                        </>
+                {previewMode && (
+                  <PDFDownloadLink
+                    id="pdf-download-link"
+                    document={
+                      !selectedExamType ? (
+                        <ApplicationPDFComplete
+                          data={currentForm.getValues()}
+                          images={pdfImages}
+                        />
                       ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </>
-                      )}
-                    </>
-                  )}
-                </PDFDownloadLink>
+                        <ApplicationPDFCompleteAkt
+                          data={currentForm.getValues()}
+                          image={attachments}
+                          images={pdfImages}
+                        />
+                      )
+                    }
+                    fileName="MRCGP_Application_Form.pdf"
+                    className="hidden"
+                  >
+                    {({ loading }) => (
+                      <>
+                        {loading || pdfGenerating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </>
+                        )}
+                      </>
+                    )}
+                  </PDFDownloadLink>
+                )}
 
                 {/* // pdf completed // */}
-                <PDFDownloadLink
-                  id="pdf-download-preview-link"
-                  document={
-                    !selectedExamType ? (
-                      <ApplicationPDFCompletePreview
-                        data={currentForm.getValues()}
-                        images={pdfImages}
-                      />
-                    ) : (
-                      <ApplicationPDFCompleteAktPreview
-                        data={aktsForm.getValues()}
-                        image={attachments}
-                        images={pdfImages}
-                      />
-                    )
-                  }
-
-                  
-                  fileName="MRCGP_Application_Form.pdf"
-                  className="hidden"
-                >
-                  {({ loading }) => (
-                    <>
-                      {loading || pdfGenerating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Generating PDF...
-                        </>
+                {previewMode && (
+                  <PDFDownloadLink
+                    id="pdf-download-preview-link"
+                    document={
+                      !selectedExamType ? (
+                        <ApplicationPDFCompletePreview
+                          data={currentForm.getValues()}
+                          images={pdfImages}
+                        />
                       ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </>
-                      )}
-                    </>
-                  )}
-                </PDFDownloadLink>
+                        <ApplicationPDFCompleteAktPreview
+                          data={aktsForm.getValues()}
+                          image={attachments}
+                          images={pdfImages}
+                        />
+                      )
+                    }
+                    fileName="MRCGP_Application_Form.pdf"
+                    className="hidden"
+                  >
+                    {({ loading }) => (
+                      <>
+                        {loading || pdfGenerating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </>
+                        )}
+                      </>
+                    )}
+                  </PDFDownloadLink>
+                )}
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={isPreviewLoading}
                   onClick={() => {
-                    currentForm.handleSubmit(test)();
+                    setIsPreviewLoading(true);
+                    setPreviewMode(true);
+                    setTimeout(() => {
+                      currentForm.handleSubmit(test)();
+                      // Reset loading state after PDF opens
+                      setTimeout(() => {
+                        setIsPreviewLoading(false);
+                      }, 2000); // Allow extra time for window to open
+                    }, 100);
                   }}
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
+                  {isPreviewLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Eye className="h-4 w-4 mr-2" />
+                  )}
+                  {isPreviewLoading ? "Generating PDF..." : "Preview"}
                 </Button>
                 <Button
                   type="button"
@@ -1373,9 +1540,14 @@ export function ApplicationForm() {
                         currentForm.reset();
                         setPassportPreview(null);
                         setMedicalLicensePreview(null);
+                        setMedicalLicenseIsPdf(null);
                         setPart1EmailPreview(null);
+                        setPart1EmailIsPdf(null);
                         setPassportBioPreview(null);
+                        setPassportBioIsPdf(null);
                         setSignaturePreview(null);
+                        setSignatureIsPdf(null);
+                        setSignatureIsPdf(null);
                       }
                     }, 500); // Increased timeout to ensure PDF generation completes
                   }}

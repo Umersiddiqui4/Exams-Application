@@ -50,852 +50,852 @@ import { columns } from "../columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
+import { useToast } from "@/components/ui/use-toast";
+import * as pdfjsLib from "pdfjs-dist/";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.js",
+  import.meta.url
+).toString();"use client"
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.js", import.meta.url).toString()
 
 export default function ApplicationTable() {
+  const { toast } = useToast()
 
-      const [activeFilter, setActiveFilter] = useState<string>("all");
-      const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all");
-      const [isExporting, setIsExporting] = useState(false);
-      const [searchQuery, setSearchQuery] = useState<string>("");
-     const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
-      const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-      const [includeWaitingList, setIncludeWaitingList] = useState(true);
-      const [includeRejected, setIncludeRejected] = useState(false);
-      const { items: examOccurrences } = useExamOccurrences();
-      const [pageSize, setPageSize] = useState(10);
-      const { applications, review, loadState, error, pagination, setPageSize: updatePageSize, setPageIndex, reload } = useApplications(
-        selectedExamOccurrence === "all" ? undefined : selectedExamOccurrence,
-        activeFilter === "all" ? undefined : activeFilter,
-        pageSize,
-        searchQuery
-      );
+  const searchQuery = ""
+  const activeFilter = "all"
+  // const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all")
+  const [isExporting, setIsExporting] = useState(false)
+  // const [searchQuery, setSearchQuery] = useState<string>("");
+  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [includeWaitingList, setIncludeWaitingList] = useState(true)
+  const [includeRejected, setIncludeRejected] = useState(false)
+  const { items: examOccurrences } = useExamOccurrences()
+  const [pageSize, setPageSize] = useState(10)
+  const {
+    applications,
+    review,
+    loadState,
+    error,
+    pagination,
+    setPageSize: updatePageSize,
+    setPageIndex,
+    reload,
+  } = useApplications(
+    selectedExamOccurrence === "all" ? undefined : selectedExamOccurrence,
+    activeFilter === "all" ? undefined : activeFilter,
+    pageSize,
+    searchQuery,
+  )
 
-      useEffect(() => {
-       const currentExamOccurrence: any = examOccurrences[0];
-       if(currentExamOccurrence && currentExamOccurrence.id) {
-       setSelectedExamOccurrence(currentExamOccurrence.id.toString());
-       }
-      }, [examOccurrences]);
+  useEffect(() => {
+    const currentExamOccurrence: any = examOccurrences[0]
+    if (currentExamOccurrence && currentExamOccurrence.id) {
+      setSelectedExamOccurrence(currentExamOccurrence.id.toString())
+    }
+  }, [examOccurrences])
 
+  const actionColumn = {
+    id: "actions",
+    header: "Action",
+    cell: ({ row }: { row: any }) => {
+      const id = row.original.id
+      const status = row.original.status
 
-    const actionColumn = {
-        id: "actions",
-        header: "Action",
-        cell: ({ row }: { row: any }) => {
-          const id = row.original.id;
-          const status = row.original.status;
-    
-          return (
-            <div className="flex space-x-2">
-               <Button key={id}
-              onClick={() => handlePdfGenerate(row)}
-              disabled={generatingIds.has(id)}
-              className="bg-red-400 hover:bg-red-200 text-white dark:bg-red-900 dark:hover:bg-blue-900/50 dark:text-white border-blue-200 dark:border-blue-800"
-            >
-              {generatingIds.has(id) ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                status === "SUBMITTED" ? "Review" : "Get PDF"
-              )}
-            </Button>
-            {(status === "SUBMITTED" || status === "UNDER_REVIEW") && (
+      return (
+        <div className="flex space-x-2">
+          <Button
+            key={id}
+            onClick={() => handlePdfGenerate(row)}
+            disabled={generatingIds.has(id)}
+            className="bg-red-400 hover:bg-red-200 text-white dark:bg-red-900 dark:hover:bg-blue-900/50 dark:text-white border-blue-200 dark:border-blue-800"
+          >
+            {generatingIds.has(id) ? (
               <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Generating...
+              </>
+            ) : status === "SUBMITTED" ? (
+              "Review"
+            ) : (
+              "Get PDF"
+            )}
+          </Button>
+          {(status === "SUBMITTED" || status === "UNDER_REVIEW") && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 border-green-200 dark:border-green-800"
+                onClick={() => handleStatusChange(id, "approved")}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Approve
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 border-red-200 dark:border-red-800"
+                onClick={() => handleStatusChange(id, "rejected")}
+              >
+                <XIcon className="h-4 w-4 mr-1" />
+                Reject
+              </Button>
+            </>
+          )}
+        </div>
+      )
+    },
+  }
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 border-green-200 dark:border-green-800"
-                    onClick={() => handleStatusChange(id, "approved")}
-                  >
-                    <Check className="h-4 w-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 border-red-200 dark:border-red-800"
-                    onClick={() => handleStatusChange(id, "rejected")}
-                  >
-                    <XIcon className="h-4 w-4 mr-1" />
-                    Reject
-                  </Button>
-                </>
-              )}
-    
-    
-             
-            </div>
-          );
+  const handleStatusChange = async (id: string, status: "approved" | "rejected") => {
+    if (status === "approved") {
+      // Show approval confirmation dialog with optional notes
+      const result = await Swal.fire({
+        title: "Are you sure you want to approve?",
+        imageUrl: "/icon.png", // Replace with your actual icon path
+        imageWidth: 150,
+        imageHeight: 150,
+        input: "textarea",
+        inputPlaceholder: "Optional admin notes...",
+        inputAttributes: {
+          "aria-label": "Admin notes",
         },
-      };
+        showCancelButton: true,
+        confirmButtonText: "Yes, approve",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#4ade80",
+        cancelButtonColor: "#ef4444",
+        customClass: {
+          popup: "rounded-lg",
+          confirmButton: "rounded-lg px-4 py-2",
+          cancelButton: "rounded-lg px-4 py-2",
+        },
+      })
 
-      const handleStatusChange = async (id: string, status: "approved" | "rejected") => {
-        if (status === "approved") {
-          // Show approval confirmation dialog with optional notes
-          const result = await Swal.fire({
-            title: "Are you sure you want to approve?",
-            imageUrl: "/icon.png", // Replace with your actual icon path
-            imageWidth: 150,
-            imageHeight: 150,
-            input: "textarea",
-            inputPlaceholder: "Optional admin notes...",
-            inputAttributes: {
-              'aria-label': 'Admin notes'
-            },
-            showCancelButton: true,
-            confirmButtonText: "Yes, approve",
-            cancelButtonText: "Cancel",
-            confirmButtonColor: "#4ade80",
-            cancelButtonColor: "#ef4444",
-            customClass: {
-              popup: "rounded-lg",
-              confirmButton: "rounded-lg px-4 py-2",
-              cancelButton: "rounded-lg px-4 py-2",
-            },
-          })
+      if (result.isConfirmed) {
+        // Call the review API with APPROVED status
+        await review(id, "APPROVED", result.value || undefined)
 
-          if (result.isConfirmed) {
-            // Call the review API with APPROVED status
-            await review(id, "APPROVED", result.value || undefined);
-
-            // Show success message
-            await Swal.fire({
-              title: "Application Approved Successfully!",
-              imageUrl: "/icon.png", // Replace with your actual icon path
-              imageWidth: 150,
-              imageHeight: 150,
-              confirmButtonText: "OK",
-              confirmButtonColor: "#3b82f6",
-              customClass: {
-                popup: "rounded-lg",
-                confirmButton: "rounded-lg px-4 py-2",
-              },
-            })
+        // Show success message
+        await Swal.fire({
+          title: "Application Approved Successfully!",
+          imageUrl: "/icon.png", // Replace with your actual icon path
+          imageWidth: 150,
+          imageHeight: 150,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3b82f6",
+          customClass: {
+            popup: "rounded-lg",
+            confirmButton: "rounded-lg px-4 py-2",
+          },
+        })
+      }
+    } else if (status === "rejected") {
+      // Show rejection confirmation dialog with mandatory reason
+      const result = await Swal.fire({
+        title: "Are you sure you want to reject?",
+        imageUrl: "/icon.png", // Replace with your actual logo path
+        imageWidth: 150,
+        imageHeight: 150,
+        input: "textarea",
+        inputPlaceholder: "Enter reason for rejection (required)...",
+        inputValidator: (value) => {
+          if (!value) {
+            return "You need to provide a reason for rejection!"
           }
-        } else if (status === "rejected") {
-          // Show rejection confirmation dialog with mandatory reason
-          const result = await Swal.fire({
-            title: "Are you sure you want to reject?",
-            imageUrl: "/icon.png", // Replace with your actual logo path
-            imageWidth: 150,
-            imageHeight: 150,
-            input: "textarea",
-            inputPlaceholder: "Enter reason for rejection (required)...",
-            inputValidator: (value) => {
-              if (!value) {
-                return 'You need to provide a reason for rejection!';
-              }
-            },
-            showCancelButton: true,
-            confirmButtonText: "Yes, reject",
-            cancelButtonText: "Cancel",
-            confirmButtonColor: "#ef4444",
-            cancelButtonColor: "#6b7280",
-            customClass: {
-              popup: "rounded-lg",
-              input: "border rounded-lg p-2 w-auto",
-              confirmButton: "rounded-lg px-4 py-2",
-              cancelButton: "rounded-lg px-4 py-2",
-            },
-          })
+        },
+        showCancelButton: true,
+        confirmButtonText: "Yes, reject",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        customClass: {
+          popup: "rounded-lg",
+          input: "border rounded-lg p-2 w-auto",
+          confirmButton: "rounded-lg px-4 py-2",
+          cancelButton: "rounded-lg px-4 py-2",
+        },
+      })
 
-          if (result.isConfirmed && result.value) {
-            // Call the review API with REJECTED status and reason as adminNotes
-            await review(id, "REJECTED", result.value);
-          }
+      if (result.isConfirmed && result.value) {
+        // Call the review API with REJECTED status and reason as adminNotes
+        await review(id, "REJECTED", result.value)
+      }
+    }
+  }
+
+  const handleExamChange = (value: string) => {
+    setSelectedExamOccurrence(value)
+  }
+
+  const handlePdfGenerate = async (row: any) => {
+    setGeneratingIds((prev) => new Set(prev).add(row.original.id))
+    try {
+      // Call start-review API if status is SUBMITTED
+      if (row.original.status === "SUBMITTED") {
+        try {
+          await startReview(row.original.id)
+        } catch (error) {
+          // Ignore start-review API errors for now
         }
       }
-    
-    
-      const handleExamChange = (value: string) => {
-        setSelectedExamOccurrence(value);
-      };
-    
-      const handlePdfGenerate = async (row: any) => {
-        setGeneratingIds(prev => new Set(prev).add(row.original.id));
-        try {
-          // Call start-review API if status is SUBMITTED
-          if (row.original.status === "SUBMITTED") {
-            try {
-              await startReview(row.original.id);
-            } catch (error) {
-              // Ignore start-review API errors for now
-            }
-          }
 
-          // Fetch detailed application data
-          const detailedData: any = await getApplication(row.original.id);
+      // Fetch detailed application data
+      const detailedData: any = await getApplication(row.original.id)
 
-          // Convert images to base64 using the API endpoint for attachments
-          const imagePromises = detailedData.data.attachments?.map(async (attachment: any) => {
-            if (!attachment.id) return { ...attachment, base64Data: null };
+      // Convert images to base64 using the API endpoint for attachments
+      const imagePromises =
+        detailedData.data.attachments?.map(async (attachment: any) => {
+          if (!attachment.id) return { ...attachment, base64Data: null }
 
-            try {
-              // Get the auth token from localStorage (same as apiClient)
-              const token = localStorage.getItem("auth_token");
+          try {
+            // Get the auth token from localStorage (same as apiClient)
+            const token = localStorage.getItem("auth_token")
 
-              // Use the API endpoint to download the attachment with authentication
-              const response = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${attachment.id}`, {
-                method: 'GET',
-                headers: {
-                  'Accept': 'image/*',
-                  ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                },
-              });
+            // Use the API endpoint to download the attachment with authentication
+            const response = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${attachment.id}`, {
+              method: "GET",
+              headers: {
+                Accept: "*/*",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+            })
 
-              if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 
-              const blob = await response.blob();
+            const blob = await response.blob()
 
+            if (attachment.fileType === "document") {
+              // PDF Blob ko ArrayBuffer mein convert karo
+              const arrayBuffer = await blob.arrayBuffer()
+
+              // pdfjs se document load karo
+              const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
+
+              // Check if PDF has many pages (heavy file)
+              if (pdf.numPages > 5) {
+                toast({
+                  title: "Processing Heavy Files",
+                  description: "Data contains heavy files, it takes some time to generate.",
+                });
+              }
+
+              const images: string[] = []
+
+              // Har page ko render karo (agar tum sirf pehla page chahte ho to loop hata do)
+              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum)
+
+                const viewport = page.getViewport({ scale: 1.5 })
+                const canvas = document.createElement("canvas")
+                const context = canvas.getContext("2d")!
+                canvas.height = viewport.height
+                canvas.width = viewport.width
+
+                await page.render({ canvasContext: context, viewport }).promise
+
+                const base64Data = canvas.toDataURL("image/png")
+                images.push(base64Data)
+              }
+
+              // Agar multi-page PDF hai, sab pages ka array bhejo
+              return { ...attachment, base64Data: images }
+            } else {
+              // Agar image hai to normal base64 convert
               const base64Data = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  resolve(reader.result as string);
-                };
-                reader.onerror = (error) => {
-                  console.error('Base64 conversion failed for:', attachment.fileName, error);
-                  reject(error);
-                };
-                reader.readAsDataURL(blob);
-              });
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result as string)
+                reader.onerror = reject
+                reader.readAsDataURL(blob)
+              })
 
-              return { ...attachment, base64Data };
-            } catch (error) {
-              console.error(`Failed to load image ${attachment.fileName}:`, error);
-              return { ...attachment, base64Data: null };
+              return { ...attachment, base64Data }
             }
-          }) || [];
+          } catch (error) {
+            console.error(`Failed to load image ${attachment.fileName}:`, error)
+            return { ...attachment, base64Data: null }
+          }
+        }) || []
 
-          const attachmentsWithImages = await Promise.all(imagePromises);
+      const attachmentsWithImages = await Promise.all(imagePromises)
 
-          const dataWithImages = {
-            ...detailedData.data,
-            attachments: attachmentsWithImages
-          };
-          const blob = await generatePdfBlob(dataWithImages);
-          const url = URL.createObjectURL(blob);
-          window.open(url, "_blank");
+      const dataWithImages = {
+        ...detailedData.data,
+        attachments: attachmentsWithImages,
+      }
+      const blob = await generatePdfBlob(dataWithImages)
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank")
 
-          // Refetch applications after PDF opens
-          await reload();
-        } catch (error) {
-          console.error('Error generating PDF:', error);
-          Swal.fire({
-            title: "Error",
-            text: `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        } finally {
-           setGeneratingIds(prev => { const newSet = new Set(prev); newSet.delete(row.original.id); return newSet; });
-        }
-      };
+      // Refetch applications after PDF opens
+      await reload()
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      Swal.fire({
+        title: "Error",
+        text: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+        icon: "error",
+        confirmButtonText: "OK",
+      })
+    } finally {
+      setGeneratingIds((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(row.original.id)
+        return newSet
+      })
+    }
+  }
+
+  const handleExport = () => {
+    setIsExportDialogOpen(true)
+  }
+
+  const handleConfirmExport = async () => {
+    setIsExporting(true)
+    setIsExportDialogOpen(false)
+
+    try {
+      const token = localStorage.getItem("auth_token")
+      const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?includeWaitingList=${includeWaitingList}&includeRejected=${includeRejected}`
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+
+      const blob = await response.blob()
+
+      const examName =
+        selectedExamOccurrence !== "all"
+          ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)?.title ||
+            "Selected-Exam-Occurrence"
+          : "All-Exam-Occurrences"
+
+      const link = document.createElement("a")
+      link.href = URL.createObjectURL(blob)
+      link.setAttribute("download", `Applications_${examName}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+    } catch (error) {
+      console.error("Export error:", error)
+      Swal.fire({
+        title: "Error",
+        text: `Failed to export: ${error instanceof Error ? error.message : "Unknown error"}`,
+        icon: "error",
+        confirmButtonText: "OK",
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const generatePdfBlob = async (data: any) => {
+    const doc = <ApplicationPDF data={data} />
+    const asPdf = pdf()
+    asPdf.updateContainer(doc)
+    const blob = await asPdf.toBlob()
+    return blob
+  }
+
+  const ApplicationPDF = ({ data }: any) => {
+    console.log("Generating PDF for data:", data);
     
-      const handleExport = () => {
-        setIsExportDialogOpen(true);
-      };
+    return (
+      <Document>
+        {/* Main application form page */}
+        <Page size="A4" style={styles.page}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerContent1}>
+              <Image src="/icon.png" style={styles.passportImage1} />
+              <div className="text-center">
+                <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
+                <Text style={styles.subtitle}>
+                  {data.examOccurrence.type === "AKT"
+                    ? "AKT Examination Application"
+                    : "Part 2 (OSCE)} Examination Application"}
+                </Text>
+              </div>
+            </View>
+            {(() => {
+              const passportAttachment = data.attachments?.find(
+                (att: any) => att.fileName === "passport-image" && att.base64Data,
+              )
+              return passportAttachment ? (
+                <Image src={passportAttachment.base64Data || "/placeholder.svg"} style={styles.passportImage} />
+              ) : null
+            })()}
+          </View>
 
-      const handleConfirmExport = async () => {
-        setIsExporting(true);
-        setIsExportDialogOpen(false);
-
-        try {
-          const token = localStorage.getItem("auth_token");
-          const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?includeWaitingList=${includeWaitingList}&includeRejected=${includeRejected}`;
-
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-          });
-
-          if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-          const blob = await response.blob();
-
-          const examName =
-            selectedExamOccurrence !== "all"
-              ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)
-                  ?.title || "Selected-Exam-Occurrence"
-              : "All-Exam-Occurrences";
-
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.setAttribute("download", `Applications_${examName}.xlsx`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(link.href);
-
-        } catch (error) {
-          console.error("Export error:", error);
-          Swal.fire({
-            title: "Error",
-            text: `Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        } finally {
-          setIsExporting(false);
-        }
-      };
-
-      const generatePdfBlob = async (data: any) => {
-        const doc = <ApplicationPDF data={data} />;
-        const asPdf = pdf();
-        asPdf.updateContainer(doc);
-        const blob = await asPdf.toBlob();
-        return blob;
-      };
-
-      const ApplicationPDF = ({ data }: any) => {
-        return (
-          <Document>
-            {/* Main application form page */}
-            <Page size="A4" style={styles.page}>
-              {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.headerContent1}>
-                  <Image src="/icon.png" style={styles.passportImage1} />
-                  <div className="text-center">
-                    <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
-                    <Text style={styles.subtitle}>
-                      {data.examOccurrence.type === "AKT" ? "AKT Examination Application" : "Part 2 (OSCE)} Examination Application"}
-                    </Text>
-                  </div>
-                </View>
-                {(() => {
-                  const passportAttachment = data.attachments?.find((att: any) =>
-                    att.fileName === 'passport-image' && att.base64Data
-                  );
-                  return passportAttachment ? (
-                    <Image
-                      src={passportAttachment.base64Data}
-                      style={styles.passportImage}
-                    />
-                  ) : null;
-                })()}
+          {/* Main content - Resume style format */}
+          <View style={styles.section}>
+            {/* Candidate information section */}
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>CANDIDATE INFORMATION</Text>
               </View>
-    
-              {/* Main content - Resume style format */}
-              <View style={styles.section}>
-                {/* Candidate information section */}
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>
-                      CANDIDATE INFORMATION
-                    </Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.row}>
-                      <View style={styles.column}>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Candidate ID:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.candidateId || "Not provided"}
-                          </Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Full Name:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.fullName || "Not provided"}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-    
-                {/* Contact information section */}
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>
-                      CONTACT INFORMATION
-                    </Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.row}>
-                      <View style={styles.column}>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>WhatsApp:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.personalContact || "Not provided"}
-                          </Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Emergency Contact:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.emergencyContact || "Not provided"}
-                          </Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Email:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.email || "Not provided"}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-    
-                {/* Address section */}
-    
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>
-                      CONTACT INFORMATION
-                    </Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.row}>
-                      <View style={styles.column}>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Street Address:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.streetAddress || "No address"}
-                          </Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>District</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.district || ""}
-                          </Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>City:</Text>
-                          <Text style={styles.fieldValue}>{data.city || ""}</Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>province:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.province || ""}
-                          </Text>
-                        </View>
-                        <View style={styles.fieldRow}>
-                          <Text style={styles.fieldLabel}>Country:</Text>
-                          <Text style={styles.fieldValue}>
-                            {data.country || ""}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-    
-                {/* Experience section */}
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>EXPERIENCE</Text>
-                  </View>
-                  <View style={styles.resumeBody}>
+              <View style={styles.resumeBody}>
+                <View style={styles.row}>
+                  <View style={styles.column}>
                     <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Date of passing Part 1:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.osceDetails?.aktPassingDate
-                          ? format(new Date(data.osceDetails.aktPassingDate), "PPP")
-                          : "Not provided"}
-                      </Text>
+                      <Text style={styles.fieldLabel}>Candidate ID:</Text>
+                      <Text style={styles.fieldValue}>{data.candidateId || "Not provided"}</Text>
                     </View>
                     <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Previous OSCE attempts:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.osceDetails?.previousOSCEAttempts || "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Country of experience:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.clinicalExperienceCountry || "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Country of origin:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.originCountry || "Not provided"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-    
-                {/* License details section */}
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>LICENSE DETAILS</Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Registration authority:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.registrationAuthority || "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Registration number:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.registrationNumber || "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Date of registration:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.registrationDate
-                          ? format(new Date(data.registrationDate), "PPP")
-                          : "Not provided"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-    
-                {/* OSCE Session Preferences */}
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>
-                      OSCE SESSION PREFERENCES
-                    </Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Preference Date 1:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.osceDetails?.preferenceDate1 && data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
-                          ? format(new Date(data.osceDetails.preferenceDate1), "PPP")
-                          : "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Preference Date 2:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.osceDetails?.preferenceDate2 && data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
-                          ? format(new Date(data.osceDetails.preferenceDate2), "PPP")
-                          : "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Preference Date 3:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.osceDetails?.preferenceDate3 && data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
-                          ? format(new Date(data.osceDetails.preferenceDate3), "PPP")
-                          : "Not provided"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-    
-                {/* Agreement */}
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>Name:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.fullName || "Not provided"}
-                      </Text>
-                    </View>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.fieldLabel}>OSCE Candidate Statement:</Text>
-                      <Text style={styles.fieldValue}>
-                        {data.osceDetails?.osceCandidateStatement ? "Agreed" : "Not agreed"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>Please Note</Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.note}>
-                        THE NUMBER OF PLACES IS LIMITED, AND SLOTS WILL BE ALLOCATED
-                        ON THE "FIRST COME FIRST SERVED” BASIS. Your application may
-                        be rejected because of a large number of applicants and you
-                        may be invited to apply again or offered a slot at a
-                        subsequent examination. Priority will be given to applicants
-                        from South Asia and those applications that reach us first,
-                        so we encourage you to apply as soon as possible. WHILST WE
-                        WILL TRY TO ACCOMMODATE YOUR PREFERENCE, IT MAY NOT BE
-                        POSSIBLE DUE TO A LARGE NUMBER OF APPLICANTS. Please email
-                        us well in advance if you require a letter of invitation for
-                        visa purposes and make sure you complete all travel
-                        formalities in good time (visa applications, travel permits,
-                        leaves, etc.) No Refunds will be granted in case any
-                        candidate fails to get the visa prior to the exam date.
-                        Candidates with a disability are requested to read the rules
-                        and regulation document [Page 10] available on the website
-                        The MRCGP [INT.] South Asia Secretariat will notify you by
-                        email of your allocated date and time at least two weeks
-                        before the exam starting date.
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.resumeSection}>
-                  <View style={styles.resumeHeader}>
-                    <Text style={styles.resumeSectionTitle}>
-                      CANDIDATE'S STATEMENT
-                    </Text>
-                  </View>
-                  <View style={styles.resumeBody}>
-                    <View style={styles.fieldRow}>
-                      <Text style={styles.note}>
-                        I hereby apply to sit the South Asia MRCGP [INT.] Part 2
-                        (OSCE) Examination, success in which will allow me to apply
-                        for International Membership of the UK's Royal College of
-                        General Practitioners. Detailed information on the
-                        membership application process can be found on the RCGP
-                        website: Member Ship I have read and agree to abide by the
-                        conditions set out in the South Asia MRCGP [INT.]
-                        Examination Rules and Regulations as published on the MRCGP
-                        [INT.] South Asia website: www.mrcgpintsouthasia.org If
-                        accepted for International Membership, I undertake to
-                        continue approved postgraduate study while I remain in
-                        active general practice/family practice, and to uphold and
-                        promote the aims of the RCGP to the best of my ability. I
-                        understand that, on being accepted for International
-                        Membership, an annual subscription fee is to be payable to
-                        the RCGP. I understand that only registered International
-                        Members who maintain their RCGP subscription are entitled to
-                        use the post-nominal designation "MRCGP [INT]". Success in
-                        the exam does not give me the right to refer to myself as
-                        MRCGP [INT.]. I attach a banker's draft made payable to
-                        “MRCGP [INT.] South Asia”, I also understand and agree that
-                        my personal data will be handled by the MRCGP [INT.] South
-                        Asia Board and I also give permission for my personal data
-                        to be handled by the regional MRCGP [INT.] South Asia
-                        co-ordinators..
-                      </Text>
+                      <Text style={styles.fieldLabel}>Full Name:</Text>
+                      <Text style={styles.fieldValue}>{data.fullName || "Not provided"}</Text>
                     </View>
                   </View>
                 </View>
               </View>
-            </Page>
-    
-            {/* Each attachment on its own page */}
-            {data.attachments && data.attachments.filter((attachment: any) => attachment.url).map((attachment: any, index: number) => (
-              <Page key={attachment.id} size="A4" style={styles.page}>
+            </View>
+
+            {/* Contact information section */}
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>CONTACT INFORMATION</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.row}>
+                  <View style={styles.column}>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>WhatsApp:</Text>
+                      <Text style={styles.fieldValue}>{data.personalContact || "Not provided"}</Text>
+                    </View>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>Emergency Contact:</Text>
+                      <Text style={styles.fieldValue}>{data.emergencyContact || "Not provided"}</Text>
+                    </View>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>Email:</Text>
+                      <Text style={styles.fieldValue}>{data.email || "Not provided"}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Address section */}
+
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>CONTACT INFORMATION</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.row}>
+                  <View style={styles.column}>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>Street Address:</Text>
+                      <Text style={styles.fieldValue}>{data.streetAddress || "No address"}</Text>
+                    </View>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>District</Text>
+                      <Text style={styles.fieldValue}>{data.district || ""}</Text>
+                    </View>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>City:</Text>
+                      <Text style={styles.fieldValue}>{data.city || ""}</Text>
+                    </View>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>province:</Text>
+                      <Text style={styles.fieldValue}>{data.province || ""}</Text>
+                    </View>
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>Country:</Text>
+                      <Text style={styles.fieldValue}>{data.country || ""}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Experience section */}
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>EXPERIENCE</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Date of passing Part 1:</Text>
+                  <Text style={styles.fieldValue}>
+                    {data.osceDetails?.aktPassingDate
+                      ? format(new Date(data.osceDetails.aktPassingDate), "PPP")
+                      : "Not provided"}
+                  </Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Previous OSCE attempts:</Text>
+                  <Text style={styles.fieldValue}>{data.osceDetails?.previousOSCEAttempts || "Not provided"}</Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Country of experience:</Text>
+                  <Text style={styles.fieldValue}>{data.clinicalExperienceCountry || "Not provided"}</Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Country of origin:</Text>
+                  <Text style={styles.fieldValue}>{data.originCountry || "Not provided"}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* License details section */}
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>LICENSE DETAILS</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Registration authority:</Text>
+                  <Text style={styles.fieldValue}>{data.registrationAuthority || "Not provided"}</Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Registration number:</Text>
+                  <Text style={styles.fieldValue}>{data.registrationNumber || "Not provided"}</Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Date of registration:</Text>
+                  <Text style={styles.fieldValue}>
+                    {data.registrationDate ? format(new Date(data.registrationDate), "PPP") : "Not provided"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* OSCE Session Preferences */}
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>OSCE SESSION PREFERENCES</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Preference Date 1:</Text>
+                  <Text style={styles.fieldValue}>
+                    {data.osceDetails?.preferenceDate1 &&
+                    data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
+                      ? format(new Date(data.osceDetails.preferenceDate1), "PPP")
+                      : "Not provided"}
+                  </Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Preference Date 2:</Text>
+                  <Text style={styles.fieldValue}>
+                    {data.osceDetails?.preferenceDate2 &&
+                    data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
+                      ? format(new Date(data.osceDetails.preferenceDate2), "PPP")
+                      : "Not provided"}
+                  </Text>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Preference Date 3:</Text>
+                  <Text style={styles.fieldValue}>
+                    {data.osceDetails?.preferenceDate3 &&
+                    data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
+                      ? format(new Date(data.osceDetails.preferenceDate3), "PPP")
+                      : "Not provided"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Agreement */}
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
+              </View>
+              <View style={styles.resumeBody}>
+            
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>OSCE Candidate Statement:</Text>
+                  <Text style={styles.fieldValue}>
+                    {data.osceDetails?.osceCandidateStatement ? "Agreed" : "Not agreed"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>Please Note</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.note}>
+                    THE NUMBER OF PLACES IS LIMITED, AND SLOTS WILL BE ALLOCATED ON THE "FIRST COME FIRST SERVED” BASIS.
+                    Your application may be rejected because of a large number of applicants and you may be invited to
+                    apply again or offered a slot at a subsequent examination. Priority will be given to applicants from
+                    South Asia and those applications that reach us first, so we encourage you to apply as soon as
+                    possible. WHILST WE WILL TRY TO ACCOMMODATE YOUR PREFERENCE, IT MAY NOT BE POSSIBLE DUE TO A LARGE
+                    NUMBER OF APPLICANTS. Please email us well in advance if you require a letter of invitation for visa
+                    purposes and make sure you complete all travel formalities in good time (visa applications, travel
+                    permits, leaves, etc.) No Refunds will be granted in case any candidate fails to get the visa prior
+                    to the exam date. Candidates with a disability are requested to read the rules and regulation
+                    document [Page 10] available on the website The MRCGP [INT.] South Asia Secretariat will notify you
+                    by email of your allocated date and time at least two weeks before the exam starting date.
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.resumeSection}>
+              <View style={styles.resumeHeader}>
+                <Text style={styles.resumeSectionTitle}>CANDIDATE'S STATEMENT</Text>
+              </View>
+              <View style={styles.resumeBody}>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.note}>
+                    I hereby apply to sit the South Asia MRCGP [INT.] Part 2 (OSCE) Examination, success in which will
+                    allow me to apply for International Membership of the UK's Royal College of General Practitioners.
+                    Detailed information on the membership application process can be found on the RCGP website: Member
+                    Ship I have read and agree to abide by the conditions set out in the South Asia MRCGP [INT.]
+                    Examination Rules and Regulations as published on the MRCGP [INT.] South Asia website:
+                    www.mrcgpintsouthasia.org If accepted for International Membership, I undertake to continue approved
+                    postgraduate study while I remain in active general practice/family practice, and to uphold and
+                    promote the aims of the RCGP to the best of my ability. I understand that, on being accepted for
+                    International Membership, an annual subscription fee is to be payable to the RCGP. I understand that
+                    only registered International Members who maintain their RCGP subscription are entitled to use the
+                    post-nominal designation "MRCGP [INT]". Success in the exam does not give me the right to refer to
+                    myself as MRCGP [INT.]. I attach a banker's draft made payable to “MRCGP [INT.] South Asia”, I also
+                    understand and agree that my personal data will be handled by the MRCGP [INT.] South Asia Board and
+                    I also give permission for my personal data to be handled by the regional MRCGP [INT.] South Asia
+                    co-ordinators..
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Page>
+
+        {/* Each attachment on its own page */}
+        {data.attachments &&
+          data.attachments.flatMap((attachment: any, index: number) => {
+            // Build a friendly label
+            const label =
+              attachment.fileName === "passport-image"
+                ? "Passport Photo"
+                : attachment.fileName?.toLowerCase()?.includes("medical_license")
+                  ? "Medical License"
+                  : attachment.fileName?.toLowerCase()?.includes("part_1_passing_email")
+                    ? "Part 1 Passing Email"
+                    : attachment.fileName?.toLowerCase()?.includes("passport_bio_page")
+                      ? "Passport Bio Page"
+                      : attachment.fileName?.toLowerCase()?.includes("signature") 
+                        ? "Signature"
+                        : `Attachment ${index + 1}`
+
+            // Normalize base64Data to an array to support multi-page PDFs
+            const images: string[] = Array.isArray(attachment.base64Data)
+              ? attachment.base64Data
+              : attachment.base64Data
+                ? [attachment.base64Data]
+                : []
+
+            // If we have no image data, skip rendering a page for this attachment
+            if (images.length === 0) return []
+
+            // Render one PDF page per image
+            return images.map((imgSrc: string, pageIndex: number) => (
+              <Page key={`${attachment.id || index}-${pageIndex}`} size="A4" style={styles.page}>
                 <View style={styles.documentPage}>
                   <Text style={styles.documentPageTitle}>
-                    {attachment.fileName === 'passport-image' ? 'Passport Photo' :
-                     attachment.fileName === 'medical_license' && attachment.fileName.toLowerCase().includes('medical_license') ? 'Medical License' :
-                     attachment.fileName === 'part1-email' && attachment.fileName.toLowerCase().includes('part_1_passing_email') ? 'Part 1 Passing Email' :
-                     attachment.fileName === 'passport_bio_page' && attachment.fileName.toLowerCase().includes('passport_bio_page') ? 'Passport Bio Page' :
-                     attachment.category === 'application_signature' ? 'Signature' :
-                     `Attachment ${index + 1}`}
+                    {label}
+                    {images.length > 1 ? ` - Page ${pageIndex + 1}` : ""}
                   </Text>
-                  {attachment.base64Data ? (
-                    <Image
-                      src={attachment.base64Data}
-                      style={styles.documentPageImage}
-                    />
-                  ) : (
-                    <View style={styles.documentPageImageContainer}>
-                      <Text style={styles.imagePlaceholderText}>
-                        Image: {attachment.fileName}
-                      </Text>
-                      <Text style={styles.imageNoteText}>
-                        Note: Image could not be loaded from the server. The original image is available in the application.
-                      </Text>
-                    </View>
-                  )}
+                  <Image src={imgSrc || "/placeholder.svg"} style={styles.documentPageImage} />
                   <View style={styles.documentPageFooter}>
                     <Text style={styles.documentPageFooterText}>
                       {data.fullName} - Candidate ID: {data.candidateId}
                     </Text>
-                    <Text style={styles.documentPageFooterText}>
-                      {attachment.fileName}
-                    </Text>
+                    <Text style={styles.documentPageFooterText}>{attachment.fileName}</Text>
                   </View>
                 </View>
               </Page>
-            ))}
-          </Document>
-        );
-      };
+            ))
+          })}
+      </Document>
+    )
+  }
 
-      const styles = StyleSheet.create({
-        page: {
-          padding: 30,
-          backgroundColor: "#ffffff",
-          fontFamily: "Helvetica",
-        },
-        header: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginBottom: 20,
-          paddingBottom: 10,
-          borderBottomWidth: 2,
-          borderBottomColor: "#6366f1",
-          borderBottomStyle: "solid",
-        },
-        headerContent: {
-          flex: 1,
-        },
-        headerContent1: {
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "row",
-          gap: 10,
-        },
-        title: {
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#4f46e5",
-          marginBottom: 5,
-        },
-        titleimage: {
-          fontSize: 18,
-          fontWeight: "bold",
-          color: "#4f46e5",
-          marginBottom: 5,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          textAlign: "center",
-        },
-        subtitle: {
-          fontSize: 12,
-          color: "#6b7280",
-        },
-        passportImage: {
-          width: 80,
-          height: 80,
-          objectFit: "cover",
-          borderRadius: 4,
-          border: "1px solid #e5e7eb",
-        },
-        passportImage1: {
-          width: 80,
-          height: 80,
-          objectFit: "cover",
-        },
-        section: {
-          marginBottom: 10,
-        },
-        row: {
-          flexDirection: "row",
-          marginBottom: 5,
-        },
-        column: {
-          flex: 1,
-          paddingRight: 10,
-        },
-        resumeSection: {
-          marginBottom: 15,
-          borderRadius: 4,
-          borderWidth: 1,
-          borderColor: "#e5e7eb",
-          overflow: "hidden",
-        },
-        resumeHeader: {
-          backgroundColor: "#6366f1",
-          padding: 5,
-        },
-        resumeSectionTitle: {
-          fontSize: 10,
-          fontWeight: "bold",
-          color: "white",
-        },
-        resumeBody: {
-          padding: 8,
-          backgroundColor: "#f9fafb",
-        },
-        fieldRow: {
-          flexDirection: "row",
-          marginBottom: 4,
-        },
-        fieldLabel: {
-          fontSize: 9,
-          fontWeight: "bold",
-          marginRight: 5,
-          flex: 1,
-        },
-        fieldValue: {
-          fontSize: 9,
-          flex: 2,
-        },
-        note: {
-          fontSize: 10,
-          flex: 2,
-        },
-        footer: {
-          marginTop: 20,
-          padding: 10,
-          borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
-          borderTopStyle: "solid",
-          textAlign: "center",
-        },
-        footerText: {
-          fontSize: 8,
-          color: "#6b7280",
-        },
-        // Document page styles
-        documentPage: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 20,
-        },
-        documentPageTitle: {
-          fontSize: 18,
-          fontWeight: "bold",
-          marginBottom: 20,
-          color: "#4f46e5",
-          textAlign: "center",
-        },
-        documentPageImage: {
-          width: "90%",
-          height: "70%",
-          objectFit: "contain",
-          marginBottom: 20,
-          border: "1px solid #e5e7eb",
-        },
-        documentPageFooter: {
-          position: "absolute",
-          bottom: 20,
-          width: "100%",
-          textAlign: "center",
-        },
-        documentPageFooterText: {
-          fontSize: 10,
-          color: "#6b7280",
-        },
-        documentPageImageContainer: {
-          width: "90%",
-          height: "70%",
-          justifyContent: "center",
-          alignItems: "center",
-          border: "1px solid #e5e7eb",
-          backgroundColor: "#f9fafb",
-          marginBottom: 20,
-        },
-        imagePlaceholderText: {
-          fontSize: 14,
-          fontWeight: "bold",
-          color: "#4f46e5",
-          textAlign: "center",
-          marginBottom: 10,
-        },
-        imageNoteText: {
-          fontSize: 10,
-          color: "#6b7280",
-          textAlign: "center",
-          paddingHorizontal: 10,
-        },
-      });
-      const columnsWithActions = [
-        ...columns.filter((col: any) => col.id !== "actions"),
-        actionColumn,
-      ];
-
+  const styles = StyleSheet.create({
+    page: {
+      padding: 30,
+      backgroundColor: "#ffffff",
+      fontFamily: "Helvetica",
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 20,
+      paddingBottom: 10,
+      borderBottomWidth: 2,
+      borderBottomColor: "#6366f1",
+      borderBottomStyle: "solid",
+    },
+    headerContent: {
+      flex: 1,
+    },
+    headerContent1: {
+      flex: 1,
+      display: "flex",
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 10,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: "#4f46e5",
+      marginBottom: 5,
+    },
+    titleimage: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: "#4f46e5",
+      marginBottom: 5,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      textAlign: "center",
+    },
+    subtitle: {
+      fontSize: 12,
+      color: "#6b7280",
+    },
+    passportImage: {
+      width: 80,
+      height: 80,
+      objectFit: "cover",
+      borderRadius: 4,
+      border: "1px solid #e5e7eb",
+    },
+    passportImage1: {
+      width: 80,
+      height: 80,
+      objectFit: "cover",
+    },
+    section: {
+      marginBottom: 10,
+    },
+    row: {
+      flexDirection: "row",
+      marginBottom: 5,
+    },
+    column: {
+      flex: 1,
+      paddingRight: 10,
+    },
+    resumeSection: {
+      marginBottom: 15,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: "#e5e7eb",
+      overflow: "hidden",
+    },
+    resumeHeader: {
+      backgroundColor: "#6366f1",
+      padding: 5,
+    },
+    resumeSectionTitle: {
+      fontSize: 10,
+      fontWeight: "bold",
+      color: "white",
+    },
+    resumeBody: {
+      padding: 8,
+      backgroundColor: "#f9fafb",
+    },
+    fieldRow: {
+      flexDirection: "row",
+      marginBottom: 4,
+    },
+    fieldLabel: {
+      fontSize: 9,
+      fontWeight: "bold",
+      marginRight: 5,
+      flex: 1,
+    },
+    fieldValue: {
+      fontSize: 9,
+      flex: 2,
+    },
+    note: {
+      fontSize: 10,
+      flex: 2,
+    },
+    footer: {
+      marginTop: 20,
+      padding: 10,
+      borderTopWidth: 1,
+      borderTopColor: "#e5e7eb",
+      borderTopStyle: "solid",
+      textAlign: "center",
+    },
+    footerText: {
+      fontSize: 8,
+      color: "#6b7280",
+    },
+    // Document page styles
+    documentPage: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    documentPageTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      marginBottom: 20,
+      color: "#4f46e5",
+      textAlign: "center",
+    },
+    documentPageImage: {
+      width: "90%",
+      height: "70%",
+      objectFit: "contain",
+      marginBottom: 20,
+      border: "1px solid #e5e7eb",
+    },
+    documentPageFooter: {
+      position: "absolute",
+      bottom: 20,
+      width: "100%",
+      textAlign: "center",
+    },
+    documentPageFooterText: {
+      fontSize: 10,
+      color: "#6b7280",
+    },
+    documentPageImageContainer: {
+      width: "90%",
+      height: "70%",
+      justifyContent: "center",
+      alignItems: "center",
+      border: "1px solid #e5e7eb",
+      backgroundColor: "#f9fafb",
+      marginBottom: 20,
+    },
+    imagePlaceholderText: {
+      fontSize: 14,
+      fontWeight: "bold",
+      color: "#4f46e5",
+      textAlign: "center",
+      marginBottom: 10,
+    },
+    imageNoteText: {
+      fontSize: 10,
+      color: "#6b7280",
+      textAlign: "center",
+      paddingHorizontal: 10,
+    },
+  })
+  const columnsWithActions = [...columns.filter((col: any) => col.id !== "actions"), actionColumn]
 
  return (
     <div>
@@ -916,37 +916,37 @@ export default function ApplicationTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("all")}
+                  /* onClick={() => setActiveFilter("all")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("SUBMITTED")}
+                  /* onClick={() => setActiveFilter("SUBMITTED")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Submitted
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("UNDER_REVIEW")}
+                  /* onClick={() => setActiveFilter("UNDER_REVIEW")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Under Review
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("APPROVED")}
+                  /* onClick={() => setActiveFilter("APPROVED")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("REJECTED")}
+                  /* onClick={() => setActiveFilter("REJECTED")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("waiting")}
+                  /* onClick={() => setActiveFilter("waiting")} */
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Waiting
@@ -1031,8 +1031,9 @@ export default function ApplicationTable() {
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    // value={searchQuery}
+
+                    /* onChange={(e) => setSearchQuery(e.target.value)} */
                   />
                 </div>
               </div>
@@ -1073,7 +1074,7 @@ export default function ApplicationTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setActiveFilter("all")}
+                    /* onClick={() => setActiveFilter("all")} */
                     className="ml-4 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
                   >
                     Clear Filter
