@@ -50,7 +50,6 @@ interface AktsFieldsProps {
   setPassportPreview: (value: string | null) => void;
   passportPreview: string | null;
   fileErrors: { [key: string]: string };
-  setFileErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   validateFile: (file: File, fieldName: string, title?: string, attachmentId?: string) => void;
   selectedExam: any;
   attachments: any[];
@@ -72,7 +71,6 @@ export function AktFeilds(props: AktsFieldsProps) {
     setPassportPreview,
     passportPreview,
     fileErrors,
-    setFileErrors,
     validateFile,
     selectedExam,
     setAttachments,
@@ -106,6 +104,9 @@ export function AktFeilds(props: AktsFieldsProps) {
       setEmergencyError(null);
     }
   };
+
+  console.log("attachments", attachments);
+  
 
   useEffect(() => {
     if (selectedExam && selectedExam.examSlots) {
@@ -152,86 +153,6 @@ export function AktFeilds(props: AktsFieldsProps) {
   };
 
 
- const updateAttachmentFile = async (id: string, file: File | null) => {
-  if (!file) {
-    setAttachments(prev =>
-      prev.map(att =>
-        att.id === id ? { ...att, file: null, attachmentUrl: "" } : att
-      )
-    );
-    return;
-  }
-
-  // Validate file type
-  const acceptedTypes = [
-    'application/pdf',
-    'image/jpeg',
-    'image/jpg', 
-    'image/png'
-  ];
-
-  if (!acceptedTypes.includes(file.type)) {
-    const attachment = attachments.find(att => att.id === id);
-    const fieldName = attachment?.title ? attachment.title.replace('-', ' ').toUpperCase() : 'Document';
-    
-    setFileErrors(prev => ({
-      ...prev,
-      [`attachment-${id}`]: `${fieldName}: File type not supported. Only JPG, JPEG, PNG, and PDF formats are allowed.`
-    }));
-
-    // Clear the file input
-    const fileInput = document.querySelector(`input[type="file"]`) as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
-    
-    return;
-  }
-
-  // Check if file is PDF
-  const isPdf = file.type === 'application/pdf';
-  
-  // Create immediate preview URL
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const localPreviewUrl = e.target?.result as string;
-    
-    // For PDFs, convert to images for preview
-    let previewUrl = localPreviewUrl;
-    if (isPdf) {
-      try {
-        const { pdfToImages } = await import("../components/ui/pdfToImage");
-        const imagesArray = await pdfToImages(localPreviewUrl);
-        previewUrl = imagesArray[0] || localPreviewUrl; // Use first page as preview
-      } catch (error) {
-        console.error("Error converting PDF to images:", error);
-        previewUrl = localPreviewUrl; // Fallback to base64
-      }
-    }
-
-    // Update attachment with preview URL
-    setAttachments(prev =>
-      prev.map(att =>
-        att.id === id ? { ...att, file, attachmentUrl: previewUrl } : att
-      )
-    );
-
-    // Clear any file errors for this attachment
-    setFileErrors(prev => {
-      const newErrors = { ...prev };
-      delete newErrors[`attachment-${id}`];
-      return newErrors;
-    });
-  };
-  
-  reader.readAsDataURL(file);
-
-  try {
-    // Validate and upload file
-    const attachment = attachments.find(att => att.id === id);
-    await validateFile(file, "attachment", attachment?.title, attachment?.id);
-  } catch (err) {
-    console.error("Error validating file:", err);
-  }
-};
   return (
     <div>
       <Accordion
@@ -1289,7 +1210,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                 </p>
               </div>
 
-            </div>
+                      </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -1303,14 +1224,14 @@ export function AktFeilds(props: AktsFieldsProps) {
                 <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-              </div>
+                      </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
                   Eligibility Required
                 </h3>
                 <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
                   <p>Please select at least one eligibility criterion above to proceed with document uploads.</p>
-                </div>
+                      </div>
               </div>
             </div>
           </div>
@@ -1319,12 +1240,12 @@ export function AktFeilds(props: AktsFieldsProps) {
 
       {/* Required Documents Section - Only show if eligibility is selected */}
       {(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
-        <Accordion
-          type="single"
-          collapsible
+      <Accordion
+        type="single"
+        collapsible
           defaultValue="required-documents"
-          className="w-full mb-4"
-        >
+        className="w-full mb-4"
+      >
         <AccordionItem
           value="required-documents"
           className="border dark:border-slate-700 rounded-lg overflow-hidden shadow-sm"
@@ -1361,16 +1282,16 @@ export function AktFeilds(props: AktsFieldsProps) {
                             alt="Signature preview"
                             className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
                           />
-                          <Button
-                            type="button"
+                <Button
+                  type="button"
                             variant="outline"
-                            size="sm"
+                  size="sm"
                             onClick={() => removeAttachment(attachments.find(att => att.title === "signature")?.id || "")}
                             className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                          >
+                >
                             Change Document
-                          </Button>
-                        </div>
+                </Button>
+              </div>
                       </div>
                     ) : (
                       <label
@@ -1384,37 +1305,37 @@ export function AktFeilds(props: AktsFieldsProps) {
                           </p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
                             JPG, JPEG, PNG, PDF (MAX. 3MB)
-                          </p>
-                        </div>
+                  </p>
+                </div>
                         <input
                           id="signature"
                           type="file"
                           className="hidden"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              let attachmentId = attachments.find(att => att.title === "signature")?.id;
-                              
-                              if (!attachmentId) {
-                                attachmentId = Date.now().toString();
-                                setAttachments(prev => [...prev, {
-                                  id: attachmentId,
-                                  title: "signature",
-                                  file: null,
-                                  attachmentUrl: ""
-                                }]);
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                // Check if attachment already exists
+                                const existingAttachment = attachments.find(att => att.title === "signature");
+                                if (!existingAttachment) {
+                                  // Create new attachment
+                                  const newAttachment = {
+                                    id: crypto.randomUUID(),
+                                    title: "signature",
+                                    file: file,
+                                    attachmentUrl: ""
+                                  };
+                                  setAttachments(prev => [...prev, newAttachment]);
+                                }
+                                validateFile(file, "signature");
                               }
-                              
-                              updateAttachmentFile(attachmentId, file);
-                            }
-                          }}
+                            }}
                         />
                       </label>
                     )}
                   </div>
-                  {fileErrors["attachment-signature"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-signature"]}</p>
+                  {fileErrors["SIGNATURE"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["SIGNATURE"]}</p>
                   )}
                 </div>
 
@@ -1462,32 +1383,32 @@ export function AktFeilds(props: AktsFieldsProps) {
                           type="file"
                           className="hidden"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              let attachmentId = attachments.find(att => att.title === "passport-bio-page")?.id;
-                              
-                              if (!attachmentId) {
-                                attachmentId = Date.now().toString();
-                                setAttachments(prev => [...prev, {
-                                  id: attachmentId,
-                                  title: "passport-bio-page",
-                                  file: null,
-                                  attachmentUrl: ""
-                                }]);
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                // Check if attachment already exists
+                                const existingAttachment = attachments.find(att => att.title === "passport-bio-page");
+                                if (!existingAttachment) {
+                                  // Create new attachment
+                                  const newAttachment = {
+                                    id: crypto.randomUUID(),
+                                    title: "passport-bio-page",
+                                    file: file,
+                                    attachmentUrl: ""
+                                  };
+                                  setAttachments(prev => [...prev, newAttachment]);
+                                }
+                                validateFile(file, "passport-bio-page");
                               }
-                              
-                              updateAttachmentFile(attachmentId, file);
-                            }
-                          }}
+                            }}
                         />
                       </label>
                     )}
                   </div>
-                  {fileErrors["attachment-passport-bio-page"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-passport-bio-page"]}</p>
+                  {fileErrors["PASSPORT BIO PAGE"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT BIO PAGE"]}</p>
                   )}
-                </div>
+                      </div>
 
                 {/* Valid License */}
                 <div className="space-y-2">
@@ -1533,30 +1454,30 @@ export function AktFeilds(props: AktsFieldsProps) {
                           type="file"
                           className="hidden"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              let attachmentId = attachments.find(att => att.title === "valid-license")?.id;
-                              
-                              if (!attachmentId) {
-                                attachmentId = Date.now().toString();
-                                setAttachments(prev => [...prev, {
-                                  id: attachmentId,
-                                  title: "valid-license",
-                                  file: null,
-                                  attachmentUrl: ""
-                                }]);
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                // Check if attachment already exists
+                                const existingAttachment = attachments.find(att => att.title === "valid-license");
+                                if (!existingAttachment) {
+                                  // Create new attachment
+                                  const newAttachment = {
+                                    id: crypto.randomUUID(),
+                                    title: "valid-license",
+                                    file: file,
+                                    attachmentUrl: ""
+                                  };
+                                  setAttachments(prev => [...prev, newAttachment]);
+                                }
+                                validateFile(file, "valid-license");
                               }
-                              
-                              updateAttachmentFile(attachmentId, file);
-                            }
-                          }}
+                            }}
                         />
                       </label>
                     )}
                   </div>
-                  {fileErrors["attachment-valid-license"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-valid-license"]}</p>
+                  {fileErrors["VALID LICENSE"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["VALID LICENSE"]}</p>
                   )}
                 </div>
 
@@ -1564,7 +1485,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
                     MBBS Degree <span className="text-red-500">*</span>
-                  </Label>
+                        </Label>
                   <div className="flex items-center justify-center w-full">
                     {attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl ? (
                       <div className="relative w-full">
@@ -1601,33 +1522,33 @@ export function AktFeilds(props: AktsFieldsProps) {
                         </div>
                         <input
                           id="mbbs-degree"
-                          type="file"
+                            type="file"
                           className="hidden"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              let attachmentId = attachments.find(att => att.title === "mbbs-degree")?.id;
-                              
-                              if (!attachmentId) {
-                                attachmentId = Date.now().toString();
-                                setAttachments(prev => [...prev, {
-                                  id: attachmentId,
-                                  title: "mbbs-degree",
-                                  file: null,
-                                  attachmentUrl: ""
-                                }]);
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                // Check if attachment already exists
+                                const existingAttachment = attachments.find(att => att.title === "mbbs-degree");
+                                if (!existingAttachment) {
+                                  // Create new attachment
+                                  const newAttachment = {
+                                    id: crypto.randomUUID(),
+                                    title: "mbbs-degree",
+                                    file: file,
+                                    attachmentUrl: ""
+                                  };
+                                  setAttachments(prev => [...prev, newAttachment]);
+                                }
+                                validateFile(file, "mbbs-degree");
                               }
-                              
-                              updateAttachmentFile(attachmentId, file);
-                            }
-                          }}
+                            }}
                         />
                       </label>
                     )}
                   </div>
-                  {fileErrors["attachment-mbbs-degree"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-mbbs-degree"]}</p>
+                  {fileErrors["MBBS DEGREE"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["MBBS DEGREE"]}</p>
                   )}
                 </div>
               </div>
@@ -1674,7 +1595,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                             <p className="text-xs text-slate-500 dark:text-slate-400">
                               JPG, JPEG, PNG, PDF (MAX. 3MB)
                             </p>
-                          </div>
+                        </div>
                           <input
                             id="internship-certificate"
                             type="file"
@@ -1683,27 +1604,27 @@ export function AktFeilds(props: AktsFieldsProps) {
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
-                                let attachmentId = attachments.find(att => att.title === "internship-certificate")?.id;
-                                
-                                if (!attachmentId) {
-                                  attachmentId = Date.now().toString();
-                                  setAttachments(prev => [...prev, {
-                                    id: attachmentId,
+                                // Check if attachment already exists
+                                const existingAttachment = attachments.find(att => att.title === "internship-certificate");
+                                if (!existingAttachment) {
+                                  // Create new attachment
+                                  const newAttachment = {
+                                    id: crypto.randomUUID(),
                                     title: "internship-certificate",
-                                    file: null,
+                                    file: file,
                                     attachmentUrl: ""
-                                  }]);
+                                  };
+                                  setAttachments(prev => [...prev, newAttachment]);
                                 }
-                                
-                                updateAttachmentFile(attachmentId, file);
+                                validateFile(file, "internship-certificate");
                               }
                             }}
                           />
                         </label>
                       )}
-                    </div>
-                    {fileErrors["attachment-internship-certificate"] && (
-                      <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-internship-certificate"]}</p>
+                      </div>
+                    {fileErrors["INTERNSHIP CERTIFICATE"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["INTERNSHIP CERTIFICATE"]}</p>
                     )}
                   </div>
                 )}
@@ -1723,17 +1644,17 @@ export function AktFeilds(props: AktsFieldsProps) {
                               alt="Experience certificate preview"
                               className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
                             />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
                               onClick={() => removeAttachment(attachments.find(att => att.title === "experience-certificate")?.id || "")}
                               className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                            >
+                        >
                               Change Document
-                            </Button>
-                          </div>
-                        </div>
+                        </Button>
+                      </div>
+                    </div>
                       ) : (
                         <label
                           htmlFor="experience-certificate"
@@ -1756,27 +1677,27 @@ export function AktFeilds(props: AktsFieldsProps) {
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
-                                let attachmentId = attachments.find(att => att.title === "experience-certificate")?.id;
-                                
-                                if (!attachmentId) {
-                                  attachmentId = Date.now().toString();
-                                  setAttachments(prev => [...prev, {
-                                    id: attachmentId,
+                                // Check if attachment already exists
+                                const existingAttachment = attachments.find(att => att.title === "experience-certificate");
+                                if (!existingAttachment) {
+                                  // Create new attachment
+                                  const newAttachment = {
+                                    id: crypto.randomUUID(),
                                     title: "experience-certificate",
-                                    file: null,
+                                    file: file,
                                     attachmentUrl: ""
-                                  }]);
+                                  };
+                                  setAttachments(prev => [...prev, newAttachment]);
                                 }
-                                
-                                updateAttachmentFile(attachmentId, file);
+                                validateFile(file, "experience-certificate");
                               }
                             }}
                           />
                         </label>
                       )}
                     </div>
-                    {fileErrors["attachment-experience-certificate"] && (
-                      <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-experience-certificate"]}</p>
+                    {fileErrors["EXPERIENCE CERTIFICATE"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["EXPERIENCE CERTIFICATE"]}</p>
                     )}
                   </div>
                 )}

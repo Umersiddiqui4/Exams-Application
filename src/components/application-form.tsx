@@ -18,9 +18,7 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
 import { formatName } from "@/lib/utils";
-import {
-  incrementApplicationsCount,
-} from "@/redux/examDataSlice";
+import { incrementApplicationsCount } from "@/redux/examDataSlice";
 import { addApplication } from "@/redux/applicationsSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMemo } from "react";
@@ -43,10 +41,14 @@ import {
 } from "./schema/applicationSchema";
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
-import { examOccurrenceAvailability, Availability, getExamOccurrence, ExamOccurrence } from "@/lib/examOccurrencesApi";
+import {
+  examOccurrenceAvailability,
+  Availability,
+  getExamOccurrence,
+  ExamOccurrence,
+} from "@/lib/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
 import { pdfToImages } from "./ui/pdfToImage";
-
 
 export type Attachment = {
   id: string;
@@ -65,11 +67,12 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileErrors, setFileErrors] = useState<{ [key: string]: string }>({});
-  const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
+  const [passportPreview, setPassportPreview] = useState<string | null>(
+    "https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg"
+  );
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [medicalLicensePreview, setMedicalLicensePreview] = useState<any>(null);
@@ -77,19 +80,29 @@ export function ApplicationForm() {
   const [passportBioPreview, setPassportBioPreview] = useState<any>(null);
   const [signaturePreview, setSignaturePreview] = useState<any>(null);
   const [signatureIsPdf, setSignatureIsPdf] = useState<boolean | null>(null);
-  const [medicalLicenseIsPdf, setMedicalLicenseIsPdf] = useState<boolean | null>(null);
+  const [medicalLicenseIsPdf, setMedicalLicenseIsPdf] = useState<
+    boolean | null
+  >(null);
   const [part1EmailIsPdf, setPart1EmailIsPdf] = useState<boolean | null>(null);
-  const [passportBioIsPdf, setPassportBioIsPdf] = useState<boolean | null>(null);
+  const [passportBioIsPdf, setPassportBioIsPdf] = useState<boolean | null>(
+    null
+  );
   const [pdfGenerating] = useState(false);
   const [warning, setWarning] = useState(false);
-  const [examOccurrence, setExamOccurrence] = useState<Availability | null>(null);
+  const [examOccurrence, setExamOccurrence] = useState<Availability | null>(
+    null
+  );
   const [examDto, setExamDto] = useState<ExamOccurrence | null>(null);
   const [occurrenceLoading, setOccurrenceLoading] = useState(false);
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [isCreatingApplication, setIsCreatingApplication] = useState(false);
-  const [pendingUploads, setPendingUploads] = useState<{ file: File; inputId: string; localPreviewUrl: string; title?: string; }[]>([]);
-  const [uploadedFileIds, setUploadedFileIds] = useState<{ [inputId: string]: string }>({});
+  const [pendingUploads, setPendingUploads] = useState<
+    { file: File; inputId: string; localPreviewUrl: string; title?: string }[]
+  >([]);
+  const [uploadedFileIds, setUploadedFileIds] = useState<{
+    [inputId: string]: string;
+  }>({});
   const [applicationCreateTime, setApplicationCreateTime] = useState(false);
   const [applicationExists, setApplicationExists] = useState(false);
   const [triggerApplicationCheck, setTriggerApplicationCheck] = useState(false);
@@ -104,23 +117,33 @@ export function ApplicationForm() {
   if (!params.examId) return null;
 
   // Map examOccurrence to selectedExam structure for compatibility
-  const selectedExam = examDto ? {
-    id: examDto.id,
-    name: examDto.title,
-    location: Array.isArray(examDto.location) ? examDto.location.join(', ') : examDto.location,
-    openingDate: examDto.registrationStartDate,
-    closingDate: examDto.registrationEndDate,
-    slot1: examDto.examSlots?.[0] ? `${examDto.examSlots[0].startDate} | ${examDto.examSlots[0].endDate}` : '',
-    slot2: examDto.examSlots?.[1] ? `${examDto.examSlots[1].startDate} | ${examDto.examSlots[1].endDate}` : '',
-    slot3: examDto.examSlots?.[2] ? `${examDto.examSlots[2].startDate} | ${examDto.examSlots[2].endDate}` : '',
-    applicationsLimit: examDto.applicationLimit,
-    waitingLimit: examDto.waitingListLimit,
-    formLink: '',
-    isBlocked: !examDto.isActive,
-    // receivingApplicationsCount: examDto.applicationsCount,
-    examType: examDto.type,
-    examSlots: examDto.examSlots, // Add full examSlots for AktFeilds
-  } : null;
+  const selectedExam = examDto
+    ? {
+        id: examDto.id,
+        name: examDto.title,
+        location: Array.isArray(examDto.location)
+          ? examDto.location.join(", ")
+          : examDto.location,
+        openingDate: examDto.registrationStartDate,
+        closingDate: examDto.registrationEndDate,
+        slot1: examDto.examSlots?.[0]
+          ? `${examDto.examSlots[0].startDate} | ${examDto.examSlots[0].endDate}`
+          : "",
+        slot2: examDto.examSlots?.[1]
+          ? `${examDto.examSlots[1].startDate} | ${examDto.examSlots[1].endDate}`
+          : "",
+        slot3: examDto.examSlots?.[2]
+          ? `${examDto.examSlots[2].startDate} | ${examDto.examSlots[2].endDate}`
+          : "",
+        applicationsLimit: examDto.applicationLimit,
+        waitingLimit: examDto.waitingListLimit,
+        formLink: "",
+        isBlocked: !examDto.isActive,
+        // receivingApplicationsCount: examDto.applicationsCount,
+        examType: examDto.type,
+        examSlots: examDto.examSlots, // Add full examSlots for AktFeilds
+      }
+    : null;
 
   const osceForm = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -141,16 +164,18 @@ export function ApplicationForm() {
 
   const currentForm: any = !selectedExamType ? osceForm : aktsForm;
 
-
-
   useEffect(() => {
     if (params.examId) {
       const fetchOccurrence = async () => {
         setOccurrenceLoading(true);
         setOccurrenceError(null);
         try {
-          const occurrence = await examOccurrenceAvailability(params.examId as string);
-          const examData: any = await getExamOccurrence(params.examId as string);
+          const occurrence = await examOccurrenceAvailability(
+            params.examId as string
+          );
+          const examData: any = await getExamOccurrence(
+            params.examId as string
+          );
 
           setExamOccurrence(occurrence);
           setExamDto(examData?.data);
@@ -198,24 +223,34 @@ export function ApplicationForm() {
             email: values.email,
           };
 
-          const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiEmailPayload),
-          });
+          const response = await fetch(
+            "https://mrcgp-api.omnifics.io/api/v1/applications",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(apiEmailPayload),
+            }
+          );
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            const errorMessage = errorData.message || `Application creation failed: ${response.status} ${response.statusText}`;
+            const errorMessage =
+              errorData.message ||
+              `Application creation failed: ${response.status} ${response.statusText}`;
 
             // Check for specific 409 conflict error
-            if (response.status === 409 && errorData.message === "Application already exists for this exam occurrence") {
+            if (
+              response.status === 409 &&
+              errorData.message ===
+                "Application already exists for this exam occurrence"
+            ) {
               setApplicationExists(true);
               toast({
                 title: "Application Already Exists",
-                description: "An application with this email already exists for this exam. Please use a different email address.",
+                description:
+                  "An application with this email already exists for this exam. Please use a different email address.",
                 variant: "destructive",
               });
               return;
@@ -227,19 +262,23 @@ export function ApplicationForm() {
               variant: "destructive",
             });
 
-            console.warn(`Auto-application creation failed: ${response.status} ${response.statusText}`);
+            console.warn(
+              `Auto-application creation failed: ${response.status} ${response.statusText}`
+            );
             return; // Don't throw error, just log and continue
           }
 
           const apiResponse = await response.json();
 
           // Extract application ID from response
-          const appId = apiResponse.id || apiResponse.applicationId || apiResponse.data?.id;
+          const appId =
+            apiResponse.id || apiResponse.applicationId || apiResponse.data?.id;
           if (appId) {
             setApplicationId(appId);
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Network error occurred";
+          const errorMessage =
+            error instanceof Error ? error.message : "Network error occurred";
 
           toast({
             title: "Application Creation Error",
@@ -270,18 +309,19 @@ export function ApplicationForm() {
   useEffect(() => {
     const subscription = (selectedExamType ? aktsForm : osceForm).watch(
       (values) => {
-
         const currentForm = selectedExamType ? aktsForm : osceForm;
         const errors = currentForm.formState.errors;
         const emailValid = !errors.email;
-        const fullNameFilled = values.fullName && values.fullName.trim() !== '';
+        const fullNameFilled = values.fullName && values.fullName.trim() !== "";
 
         if (emailValid && fullNameFilled) {
           if (prevValuesRef.current) {
             // Check if any other field changed
-            const otherFieldsChanged = Object.keys(values).some(key => {
-              if (key === 'email' || key === 'fullName') return false;
-              return (values as any)[key] !== (prevValuesRef.current as any)[key];
+            const otherFieldsChanged = Object.keys(values).some((key) => {
+              if (key === "email" || key === "fullName") return false;
+              return (
+                (values as any)[key] !== (prevValuesRef.current as any)[key]
+              );
             });
             if (otherFieldsChanged) {
               setApplicationCreateTime(true);
@@ -317,16 +357,19 @@ export function ApplicationForm() {
     if (!candidateId || candidateId.trim() === "") return;
 
     try {
-      const response = await fetch("https://mrcgp-api.omnifics.io/api/v1/applications/can-apply", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          candidateId: candidateId.trim(),
-          examOccurrenceId: params.examId,
-        }),
-      });
+      const response = await fetch(
+        "https://mrcgp-api.omnifics.io/api/v1/applications/can-apply",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            candidateId: candidateId.trim(),
+            examOccurrenceId: params.examId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -338,7 +381,8 @@ export function ApplicationForm() {
         setIsEligible(false);
         toast({
           title: "Eligibility Check Failed",
-          description: data.reason || "You are not eligible to submit the application.",
+          description:
+            data.reason || "You are not eligible to submit the application.",
           variant: "destructive",
         });
       }
@@ -376,32 +420,38 @@ export function ApplicationForm() {
       const processPendingUploads = async () => {
         for (const { file, inputId, title } of pendingUploads) {
           // Check if file is PDF
-          const isPdf = file.type === 'application/pdf';
+          const isPdf = file.type === "application/pdf";
 
           // Delete existing file if it exists
           const existingFileId = uploadedFileIds[inputId];
           if (existingFileId) {
             try {
-              const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
-                method: 'DELETE'
-              });
+              const deleteResponse = await fetch(
+                `https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`,
+                {
+                  method: "DELETE",
+                }
+              );
 
               if (!deleteResponse.ok) {
-                console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
+                console.warn(
+                  `Failed to delete existing file ${existingFileId} for ${inputId}`
+                );
               }
             } catch (error) {
-              console.warn(`Error deleting existing file for ${inputId}:`, error);
+              console.warn(
+                `Error deleting existing file for ${inputId}:`,
+                error
+              );
             }
           }
 
           // Determine filename based on exam type and input
           let fileName = file.name;
 
-          if (selectedExamType && inputId === "attachment") {
-            // For AKT attachments, find the attachment with the matching file
-            if (title) {
-              fileName = title; // ✅ direct use karo
-            }
+          if (selectedExamType) {
+            // For AKT attachments, use the inputId as filename
+            fileName = inputId;
           } else if (!selectedExamType) {
             // For OSCE applications, use standard titles for all file types
             switch (inputId) {
@@ -431,35 +481,40 @@ export function ApplicationForm() {
           if (isPdf) {
             // PDF upload using document API - send file with API body
             const formData = new FormData();
-            formData.append('file', file);
-            formData.append('examOccurrenceId', params.examId as string);
-            formData.append('entityType', 'application');
-            formData.append('entityId', applicationId as string);
-            formData.append('category', 'application_other');
-            formData.append('fileName', fileName || file.name);
+            formData.append("file", file);
+            formData.append("examOccurrenceId", params.examId as string);
+            formData.append("entityType", "application");
+            formData.append("entityId", applicationId as string);
+            formData.append("category", "application_other");
+            formData.append("fileName", fileName || file.name);
 
-            response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
-              method: 'POST',
-              body: formData
-            });
+            response = await fetch(
+              "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document",
+              {
+                method: "POST",
+                body: formData,
+              }
+            );
           } else {
             // Image upload using existing API
             const formData = new FormData();
-            formData.append('file', file);
-            formData.append('examOccurrenceId', params.examId as string);
-            formData.append('entityType', 'application');
-            formData.append('entityId', applicationId as string);
-            formData.append('category', getCategory(inputId));
-            formData.append('fileName', fileName);
+            formData.append("file", file);
+            formData.append("examOccurrenceId", params.examId as string);
+            formData.append("entityType", "application");
+            formData.append("entityId", applicationId as string);
+            formData.append("category", getCategory(inputId));
+            formData.append("fileName", fileName);
 
-            response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
-              method: 'POST',
-              body: formData
-            });
+            response = await fetch(
+              "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image",
+              {
+                method: "POST",
+                body: formData,
+              }
+            );
           }
 
           try {
-
             if (!response.ok) {
               console.error(`Upload failed for ${inputId}`);
               continue;
@@ -468,17 +523,19 @@ export function ApplicationForm() {
             const data = await response.json();
             const newFileId = data.id; // Capture the new file ID
             // const serverUrl = data.url; // Capture server URL from response
-      
+
             // Store the new file ID for future deletions
-            setUploadedFileIds(prev => ({
+            setUploadedFileIds((prev) => ({
               ...prev,
-              [inputId]: newFileId
+              [inputId]: newFileId,
             }));
-      
+
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
-            const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+            const fieldName = title
+              ? title.replace("-", " ").toUpperCase()
+              : inputId.replace("-", " ").toUpperCase();
             toast({
               title: "File Upload Failed",
               description: `${fieldName} upload failed. Please try again.`,
@@ -489,7 +546,7 @@ export function ApplicationForm() {
         // Clear pending uploads after processing
         setPendingUploads([]);
       };
-    
+
       processPendingUploads();
     }
   }, [applicationId, pendingUploads, params.examId]);
@@ -511,7 +568,6 @@ export function ApplicationForm() {
     signaturePreview,
   ]);
 
-
   const getCategory = (inputId: string) => {
     switch (inputId) {
       case "passport-image":
@@ -527,14 +583,19 @@ export function ApplicationForm() {
     const existingFileId = uploadedFileIds[inputId];
     if (existingFileId) {
       try {
-        const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
-          method: 'DELETE'
-        });
+        const deleteResponse = await fetch(
+          `https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`,
+          {
+            method: "DELETE",
+          }
+        );
 
         if (!deleteResponse.ok) {
-          console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
+          console.warn(
+            `Failed to delete existing file ${existingFileId} for ${inputId}`
+          );
         } else {
-          setUploadedFileIds(prev => {
+          setUploadedFileIds((prev) => {
             const newState = { ...prev };
             delete newState[inputId];
             return newState;
@@ -547,14 +608,13 @@ export function ApplicationForm() {
   };
 
   async function onSubmit(data: AktsFormValues | FormValues) {
-
     if (!examOccurrence) {
       Swal.fire({
         title: "Notice",
         text: "Exam occurrence not loaded.",
         icon: "warning",
         confirmButtonColor: "#f59e0b",
-        confirmButtonText: "OK"
+        confirmButtonText: "OK",
       }).then(() => {
         window.location.href = "https://mrcgpintsouthasia.org/";
       });
@@ -595,7 +655,7 @@ export function ApplicationForm() {
           text: "Exam ID is missing or invalid. Please try again.",
           icon: "warning",
           confirmButtonColor: "#f59e0b",
-          confirmButtonText: "OK"
+          confirmButtonText: "OK",
         }).then(() => {
           window.location.href = "https://mrcgpintsouthasia.org/";
         });
@@ -621,7 +681,11 @@ export function ApplicationForm() {
       // AKT eligibility validation
       if (selectedExamType) {
         const aktData = data as AktsFormValues;
-        if (!aktData.eligibilityA && !aktData.eligibilityB && !aktData.eligibilityC) {
+        if (
+          !aktData.eligibilityA &&
+          !aktData.eligibilityB &&
+          !aktData.eligibilityC
+        ) {
           currentForm.setError("eligibilityA", {
             type: "manual",
             message: "Please select at least one eligibility criterion",
@@ -631,8 +695,13 @@ export function ApplicationForm() {
         }
 
         // Validate required documents based on eligibility
-        const requiredDocs = ["signature", "passport-bio-page", "valid-license", "mbbs-degree"];
-        
+        const requiredDocs = [
+          "signature",
+          "passport-bio-page",
+          "valid-license",
+          "mbbs-degree",
+        ];
+
         // Add case-specific documents
         if (aktData.eligibilityA || aktData.eligibilityB) {
           requiredDocs.push("internship-certificate");
@@ -642,8 +711,9 @@ export function ApplicationForm() {
         }
 
         // Check if all required documents are uploaded
-        const missingDocs = requiredDocs.filter(doc => 
-          !attachments.find(att => att.title === doc && att.attachmentUrl)
+        const missingDocs = requiredDocs.filter(
+          (doc) =>
+            !attachments.find((att) => att.title === doc && att.attachmentUrl)
         );
 
         if (missingDocs.length > 0) {
@@ -700,19 +770,26 @@ export function ApplicationForm() {
           clinicalExperienceCountry: data.countryOfExperience,
           registrationAuthority: data.registrationAuthority,
           registrationNumber: data.registrationNumber,
-          registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString() : "",
-          usualForename: data.fullName.split(' ')[0] || "",
+          registrationDate: data.dateOfRegistration
+            ? new Date(data.dateOfRegistration).toISOString()
+            : "",
+          usualForename: data.fullName.split(" ")[0] || "",
           gender: "MALE", // Default, could be added to form
-          previousAKTAttempts: (data as AktsFormValues).previousAktsAttempts || 0,
+          previousAKTAttempts:
+            (data as AktsFormValues).previousAktsAttempts || 0,
           graduatingSchoolName: (data as AktsFormValues).schoolName || "",
-          graduatingSchoolLocation: (data as AktsFormValues).schoolLocation || "",
-          dateOfQualification: (data as AktsFormValues).QualificationDate ? new Date((data as AktsFormValues).QualificationDate).toISOString() : "",
+          graduatingSchoolLocation:
+            (data as AktsFormValues).schoolLocation || "",
+          dateOfQualification: (data as AktsFormValues).QualificationDate
+            ? new Date((data as AktsFormValues).QualificationDate).toISOString()
+            : "",
           aktEligibility: "A", // Default, could be mapped from eligibility fields
-          examinationCenterPreference: (data as AktsFormValues).examinationCenter || "null",
+          examinationCenterPreference:
+            (data as AktsFormValues).examinationCenter || "null",
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
           date: new Date().toISOString(),
           examType: examDto?.type || "AKT",
-          "shouldSubmit": true,
+          shouldSubmit: true,
           // notes: ""
         };
       } else {
@@ -731,9 +808,13 @@ export function ApplicationForm() {
           clinicalExperienceCountry: data.countryOfExperience,
           registrationAuthority: data.registrationAuthority,
           registrationNumber: data.registrationNumber,
-          registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
-          date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
-          usualForename: data.fullName.split(' ')[0] || "",
+          registrationDate: data.dateOfRegistration
+            ? new Date(data.dateOfRegistration).toISOString().split("T")[0]
+            : "",
+          date: data.agreementDate
+            ? new Date(data.agreementDate).toISOString().split("T")[0]
+            : "",
+          usualForename: data.fullName.split(" ")[0] || "",
           // gender: "MALE",
           previousAKTAttempts: 0,
           aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
@@ -743,13 +824,15 @@ export function ApplicationForm() {
           preferenceDate3: data.preferenceDate3 || "00/00/0000",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
           examType: examDto?.type || "OSCE",
-          "shouldSubmit": true,
+          shouldSubmit: true,
         };
       }
 
       // Check if application was auto-created
       if (!applicationId) {
-        throw new Error("Application not created yet. Please ensure fullname and email are filled.");
+        throw new Error(
+          "Application not created yet. Please ensure fullname and email are filled."
+        );
       }
 
       // Make confirmation API call with retry logic
@@ -760,32 +843,43 @@ export function ApplicationForm() {
         try {
           confirmationAttempts++;
 
-          const confirmationResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/applications/${applicationId}`, {
-            method: "PATCH", // Changed to PUT as per API spec
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiPayload),
-          });
+          const confirmationResponse = await fetch(
+            `https://mrcgp-api.omnifics.io/api/v1/applications/${applicationId}`,
+            {
+              method: "PATCH", // Changed to PUT as per API spec
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(apiPayload),
+            }
+          );
 
           if (!confirmationResponse.ok) {
-            const errorData = await confirmationResponse.json().catch(() => ({}));
-            const errorMessage = errorData.message || `Application confirmation failed: ${confirmationResponse.status} ${confirmationResponse.statusText}`;
+            const errorData = await confirmationResponse
+              .json()
+              .catch(() => ({}));
+            const errorMessage =
+              errorData.message ||
+              `Application confirmation failed: ${confirmationResponse.status} ${confirmationResponse.statusText}`;
             throw new Error(errorMessage);
           }
 
           break; // Success, exit retry loop
-
         } catch (error) {
-          console.warn(`Confirmation attempt ${confirmationAttempts} failed:`, error);
+          console.warn(
+            `Confirmation attempt ${confirmationAttempts} failed:`,
+            error
+          );
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
-            const errorMessage = `${error instanceof Error ? error.message : 'Unknown error'}`;
+            const errorMessage = `${
+              error instanceof Error ? error.message : "Unknown error"
+            }`;
             throw new Error(errorMessage);
           }
 
           // Wait 1 second before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
@@ -811,37 +905,37 @@ export function ApplicationForm() {
         preferenceDate3: data.preferenceDate3 || "00/00/0000",
         ...(selectedExamType
           ? {
-            eligibilityA: (data as AktsFormValues).eligibilityA || false,
-            eligibilityB: (data as AktsFormValues).eligibilityB || false,
-            eligibilityC: (data as AktsFormValues).eligibilityC || false,
-            schoolName: (data as AktsFormValues).schoolName || "",
-            schoolLocation: (data as AktsFormValues).schoolLocation || "",
-            QualificationDate: (data as AktsFormValues).QualificationDate
-              ? new Date(
-                (data as AktsFormValues).QualificationDate
-              ).toISOString()
-              : "",
-            candidateId: (data as AktsFormValues).candidateId || "",
-            candidateStatementA:
-              (data as AktsFormValues).candidateStatementA || false,
-            candidateStatementB:
-              (data as AktsFormValues).candidateStatementB || false,
-            candidateStatementC:
-              (data as AktsFormValues).candidateStatementC || false,
-            examinationCenter:
-              (data as AktsFormValues).examinationCenter || "",
-            attachments: attachments.map((att: any) => ({
-              id: att.id,
-              attachmentUrl: att.attachmentUrl || "",
-              title: att.title || "",
-            })),
-          }
+              eligibilityA: (data as AktsFormValues).eligibilityA || false,
+              eligibilityB: (data as AktsFormValues).eligibilityB || false,
+              eligibilityC: (data as AktsFormValues).eligibilityC || false,
+              schoolName: (data as AktsFormValues).schoolName || "",
+              schoolLocation: (data as AktsFormValues).schoolLocation || "",
+              QualificationDate: (data as AktsFormValues).QualificationDate
+                ? new Date(
+                    (data as AktsFormValues).QualificationDate
+                  ).toISOString()
+                : "",
+              candidateId: (data as AktsFormValues).candidateId || "",
+              candidateStatementA:
+                (data as AktsFormValues).candidateStatementA || false,
+              candidateStatementB:
+                (data as AktsFormValues).candidateStatementB || false,
+              candidateStatementC:
+                (data as AktsFormValues).candidateStatementC || false,
+              examinationCenter:
+                (data as AktsFormValues).examinationCenter || "",
+              attachments: attachments.map((att: any) => ({
+                id: att.id,
+                attachmentUrl: att.attachmentUrl || "",
+                title: att.title || "",
+              })),
+            }
           : {
-            medicalLicenseUrl: medicalLicensePreview || "",
-            part1EmailUrl: part1EmailPreview || "",
-            passportBioUrl: passportBioPreview || "",
-            part1PassingEmailUrl: part1EmailPreview || "",
-          }),
+              medicalLicenseUrl: medicalLicensePreview || "",
+              part1EmailUrl: part1EmailPreview || "",
+              passportBioUrl: passportBioPreview || "",
+              part1PassingEmailUrl: part1EmailPreview || "",
+            }),
       };
 
       dispatch(addApplication(application));
@@ -873,16 +967,22 @@ export function ApplicationForm() {
             });
         },
       }).then(() => {
-        setTimeout(() => window.location.href = "https://mrcgpintsouthasia.org/", 2000);
+        setTimeout(
+          () => (window.location.href = "https://mrcgpintsouthasia.org/"),
+          2000
+        );
       });
     } catch (err) {
       console.error("Submission error:", err);
       Swal.fire({
         title: "Notice",
-        text: err instanceof Error ? err.message : "Something went wrong during submission.",
+        text:
+          err instanceof Error
+            ? err.message
+            : "Something went wrong during submission.",
         icon: "warning",
         confirmButtonColor: "#f59e0b",
-        confirmButtonText: "OK"
+        confirmButtonText: "OK",
       }).then(() => {
         // Redirect to main MRCGP website when user clicks OK
         window.location.href = "https://mrcgpintsouthasia.org/";
@@ -892,7 +992,12 @@ export function ApplicationForm() {
     }
   }
 
-  const validateFile = async (file: File, inputId: string, title?: string, attachmentId?: string) => {
+  const validateFile = async (
+    file: File,
+    inputId: string,
+    title?: string,
+    attachmentId?: string
+  ) => {
     // List of input IDs that require validation
     const validateThese = ["passport-image"];
 
@@ -901,63 +1006,87 @@ export function ApplicationForm() {
       // For attachments, use attachment ID for unique error key
       fieldName = `attachment-${attachmentId}`;
     } else {
-      fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+      fieldName = title
+        ? title.replace("-", " ").toUpperCase()
+        : inputId.replace("-", " ").toUpperCase();
     }
 
     // Reset error for this field
-    setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
+    setFileErrors((prev) => ({ ...prev, [fieldName]: "" }));
 
     // Check if file is PDF
-    const isPdf = file.type === 'application/pdf';
+    const isPdf = file.type === "application/pdf";
 
     // Only validate if inputId is in the validation list or if it's a PDF
     if (validateThese.includes(inputId) || isPdf) {
       // Check file type for images
       if (!isPdf) {
-        const validTypes = ["image/jpeg", "image/jpg", "image/png" ];
-        const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
+        const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+        const fieldName = title
+          ? title.replace("-", " ").toUpperCase()
+          : inputId.replace("-", " ").toUpperCase();
         if (!validTypes.includes(file.type)) {
-          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG and PNG formats are supported.` }));
-          const fileInput = document.getElementById(inputId) as HTMLInputElement;
+          setFileErrors((prev) => ({
+            ...prev,
+            [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG and PNG formats are supported.`,
+          }));
+          const fileInput = document.getElementById(
+            inputId
+          ) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
           // Clear the preview on validation error
-          if (title === "passport-image") {
-            // AKT passport image
-            setPassportPreview(null);
-          } else {
-            switch (inputId) {
-              case "passport-image":
-                setPassportPreview(null);
-                break;
-              case "medical-license":
-                setMedicalLicensePreview(null);
-                setMedicalLicenseIsPdf(null);
-                break;
-              case "part1-email":
-                setPart1EmailPreview(null);
-                setPart1EmailIsPdf(null);
-                break;
-              case "passport-bio":
-                setPassportBioPreview(null);
-                setPassportBioIsPdf(null);
-                break;
-              case "signature":
-                setSignaturePreview(null);
-                setSignatureIsPdf(null);
-                break;
-              case "attachment":
-                setAttachmentUrl(null);
-                break;
-            }
+          switch (inputId) {
+            case "passport-image":
+              setPassportPreview(null);
+              break;
+            case "medical-license":
+              setMedicalLicensePreview(null);
+              setMedicalLicenseIsPdf(null);
+              break;
+            case "part1-email":
+              setPart1EmailPreview(null);
+              setPart1EmailIsPdf(null);
+              break;
+            case "passport-bio":
+              setPassportBioPreview(null);
+              setPassportBioIsPdf(null);
+              break;
+            case "signature":
+              setSignaturePreview(null);
+              setSignatureIsPdf(null);
+              break;
+            case "passport-bio-page":
+              setPassportBioPreview(null);
+              setPassportBioIsPdf(null);
+              break;
+            case "valid-license":
+              setMedicalLicensePreview(null);
+              setMedicalLicenseIsPdf(null);
+              break;
+            case "mbbs-degree":
+              setPart1EmailPreview(null);
+              setPart1EmailIsPdf(null);
+              break;
+            case "internship-certificate":
+            case "experience-certificate":
+              setAttachmentUrl(null);
+              break;
           }
           return false;
         }
       } else {
         // For PDFs, reject for passport-image
         if (inputId === "passport-image") {
-          const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: PDF files are not allowed for this field.` }));
-          const fileInput = document.getElementById(inputId) as HTMLInputElement;
+          const fieldName = title
+            ? title.replace("-", " ").toUpperCase()
+            : inputId.replace("-", " ").toUpperCase();
+          setFileErrors((prev) => ({
+            ...prev,
+            [fieldName]: `${fieldName}: PDF files are not allowed for this field.`,
+          }));
+          const fileInput = document.getElementById(
+            inputId
+          ) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
           setPassportPreview(null);
           return false;
@@ -967,302 +1096,13 @@ export function ApplicationForm() {
       // Check file size (10MB = 10 * 1024 * 1024 bytes)
       const maxSize = 3 * 1024 * 1024;
       if (file.size > maxSize) {
-        setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: File size exceeds 3MB limit. Please choose a smaller file.` }));
+        setFileErrors((prev) => ({
+          ...prev,
+          [fieldName]: `${fieldName}: File size exceeds 3MB limit. Please choose a smaller file.`,
+        }));
         const fileInput = document.getElementById(inputId) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
         // Clear the preview on validation error
-        if (title === "passport-image") {
-          // AKT passport image
-          setPassportPreview(null);
-        } else {
-          switch (inputId) {
-            case "passport-image":
-              setPassportPreview(null);
-              break;
-            case "medical-license":
-              setMedicalLicensePreview(null);
-              setMedicalLicenseIsPdf(null);
-              break;
-            case "part1-email":
-              setPart1EmailPreview(null);
-              setPart1EmailIsPdf(null);
-              break;
-            case "passport-bio":
-              setPassportBioPreview(null);
-              setPassportBioIsPdf(null);
-              break;
-            case "signature":
-              setSignaturePreview(null);
-              setSignatureIsPdf(null);
-              break;
-            case "attachment":
-              setAttachmentUrl(null);
-              break;
-          }
-        }
-        return false;
-      }
-    }
-
-    // Create local preview URL immediately
-    const localPreviewUrl = await fileToBase64(file);
-    console.log("localPreviewUrl", localPreviewUrl);
-    
-    // Set immediate preview with local URL
-    if (title === "passport-image") {
-      // AKT passport image
-      setPassportPreview(localPreviewUrl);
-    } else {
-      switch (inputId) {
-        case "passport-image":
-          setPassportPreview(localPreviewUrl);
-          break;
-        case "medical-license":
-          if (isPdf) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              const base64Pdf = e.target?.result as string;
-              const imagesArray = await pdfToImages(base64Pdf);
-              setMedicalLicensePreview(imagesArray); // array of images
-            };
-            reader.readAsDataURL(file);
-          } else {
-            setMedicalLicensePreview([localPreviewUrl]);
-          }
-          setMedicalLicenseIsPdf(isPdf);
-          break;
-        case "part1-email":
-          if (isPdf) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              const base64Pdf = e.target?.result as string;
-              const imagesArray = await pdfToImages(base64Pdf);
-              setPart1EmailPreview(imagesArray);
-            };
-            reader.readAsDataURL(file);
-          } else {
-            setPart1EmailPreview([localPreviewUrl]);
-          }
-          setPart1EmailIsPdf(isPdf);
-          break;
-        case "passport-bio":
-          if (isPdf) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              const base64Pdf = e.target?.result as string;
-              const imagesArray = await pdfToImages(base64Pdf);
-              setPassportBioPreview(imagesArray);
-            };
-            reader.readAsDataURL(file);
-          } else {
-            setPassportBioPreview([localPreviewUrl]);
-          }
-          setPassportBioIsPdf(isPdf);
-          break;
-        case "signature":
-          if (isPdf) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              const base64Pdf = e.target?.result as string;
-              const imagesArray = await pdfToImages(base64Pdf);
-              setSignaturePreview(imagesArray);
-            };
-            reader.readAsDataURL(file);
-          } else {
-            setSignaturePreview([localPreviewUrl]);
-          }
-          setSignatureIsPdf(isPdf);
-          break;
-        case "attachment":
-          setAttachmentUrl(localPreviewUrl);
-          break;
-      }
-    }
-
-    // Check if application is created
-    if (!applicationId) {
-      // Queue the file for upload once application is created
-      setPendingUploads(prev => [...prev, { file, inputId, title, localPreviewUrl }]);
-      setFileErrors(prev => ({ ...prev, [fieldName]: '' })); // Clear any previous errors
-      return true; // Return true to indicate file is accepted but queued
-    }
-
-    // Determine filename based on exam type and input
-    let fileName = file.name;
-
-   if (inputId === "attachment") {
-    if (title) {
-      fileName = title; // ✅ direct use karo
-    }
-    } else if (!selectedExamType) {
-      // For OSCE applications, use standard titles for all file types
-      switch (inputId) {
-        case "passport-image":
-          fileName = "passport-image";
-          break;
-        case "medical-license":
-          fileName = "medical license";
-          break;
-        case "part1-email":
-          fileName = "part 1 passing email";
-          break;
-        case "passport-bio":
-          fileName = "passport bio page";
-          break;
-        case "signature":
-          fileName = "signature";
-          break;
-        default: {
-          // find the attachment by file or id
-          const att = attachments.find((a) => a.file === file || a.id === inputId);
-          fileName = att?.title || file.name; // fallback
-        }
-      }
-    }
-
-    // Delete existing file if it exists (skip for attachments since each is independent)
-    if (inputId !== "attachment") {
-      const existingFileId = uploadedFileIds[inputId];
-      if (existingFileId) {
-        try {
-          const deleteResponse = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`, {
-            method: 'DELETE'
-          });
-
-          if (!deleteResponse.ok) {
-            console.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
-          }
-        } catch (error) {
-          console.warn(`Error deleting existing file for ${inputId}:`, error);
-        }
-      }
-    }
-
-    // Upload to API based on file type
-    let response;
-
-    if (isPdf) {
-      // PDF upload using document API - send file with API body
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('examOccurrenceId', params.examId as string);
-      formData.append('entityType', 'application');
-      formData.append('entityId', applicationId as string);
-      formData.append('category', 'application_other');
-      formData.append('fileName', fileName || file.name);
-
-      response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document', {
-        method: 'POST',
-        body: formData
-      });
-    } else {
-      // Image upload using existing API
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('examOccurrenceId', params.examId as string);
-      formData.append('entityType', 'application');
-      formData.append('entityId', applicationId as string);
-      formData.append('category', getCategory(inputId));
-      const matchedAttachment = attachments.find(
-        (att: any) => att.file === file || att.id === inputId
-      );
-
-      // File name preference: attachment title > computed fileName > actual file name
-      const finalFileName = matchedAttachment?.title || fileName || file.name;
-
-      formData.append('fileName', finalFileName);
-
-      response = await fetch('https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image', {
-        method: 'POST',
-        body: formData
-      });
-    }
-
-    try {
-
-      if (!response.ok) {
-        const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-        let errorMessage = `${fieldName}: Upload failed. Please try again.`;
-        try {
-          const errorData = await response.json().catch(() => ({}));
-          if (errorData.message) {
-            errorMessage = `${fieldName}: Upload failed: ${errorData.message}`;
-          } else if (response.status === 413) {
-            errorMessage = `${fieldName}: File is too large. Please choose a smaller file.`;
-          } else if (response.status === 415) {
-            errorMessage = `${fieldName}: File type not supported. Please use JPG, PNG, GIF, or WebP.`;
-          } else if (response.status >= 500) {
-            errorMessage = `${fieldName}: Server error. Please try again later.`;
-          }
-        } catch (e) {
-          // Keep default message if parsing fails
-        }
-        setFileErrors(prev => ({ ...prev, [fieldName]: errorMessage }));
-
-        // Clear the preview image on upload error
-        if (title === "passport-image") {
-          // AKT passport image
-          setPassportPreview(null);
-        } else {
-          switch (inputId) {
-            case "passport-image":
-              setPassportPreview(null);
-              break;
-            case "medical-license":
-              setMedicalLicensePreview(null);
-              setMedicalLicenseIsPdf(null);
-              break;
-            case "part1-email":
-              setPart1EmailPreview(null);
-              setPart1EmailIsPdf(null);
-              break;
-            case "passport-bio":
-              setPassportBioPreview(null);
-              setPassportBioIsPdf(null);
-              break;
-            case "signature":
-              setSignaturePreview(null);
-              setSignatureIsPdf(null);
-              break;
-            case "attachment":
-              setAttachmentUrl(null);
-              break;
-          }
-        }
-
-        toast({
-          title: isPdf ? "PDF Upload Failed" : "File Upload Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const data = await response.json();
-      const newFileId = data.id; // Capture the new file ID
-      // const serverUrl = data.url; // Capture server URL from response
-
-      // Store the new file ID for future deletions
-      setUploadedFileIds(prev => ({
-        ...prev,
-        [inputId]: newFileId
-      }));
-
-      // Clear any previous errors for this field
-      setFileErrors(prev => ({ ...prev, [fieldName]: '' }));
-
-      // Keep the local preview URL, don't replace with server URL
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Network error occurred";
-      const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
-      const fullErrorMessage = `${fieldName}: Upload failed: ${errorMessage}. Please check your connection and try again.`;
-      setFileErrors(prev => ({ ...prev, [fieldName]: fullErrorMessage }));
-
-      // Clear the preview image on any error
-      if (title === "passport-image") {
-        // AKT passport image
-        setPassportPreview(null);
-      } else {
         switch (inputId) {
           case "passport-image":
             setPassportPreview(null);
@@ -1283,10 +1123,477 @@ export function ApplicationForm() {
             setSignaturePreview(null);
             setSignatureIsPdf(null);
             break;
-          case "attachment":
+          case "passport-bio-page":
+            setPassportBioPreview(null);
+            setPassportBioIsPdf(null);
+            break;
+          case "valid-license":
+            setMedicalLicensePreview(null);
+            setMedicalLicenseIsPdf(null);
+            break;
+          case "mbbs-degree":
+            setPart1EmailPreview(null);
+            setPart1EmailIsPdf(null);
+            break;
+          case "internship-certificate":
+          case "experience-certificate":
             setAttachmentUrl(null);
             break;
         }
+        return false;
+      }
+    }
+
+    // Create local preview URL immediately
+    const localPreviewUrl = await fileToBase64(file);
+
+    // Set immediate preview with local URL
+    switch (inputId) {
+      case "passport-image":
+        setPassportPreview(localPreviewUrl);
+        break;
+      case "medical-license":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setMedicalLicensePreview(imagesArray); // array of images
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setMedicalLicensePreview([localPreviewUrl]);
+        }
+        setMedicalLicenseIsPdf(isPdf);
+        break;
+      case "part1-email":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setPart1EmailPreview(imagesArray);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setPart1EmailPreview([localPreviewUrl]);
+        }
+        setPart1EmailIsPdf(isPdf);
+        break;
+      case "passport-bio":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setPassportBioPreview(imagesArray);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setPassportBioPreview([localPreviewUrl]);
+        }
+        setPassportBioIsPdf(isPdf);
+        break;
+      // AKT attachment fields
+      case "passport-bio-page":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setPassportBioPreview(imagesArray);
+            // Update attachment in array
+            setAttachments(prev => prev.map(att => 
+              att.title === "passport-bio-page" 
+                ? { ...att, attachmentUrl: imagesArray[0] }
+                : att
+            ));
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setPassportBioPreview([localPreviewUrl]);
+          // Update attachment in array
+          setAttachments(prev => prev.map(att => 
+            att.title === "passport-bio-page" 
+              ? { ...att, attachmentUrl: localPreviewUrl }
+              : att
+          ));
+        }
+        setPassportBioIsPdf(isPdf);
+        break;
+      case "valid-license":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setMedicalLicensePreview(imagesArray);
+            // Update attachment in array
+            setAttachments(prev => prev.map(att => 
+              att.title === "valid-license" 
+                ? { ...att, attachmentUrl: imagesArray[0] }
+                : att
+            ));
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setMedicalLicensePreview([localPreviewUrl]);
+          // Update attachment in array
+          setAttachments(prev => prev.map(att => 
+            att.title === "valid-license" 
+              ? { ...att, attachmentUrl: localPreviewUrl }
+              : att
+          ));
+        }
+        setMedicalLicenseIsPdf(isPdf);
+        break;
+      case "mbbs-degree":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setPart1EmailPreview(imagesArray);
+            // Update attachment in array
+            setAttachments(prev => prev.map(att => 
+              att.title === "mbbs-degree" 
+                ? { ...att, attachmentUrl: imagesArray[0] }
+                : att
+            ));
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setPart1EmailPreview([localPreviewUrl]);
+          // Update attachment in array
+          setAttachments(prev => prev.map(att => 
+            att.title === "mbbs-degree" 
+              ? { ...att, attachmentUrl: localPreviewUrl }
+              : att
+          ));
+        }
+        setPart1EmailIsPdf(isPdf);
+        break;
+      case "internship-certificate":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setAttachmentUrl(imagesArray[0]); // Use first image as preview
+            // Update attachment in array
+            setAttachments(prev => prev.map(att => 
+              att.title === "internship-certificate" 
+                ? { ...att, attachmentUrl: imagesArray[0] }
+                : att
+            ));
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setAttachmentUrl(localPreviewUrl);
+          // Update attachment in array
+          setAttachments(prev => prev.map(att => 
+            att.title === "internship-certificate" 
+              ? { ...att, attachmentUrl: localPreviewUrl }
+              : att
+          ));
+        }
+        break;
+      case "experience-certificate":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setAttachmentUrl(imagesArray[0]); // Use first image as preview
+            // Update attachment in array
+            setAttachments(prev => prev.map(att => 
+              att.title === "experience-certificate" 
+                ? { ...att, attachmentUrl: imagesArray[0] }
+                : att
+            ));
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setAttachmentUrl(localPreviewUrl);
+          // Update attachment in array
+          setAttachments(prev => prev.map(att => 
+            att.title === "experience-certificate" 
+              ? { ...att, attachmentUrl: localPreviewUrl }
+              : att
+          ));
+        }
+        break;
+      case "signature":
+        if (isPdf) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const base64Pdf = e.target?.result as string;
+            const imagesArray = await pdfToImages(base64Pdf);
+            setSignaturePreview(imagesArray);
+            // Update attachment in array
+            setAttachments(prev => prev.map(att => 
+              att.title === "signature" 
+                ? { ...att, attachmentUrl: imagesArray[0] }
+                : att
+            ));
+          };
+          reader.readAsDataURL(file);
+        } else {
+          setSignaturePreview([localPreviewUrl]);
+          // Update attachment in array
+          setAttachments(prev => prev.map(att => 
+            att.title === "signature" 
+              ? { ...att, attachmentUrl: localPreviewUrl }
+              : att
+          ));
+        }
+        setSignatureIsPdf(isPdf);
+        break;
+    }
+
+    // Check if application is created
+    if (!applicationId) {
+      // Queue the file for upload once application is created
+      setPendingUploads((prev) => [
+        ...prev,
+        { file, inputId, title, localPreviewUrl },
+      ]);
+      setFileErrors((prev) => ({ ...prev, [fieldName]: "" })); // Clear any previous errors
+      return true; // Return true to indicate file is accepted but queued
+    }
+
+    // Determine filename based on exam type and input
+    let fileName = file.name;
+
+    if (selectedExamType) {
+      // For AKT attachments, use the inputId as filename
+      fileName = inputId;
+    } else if (!selectedExamType) {
+      // For OSCE applications, use standard titles for all file types
+      switch (inputId) {
+        case "passport-image":
+          fileName = "passport-image";
+          break;
+        case "medical-license":
+          fileName = "medical license";
+          break;
+        case "part1-email":
+          fileName = "part 1 passing email";
+          break;
+        case "passport-bio":
+          fileName = "passport bio page";
+          break;
+        case "signature":
+          fileName = "signature";
+          break;
+        default: {
+          // find the attachment by file or id
+          const att = attachments.find(
+            (a) => a.file === file || a.id === inputId
+          );
+          fileName = att?.title || file.name; // fallback
+        }
+      }
+    }
+
+    // Delete existing file if it exists (skip for attachments since each is independent)
+    if (inputId !== "attachment") {
+      const existingFileId = uploadedFileIds[inputId];
+      if (existingFileId) {
+        try {
+          const deleteResponse = await fetch(
+            `https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`,
+            {
+              method: "DELETE",
+            }
+          );
+
+          if (!deleteResponse.ok) {
+            console.warn(
+              `Failed to delete existing file ${existingFileId} for ${inputId}`
+            );
+          }
+        } catch (error) {
+          console.warn(`Error deleting existing file for ${inputId}:`, error);
+        }
+      }
+    }
+
+    // Upload to API based on file type
+    let response;
+
+    if (isPdf) {
+      // PDF upload using document API - send file with API body
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("examOccurrenceId", params.examId as string);
+      formData.append("entityType", "application");
+      formData.append("entityId", applicationId as string);
+      formData.append("category", "application_other");
+      formData.append("fileName", fileName || file.name);
+
+      response = await fetch(
+        "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+    } else {
+      // Image upload using existing API
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("examOccurrenceId", params.examId as string);
+      formData.append("entityType", "application");
+      formData.append("entityId", applicationId as string);
+      formData.append("category", getCategory(inputId));
+      const matchedAttachment = attachments.find(
+        (att: any) => att.file === file || att.id === inputId
+      );
+
+      // File name preference: attachment title > computed fileName > actual file name
+      const finalFileName = matchedAttachment?.title || fileName || file.name;
+
+      formData.append("fileName", finalFileName);
+
+      response = await fetch(
+        "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+    }
+
+    try {
+      if (!response.ok) {
+        const fieldName = title
+          ? title.replace("-", " ").toUpperCase()
+          : inputId.replace("-", " ").toUpperCase();
+        let errorMessage = `${fieldName}: Upload failed. Please try again.`;
+        try {
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.message) {
+            errorMessage = `${fieldName}: Upload failed: ${errorData.message}`;
+          } else if (response.status === 413) {
+            errorMessage = `${fieldName}: File is too large. Please choose a smaller file.`;
+          } else if (response.status === 415) {
+            errorMessage = `${fieldName}: File type not supported. Please use JPG, PNG, GIF, or WebP.`;
+          } else if (response.status >= 500) {
+            errorMessage = `${fieldName}: Server error. Please try again later.`;
+          }
+        } catch (e) {
+          // Keep default message if parsing fails
+        }
+        setFileErrors((prev) => ({ ...prev, [fieldName]: errorMessage }));
+
+        // Clear the preview image on upload error
+        switch (inputId) {
+          case "passport-image":
+            setPassportPreview(null);
+            break;
+          case "medical-license":
+            setMedicalLicensePreview(null);
+            setMedicalLicenseIsPdf(null);
+            break;
+          case "part1-email":
+            setPart1EmailPreview(null);
+            setPart1EmailIsPdf(null);
+            break;
+          case "passport-bio":
+            setPassportBioPreview(null);
+            setPassportBioIsPdf(null);
+            break;
+          case "signature":
+            setSignaturePreview(null);
+            setSignatureIsPdf(null);
+            break;
+          case "passport-bio-page":
+            setPassportBioPreview(null);
+            setPassportBioIsPdf(null);
+            break;
+          case "valid-license":
+            setMedicalLicensePreview(null);
+            setMedicalLicenseIsPdf(null);
+            break;
+          case "mbbs-degree":
+            setPart1EmailPreview(null);
+            setPart1EmailIsPdf(null);
+            break;
+          case "internship-certificate":
+          case "experience-certificate":
+            setAttachmentUrl(null);
+            break;
+        }
+
+        toast({
+          title: isPdf ? "PDF Upload Failed" : "File Upload Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const data = await response.json();
+      const newFileId = data.id; // Capture the new file ID
+      // const serverUrl = data.url; // Capture server URL from response
+
+      // Store the new file ID for future deletions
+      setUploadedFileIds((prev) => ({
+        ...prev,
+        [inputId]: newFileId,
+      }));
+
+      // Clear any previous errors for this field
+      setFileErrors((prev) => ({ ...prev, [fieldName]: "" }));
+
+      // Keep the local preview URL, don't replace with server URL
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Network error occurred";
+      const fieldName = title
+        ? title.replace("-", " ").toUpperCase()
+        : inputId.replace("-", " ").toUpperCase();
+      const fullErrorMessage = `${fieldName}: Upload failed: ${errorMessage}. Please check your connection and try again.`;
+      setFileErrors((prev) => ({ ...prev, [fieldName]: fullErrorMessage }));
+
+      // Clear the preview image on any error
+      switch (inputId) {
+        case "passport-image":
+          setPassportPreview(null);
+          break;
+        case "medical-license":
+          setMedicalLicensePreview(null);
+          setMedicalLicenseIsPdf(null);
+          break;
+        case "part1-email":
+          setPart1EmailPreview(null);
+          setPart1EmailIsPdf(null);
+          break;
+        case "passport-bio":
+          setPassportBioPreview(null);
+          setPassportBioIsPdf(null);
+          break;
+        case "signature":
+          setSignaturePreview(null);
+          setSignatureIsPdf(null);
+          break;
+        case "passport-bio-page":
+          setPassportBioPreview(null);
+          setPassportBioIsPdf(null);
+          break;
+        case "valid-license":
+          setMedicalLicensePreview(null);
+          setMedicalLicenseIsPdf(null);
+          break;
+        case "mbbs-degree":
+          setPart1EmailPreview(null);
+          setPart1EmailIsPdf(null);
+          break;
+        case "internship-certificate":
+        case "experience-certificate":
+          setAttachmentUrl(null);
+          break;
       }
 
       toast({
@@ -1306,10 +1613,14 @@ export function ApplicationForm() {
     // Cleanup function to revoke object URLs when component unmounts
     return () => {
       if (passportPreview) URL.revokeObjectURL(passportPreview);
-      if (medicalLicensePreview && typeof medicalLicensePreview === 'string') URL.revokeObjectURL(medicalLicensePreview);
-      if (part1EmailPreview && typeof part1EmailPreview === 'string') URL.revokeObjectURL(part1EmailPreview);
-      if (passportBioPreview && typeof passportBioPreview === 'string') URL.revokeObjectURL(passportBioPreview);
-      if (signaturePreview && typeof signaturePreview === 'string') URL.revokeObjectURL(signaturePreview);
+      if (medicalLicensePreview && typeof medicalLicensePreview === "string")
+        URL.revokeObjectURL(medicalLicensePreview);
+      if (part1EmailPreview && typeof part1EmailPreview === "string")
+        URL.revokeObjectURL(part1EmailPreview);
+      if (passportBioPreview && typeof passportBioPreview === "string")
+        URL.revokeObjectURL(passportBioPreview);
+      if (signaturePreview && typeof signaturePreview === "string")
+        URL.revokeObjectURL(signaturePreview);
     };
   }, [
     passportPreview,
@@ -1351,7 +1662,9 @@ export function ApplicationForm() {
     return (
       <div className="flex flex-col items-center justify-center h-[400px] space-y-4">
         <Loader2 className="h-32 w-32 animate-spin text-indigo-500" />
-        <p className="text-slate-600 dark:text-slate-400">Loading exam details...</p>
+        <p className="text-slate-600 dark:text-slate-400">
+          Loading exam details...
+        </p>
       </div>
     );
   }
@@ -1365,7 +1678,6 @@ export function ApplicationForm() {
     return <NotFound />;
   }
 
-
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
       <Card className="border-0 shadow-xl overflow-hidden bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
@@ -1378,11 +1690,10 @@ export function ApplicationForm() {
                   <img src="/icon.png" alt="404" />
                 </div>
                 <div className="">
-                <span>APPLICATION FORM</span>
-              <CardDescription className="text-slate-500 dark:text-slate-400">
-                For the South Asia MRCGP [INT.] Part 2 (OSCE) Examination
-              </CardDescription>
-
+                  <span>APPLICATION FORM</span>
+                  <CardDescription className="text-slate-500 dark:text-slate-400">
+                    For the South Asia MRCGP [INT.] Part 2 (OSCE) Examination
+                  </CardDescription>
                 </div>
               </div>
             </CardTitle>
@@ -1395,13 +1706,17 @@ export function ApplicationForm() {
         </CardHeader>
 
         <CardContent className="p-6">
-          {examOccurrence && selectedExam && examOccurrence.applicationsCount === selectedExam.applicationsLimit && (
-            <Alert className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
-              <AlertDescription className="text-amber-800 dark:text-amber-200 font-medium">
-                Please Note: All regular seats for this exam have been filled. Your application has been placed on the waiting list.
-              </AlertDescription>
-            </Alert>
-          )}
+          {examOccurrence &&
+            selectedExam &&
+            examOccurrence.applicationsCount ===
+              selectedExam.applicationsLimit && (
+              <Alert className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
+                <AlertDescription className="text-amber-800 dark:text-amber-200 font-medium">
+                  Please Note: All regular seats for this exam have been filled.
+                  Your application has been placed on the waiting list.
+                </AlertDescription>
+              </Alert>
+            )}
           <Form {...currentForm}>
             <form
               onSubmit={currentForm.handleSubmit(onSubmit)}
@@ -1447,7 +1762,6 @@ export function ApplicationForm() {
                   setPassportPreview={setPassportPreview}
                   passportPreview={passportPreview}
                   fileErrors={fileErrors}
-                  setFileErrors={setFileErrors}
                   validateFile={validateFile}
                   selectedExam={selectedExam}
                   attachmentUrl={attachmentUrl}
@@ -1591,7 +1905,9 @@ export function ApplicationForm() {
                 ></Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || applicationExists || isEligible === false}
+                  disabled={
+                    isSubmitting || applicationExists || isEligible === false
+                  }
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
@@ -1603,7 +1919,7 @@ export function ApplicationForm() {
                     "Application Already Exists - Change Email"
                   ) : isEligible === false ? (
                     "Not Eligible to Submit"
-                          ) : (
+                  ) : (
                     "Submit"
                   )}
                 </Button>
