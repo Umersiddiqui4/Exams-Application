@@ -55,6 +55,7 @@ interface AktsFieldsProps {
   attachments: any[];
   setAttachments: React.Dispatch<React.SetStateAction<any[]>>;
   attachmentUrl: string | null;
+  deleteUploadedFile: (inputId: string) => Promise<void>;
   onEmailBlur?: () => void;
   onFullNameBlur?: () => void;
   onCandidateIdBlur: (candidateId: string) => void;
@@ -75,6 +76,7 @@ export function AktFeilds(props: AktsFieldsProps) {
     selectedExam,
     setAttachments,
     attachments,
+    deleteUploadedFile,
     onEmailBlur,
     onFullNameBlur,
     onCandidateIdBlur,
@@ -146,7 +148,15 @@ export function AktFeilds(props: AktsFieldsProps) {
   }, [selectedExam]);
 
 
-  const removeAttachment = (id: string) => {
+  const removeAttachment = async (id: string) => {
+    // Find the attachment to get its title for API deletion
+    const attachment = attachments.find((att: any) => att.id === id);
+    if (attachment) {
+      // Delete from API using the title as inputId
+      await deleteUploadedFile(attachment.title);
+    }
+    
+    // Remove from local state
     setAttachments(
       attachments.filter((attachment: any) => attachment.id !== id)
     );

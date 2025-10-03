@@ -992,6 +992,9 @@ export function ApplicationForm() {
     }
   }
 
+  // PDF placeholder with icon and processing text
+  const pdfPlaceholder = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI2MCIgdmlld0JveD0iMCAwIDIwMCAyNjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjYwIiBmaWxsPSIjRjNGNEY2Ii8+CjxyZWN0IHg9IjYwIiB5PSI2MCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0VGRjZGNCIgc3Ryb2tlPSIjRjU5RTBCIiBzdHJva2Utd2lkdGg9IjIiIHJ4PSI0Ii8+CjxyZWN0IHg9IjY4IiB5PSI4MCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjgiIGZpbGw9IiNGNTlFMEIiLz4KPHJlY3QgeD0iNjgiIHk9Ijk2IiB3aWR0aD0iNDgiIGhlaWdodD0iOCIgZmlsbD0iI0Y1OUUwQiIvPgo8cmVjdCB4PSI2OCIgeT0iMTEyIiB3aWR0aD0iNTYiIGhlaWdodD0iOCIgZmlsbD0iI0Y1OUUwQiIvPgo8cmVjdCB4PSI2OCIgeT0iMTI4IiB3aWR0aD0iNDAiIGhlaWdodD0iOCIgZmlsbD0iI0Y1OUUwQiIvPgo8dGV4dCB4PSIxMDAiIHk9IjE4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI0Y1OUUwQiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UERGPC90ZXh0Pgo8dGV4dCB4PSIxMDAiIHk9IjIwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNkI3MjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QREYgaXMgcHJvY2Vzc2luZzwvdGV4dD4KPHRleHQgeD0iMTAwIiB5PSIyMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzZCNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+dG8gcHJldmlldzwvdGV4dD4KPC9zdmc+";
+
   const validateFile = async (
     file: File,
     inputId: string,
@@ -1197,17 +1200,33 @@ export function ApplicationForm() {
       // AKT attachment fields
       case "passport-bio-page":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setPassportBioPreview([pdfPlaceholder]);
+          setPassportBioIsPdf(isPdf);
+          // Update attachment in array with placeholder
+          setAttachments(prev => prev.map(att => 
+            att.title === "passport-bio-page" 
+              ? { ...att, attachmentUrl: pdfPlaceholder }
+              : att
+          ));
+          
+          // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setPassportBioPreview(imagesArray);
-            // Update attachment in array
-            setAttachments(prev => prev.map(att => 
-              att.title === "passport-bio-page" 
-                ? { ...att, attachmentUrl: imagesArray[0] }
-                : att
-            ));
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPassportBioPreview(imagesArray);
+              // Update attachment in array with actual preview
+              setAttachments(prev => prev.map(att => 
+                att.title === "passport-bio-page" 
+                  ? { ...att, attachmentUrl: imagesArray[0] }
+                  : att
+              ));
+            } catch (error) {
+              console.error("PDF conversion error:", error);
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1223,17 +1242,33 @@ export function ApplicationForm() {
         break;
       case "valid-license":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setMedicalLicensePreview([pdfPlaceholder]);
+          setMedicalLicenseIsPdf(isPdf);
+          // Update attachment in array with placeholder
+          setAttachments(prev => prev.map(att => 
+            att.title === "valid-license" 
+              ? { ...att, attachmentUrl: pdfPlaceholder }
+              : att
+          ));
+          
+          // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setMedicalLicensePreview(imagesArray);
-            // Update attachment in array
-            setAttachments(prev => prev.map(att => 
-              att.title === "valid-license" 
-                ? { ...att, attachmentUrl: imagesArray[0] }
-                : att
-            ));
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setMedicalLicensePreview(imagesArray);
+              // Update attachment in array with actual preview
+              setAttachments(prev => prev.map(att => 
+                att.title === "valid-license" 
+                  ? { ...att, attachmentUrl: imagesArray[0] }
+                  : att
+              ));
+            } catch (error) {
+              console.error("PDF conversion error:", error);
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1249,17 +1284,33 @@ export function ApplicationForm() {
         break;
       case "mbbs-degree":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setPart1EmailPreview([pdfPlaceholder]);
+          setPart1EmailIsPdf(isPdf);
+          // Update attachment in array with placeholder
+          setAttachments(prev => prev.map(att => 
+            att.title === "mbbs-degree" 
+              ? { ...att, attachmentUrl: pdfPlaceholder }
+              : att
+          ));
+          
+          // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setPart1EmailPreview(imagesArray);
-            // Update attachment in array
-            setAttachments(prev => prev.map(att => 
-              att.title === "mbbs-degree" 
-                ? { ...att, attachmentUrl: imagesArray[0] }
-                : att
-            ));
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPart1EmailPreview(imagesArray);
+              // Update attachment in array with actual preview
+              setAttachments(prev => prev.map(att => 
+                att.title === "mbbs-degree" 
+                  ? { ...att, attachmentUrl: imagesArray[0] }
+                  : att
+              ));
+            } catch (error) {
+              console.error("PDF conversion error:", error);
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1275,17 +1326,32 @@ export function ApplicationForm() {
         break;
       case "internship-certificate":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setAttachmentUrl(pdfPlaceholder);
+          // Update attachment in array with placeholder
+          setAttachments(prev => prev.map(att => 
+            att.title === "internship-certificate" 
+              ? { ...att, attachmentUrl: pdfPlaceholder }
+              : att
+          ));
+          
+          // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setAttachmentUrl(imagesArray[0]); // Use first image as preview
-            // Update attachment in array
-            setAttachments(prev => prev.map(att => 
-              att.title === "internship-certificate" 
-                ? { ...att, attachmentUrl: imagesArray[0] }
-                : att
-            ));
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setAttachmentUrl(imagesArray[0]); // Use first image as preview
+              // Update attachment in array with actual preview
+              setAttachments(prev => prev.map(att => 
+                att.title === "internship-certificate" 
+                  ? { ...att, attachmentUrl: imagesArray[0] }
+                  : att
+              ));
+            } catch (error) {
+              console.error("PDF conversion error:", error);
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1300,17 +1366,32 @@ export function ApplicationForm() {
         break;
       case "experience-certificate":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setAttachmentUrl(pdfPlaceholder);
+          // Update attachment in array with placeholder
+          setAttachments(prev => prev.map(att => 
+            att.title === "experience-certificate" 
+              ? { ...att, attachmentUrl: pdfPlaceholder }
+              : att
+          ));
+          
+          // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setAttachmentUrl(imagesArray[0]); // Use first image as preview
-            // Update attachment in array
-            setAttachments(prev => prev.map(att => 
-              att.title === "experience-certificate" 
-                ? { ...att, attachmentUrl: imagesArray[0] }
-                : att
-            ));
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setAttachmentUrl(imagesArray[0]); // Use first image as preview
+              // Update attachment in array with actual preview
+              setAttachments(prev => prev.map(att => 
+                att.title === "experience-certificate" 
+                  ? { ...att, attachmentUrl: imagesArray[0] }
+                  : att
+              ));
+            } catch (error) {
+              console.error("PDF conversion error:", error);
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1325,17 +1406,33 @@ export function ApplicationForm() {
         break;
       case "signature":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setSignaturePreview([pdfPlaceholder]);
+          setSignatureIsPdf(isPdf);
+          // Update attachment in array with placeholder
+          setAttachments(prev => prev.map(att => 
+            att.title === "signature" 
+              ? { ...att, attachmentUrl: pdfPlaceholder }
+              : att
+          ));
+          
+          // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setSignaturePreview(imagesArray);
-            // Update attachment in array
-            setAttachments(prev => prev.map(att => 
-              att.title === "signature" 
-                ? { ...att, attachmentUrl: imagesArray[0] }
-                : att
-            ));
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setSignaturePreview(imagesArray);
+              // Update attachment in array with actual preview
+              setAttachments(prev => prev.map(att => 
+                att.title === "signature" 
+                  ? { ...att, attachmentUrl: imagesArray[0] }
+                  : att
+              ));
+            } catch (error) {
+              console.error("PDF conversion error:", error);
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1767,6 +1864,7 @@ export function ApplicationForm() {
                   attachmentUrl={attachmentUrl}
                   attachments={attachments}
                   setAttachments={setAttachments}
+                  deleteUploadedFile={deleteUploadedFile}
                   onEmailBlur={handleEmailBlur}
                   onFullNameBlur={handleFullNameBlur}
                   onCandidateIdBlur={handleCandidateIdBlur}
