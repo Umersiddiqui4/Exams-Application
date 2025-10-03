@@ -618,6 +618,19 @@ export function ApplicationForm() {
         setWarning(false);
       }
 
+      // AKT eligibility validation
+      if (selectedExamType) {
+        const aktData = data as AktsFormValues;
+        if (!aktData.eligibilityA && !aktData.eligibilityB && !aktData.eligibilityC) {
+          currentForm.setError("eligibilityA", {
+            type: "manual",
+            message: "Please select at least one eligibility criterion",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Show confirmation dialog
       const confirmationResult = await Swal.fire({
         html: `
@@ -697,7 +710,7 @@ export function ApplicationForm() {
           usualForename: data.fullName.split(' ')[0] || "",
           // gender: "MALE",
           previousAKTAttempts: 0,
-          aktPassingDate: data.dateOfPassingPart1 || "",
+          aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
           preferenceDate1: data.preferenceDate1 || "00/00/0000",
           preferenceDate2: data.preferenceDate2 || "00/00/0000",

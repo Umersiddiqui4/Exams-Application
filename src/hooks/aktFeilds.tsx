@@ -347,7 +347,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                         accept="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            validateFile(e.target.files[0], "attachment", "passport-image");
+                            validateFile(e.target.files[0], "passport-image", "passport-image");
                           }
                         }}
                       />

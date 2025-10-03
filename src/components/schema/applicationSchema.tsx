@@ -31,7 +31,6 @@ const aktsFormSchema = z.object({
   email: z.string().email("Invalid email address"),
 
   // Experience
-  dateOfPassingPart1: z.string().min(1, "Date of passing Part 1 exam is required"),
   previousAktsAttempts: z.string().min(1, "Number of previous AKTs attempts is required"),
 
   // Experience and License
@@ -185,7 +184,6 @@ export const aktsFormDefaultValues: AktsFormValues = {
   whatsapp: formDefaultValues.whatsapp,
   emergencyContact: formDefaultValues.emergencyContact,
   email: formDefaultValues.email,
-  dateOfPassingPart1: formDefaultValues.dateOfPassingPart1,
   previousAktsAttempts: "0",
   countryOfExperience: formDefaultValues.countryOfExperience,
   countryOfOrigin: formDefaultValues.countryOfOrigin,
