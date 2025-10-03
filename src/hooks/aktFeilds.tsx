@@ -36,8 +36,6 @@ import {
   FileText,
   Shield,
   MapPin,
-  Plus,
-  X,
 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { isValidPhoneNumber } from "libphonenumber-js";
@@ -52,6 +50,7 @@ interface AktsFieldsProps {
   setPassportPreview: (value: string | null) => void;
   passportPreview: string | null;
   fileErrors: { [key: string]: string };
+  setFileErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   validateFile: (file: File, fieldName: string, title?: string, attachmentId?: string) => void;
   selectedExam: any;
   attachments: any[];
@@ -73,6 +72,7 @@ export function AktFeilds(props: AktsFieldsProps) {
     setPassportPreview,
     passportPreview,
     fileErrors,
+    setFileErrors,
     validateFile,
     selectedExam,
     setAttachments,
@@ -144,14 +144,6 @@ export function AktFeilds(props: AktsFieldsProps) {
     }
   }, [selectedExam]);
 
-  const addAttachment = () => {
-    const newAttachment: any = {
-      id: Date.now().toString(),
-      title: "",
-      file: null,
-    };
-    setAttachments([...attachments, newAttachment]);
-  };
 
   const removeAttachment = (id: string) => {
     setAttachments(
@@ -159,13 +151,6 @@ export function AktFeilds(props: AktsFieldsProps) {
     );
   };
 
-  const updateAttachmentTitle = (id: string, title: string) => {
-    setAttachments(
-      attachments.map((attachment: any) =>
-        attachment.id === id ? { ...attachment, title } : attachment
-      )
-    );
-  };
 
  const updateAttachmentFile = async (id: string, file: File | null) => {
   if (!file) {
@@ -177,25 +162,72 @@ export function AktFeilds(props: AktsFieldsProps) {
     return;
   }
 
-  // pehle file set karo (for preview, etc.)
-  setAttachments(prev =>
-    prev.map(att => (att.id === id ? { ...att, file } : att))
-  );
+  // Validate file type
+  const acceptedTypes = [
+    'application/pdf',
+    'image/jpeg',
+    'image/jpg', 
+    'image/png'
+  ];
+
+  if (!acceptedTypes.includes(file.type)) {
+    const attachment = attachments.find(att => att.id === id);
+    const fieldName = attachment?.title ? attachment.title.replace('-', ' ').toUpperCase() : 'Document';
+    
+    setFileErrors(prev => ({
+      ...prev,
+      [`attachment-${id}`]: `${fieldName}: File type not supported. Only JPG, JPEG, PNG, and PDF formats are allowed.`
+    }));
+
+    // Clear the file input
+    const fileInput = document.querySelector(`input[type="file"]`) as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
+    
+    return;
+  }
+
+  // Check if file is PDF
+  const isPdf = file.type === 'application/pdf';
+  
+  // Create immediate preview URL
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const localPreviewUrl = e.target?.result as string;
+    
+    // For PDFs, convert to images for preview
+    let previewUrl = localPreviewUrl;
+    if (isPdf) {
+      try {
+        const { pdfToImages } = await import("../components/ui/pdfToImage");
+        const imagesArray = await pdfToImages(localPreviewUrl);
+        previewUrl = imagesArray[0] || localPreviewUrl; // Use first page as preview
+      } catch (error) {
+        console.error("Error converting PDF to images:", error);
+        previewUrl = localPreviewUrl; // Fallback to base64
+      }
+    }
+
+    // Update attachment with preview URL
+    setAttachments(prev =>
+      prev.map(att =>
+        att.id === id ? { ...att, file, attachmentUrl: previewUrl } : att
+      )
+    );
+
+    // Clear any file errors for this attachment
+    setFileErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[`attachment-${id}`];
+      return newErrors;
+    });
+  };
+  
+  reader.readAsDataURL(file);
 
   try {
-    // file ko validate karo
+    // Validate and upload file
     const attachment = attachments.find(att => att.id === id);
-
-    const url = await validateFile(file, "attachment", attachment?.title, attachment?.id);
-
-   
-      // ✅ URL mil gaya → direct state update
-      setAttachments(prev =>
-        prev.map(att =>
-          att.id === id ? { ...att, attachmentUrl: url, file } : att
-        )
-      );
-  
+    await validateFile(file, "attachment", attachment?.title, attachment?.id);
   } catch (err) {
     console.error("Error validating file:", err);
   }
@@ -1011,15 +1043,17 @@ export function AktFeilds(props: AktsFieldsProps) {
           <AccordionTrigger className="px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
             <div className="flex items-center text-lg font-semibold text-slate-800 dark:text-slate-200">
               <Shield className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
-              ELIGIBILITY
+              ELIGIBILITY<span className="text-red-500 ml-1">*</span>
             </div>
           </AccordionTrigger>
+          
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
               <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">
                 I am eligible to apply for the MRCGP[INT] South Asia Examination
                 under the following criterion – please choose at least ONE:
               </p>
+           
 
               <div className="space-y-4">
                 <FormField
@@ -1096,6 +1130,27 @@ export function AktFeilds(props: AktsFieldsProps) {
                   )}
                 />
               </div>
+              {!(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
+        <div className="w-full mb-4">
+          <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Eligibility Required
+                </h3>
+                <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                  <p>You must select at least one eligibility criterion to access the document upload section.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )} 
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1234,199 +1289,503 @@ export function AktFeilds(props: AktsFieldsProps) {
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  I attach the following:
-                </p>
-
-                <FormField
-                  control={currentForm.control}
-                  name="candidateStatementA"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-medium">
-                          A photocopy of my qualification, internship/house job
-                          and registration documentation.
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={currentForm.control}
-                  name="candidateStatementB"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-medium">
-                          One passport-size photograph.
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={currentForm.control}
-                  name="candidateStatementC"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-medium">
-                          Job experience certificates / private practice
-                          certificates etc to prove that you fulfil the
-                          eligibility criteria.
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
-      <Accordion
-        type="single"
-        collapsible
-        defaultValue="experience"
-        className="w-full mb-4"
-      >
+      {/* Warning message when no eligibility is selected */}
+      {!(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
+        <div className="w-full mb-4">
+          <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  Eligibility Required
+                </h3>
+                <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                  <p>Please select at least one eligibility criterion above to proceed with document uploads.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Required Documents Section - Only show if eligibility is selected */}
+      {(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="required-documents"
+          className="w-full mb-4"
+        >
         <AccordionItem
-          value="attachments"
+          value="required-documents"
           className="border dark:border-slate-700 rounded-lg overflow-hidden shadow-sm"
         >
           <AccordionTrigger className="px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
             <div className="flex items-center text-lg font-semibold text-slate-800 dark:text-slate-200">
               <Upload className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
-              ATTACHMENTS
+              REQUIRED DOCUMENTS
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Add supporting documents and files
+            <div className="space-y-6">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>Note:</strong> Based on your selected eligibility criteria, please upload the required documents. 
+                  All documents should be in JPG, JPEG, PNG, or PDF format.
                 </p>
-                <Button
-                  type="button"
-                  onClick={addAttachment}
-                  size="sm"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add
-                </Button>
               </div>
 
-              {attachments.length === 0 && (
-                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                  <Upload className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No attachments added yet</p>
-                  <p className="text-sm">
-                    Click the Add button to upload documents
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                {attachments.map((attachment: any) => (
-                  <>
-                    <div
-                      key={attachment.id}
-                      className="flex flex-col sm:flex-row gap-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800"
-                    >
-                      <div className="flex-1">
-                        <Label
-                          htmlFor={`title-${attachment.id}`}
-                          className="text-sm font-medium"
-                        >
-                          Title
-                        </Label>
-                        <Input
-                          id={`title-${attachment.id}`}
-                          placeholder="Enter document title"
-                          value={attachment.title}
-                          onChange={(e) =>
-                            updateAttachmentTitle(attachment.id, e.target.value)
-                          }
-                          className="mt-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-600"
-                        />
-                      </div>
-
-                      <div className="flex-1">
-                        <Label
-                          htmlFor={`file-${attachment.id}`}
-                          className="text-sm font-medium"
-                        >
-                          Upload Document
-                        </Label>
-                        <div className="mt-1 relative">
-                          <Input
-                            id={`file-${attachment.id}`}
-                            type="file"
-                            accept=".pdf,.webp,.jpg,.jpeg,.png,.gif"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0] || null;
-                              updateAttachmentFile(attachment.id, file);
-                            }}
-                            className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-600 flex justify-center items-center  file:text-sm"
+              {/* Common Documents */}
+              <div className="space-y-4">
+                
+                {/* Signature */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Signature <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex items-center justify-center w-full">
+                    {attachments.find(att => att.title === "signature")?.attachmentUrl ? (
+                      <div className="relative w-full">
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={attachments.find(att => att.title === "signature")?.attachmentUrl}
+                            alt="Signature preview"
+                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
                           />
-                          {fileErrors[`attachment-${attachment.id}`] ? (
-                            <p className="text-xs text-red-500 mt-1">
-                              {fileErrors[`attachment-${attachment.id}`]}
-                            </p>
-                          ) : attachment.file ? (
-                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                              Selected: {attachment.file.name}
-                            </p>
-                          ) : null}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeAttachment(attachments.find(att => att.title === "signature")?.id || "")}
+                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                          >
+                            Change Document
+                          </Button>
                         </div>
                       </div>
+                    ) : (
+                      <label
+                        htmlFor="signature"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-semibold">Click to upload</span> signature
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            JPG, JPEG, PNG, PDF (MAX. 3MB)
+                          </p>
+                        </div>
+                        <input
+                          id="signature"
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              let attachmentId = attachments.find(att => att.title === "signature")?.id;
+                              
+                              if (!attachmentId) {
+                                attachmentId = Date.now().toString();
+                                setAttachments(prev => [...prev, {
+                                  id: attachmentId,
+                                  title: "signature",
+                                  file: null,
+                                  attachmentUrl: ""
+                                }]);
+                              }
+                              
+                              updateAttachmentFile(attachmentId, file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {fileErrors["attachment-signature"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-signature"]}</p>
+                  )}
+                </div>
 
-                      <div className="flex items-end">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeAttachment(attachment.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                {/* Passport Bio Page */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Passport Bio Page (Valid) <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex items-center justify-center w-full">
+                    {attachments.find(att => att.title === "passport-bio-page")?.attachmentUrl ? (
+                      <div className="relative w-full">
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={attachments.find(att => att.title === "passport-bio-page")?.attachmentUrl}
+                            alt="Passport bio page preview"
+                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeAttachment(attachments.find(att => att.title === "passport-bio-page")?.id || "")}
+                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                          >
+                            Change Document
+                          </Button>
+                        </div>
                       </div>
+                    ) : (
+                      <label
+                        htmlFor="passport-bio-page"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-semibold">Click to upload</span> passport bio page
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            JPG, JPEG, PNG, PDF (MAX. 3MB)
+                          </p>
+                        </div>
+                        <input
+                          id="passport-bio-page"
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              let attachmentId = attachments.find(att => att.title === "passport-bio-page")?.id;
+                              
+                              if (!attachmentId) {
+                                attachmentId = Date.now().toString();
+                                setAttachments(prev => [...prev, {
+                                  id: attachmentId,
+                                  title: "passport-bio-page",
+                                  file: null,
+                                  attachmentUrl: ""
+                                }]);
+                              }
+                              
+                              updateAttachmentFile(attachmentId, file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {fileErrors["attachment-passport-bio-page"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-passport-bio-page"]}</p>
+                  )}
+                </div>
+
+                {/* Valid License */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Valid License <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex items-center justify-center w-full">
+                    {attachments.find(att => att.title === "valid-license")?.attachmentUrl ? (
+                      <div className="relative w-full">
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={attachments.find(att => att.title === "valid-license")?.attachmentUrl}
+                            alt="Valid license preview"
+                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeAttachment(attachments.find(att => att.title === "valid-license")?.id || "")}
+                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                          >
+                            Change Document
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="valid-license"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-semibold">Click to upload</span> valid license
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            JPG, JPEG, PNG, PDF (MAX. 3MB)
+                          </p>
+                        </div>
+                        <input
+                          id="valid-license"
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              let attachmentId = attachments.find(att => att.title === "valid-license")?.id;
+                              
+                              if (!attachmentId) {
+                                attachmentId = Date.now().toString();
+                                setAttachments(prev => [...prev, {
+                                  id: attachmentId,
+                                  title: "valid-license",
+                                  file: null,
+                                  attachmentUrl: ""
+                                }]);
+                              }
+                              
+                              updateAttachmentFile(attachmentId, file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {fileErrors["attachment-valid-license"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-valid-license"]}</p>
+                  )}
+                </div>
+
+                {/* MBBS Degree */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    MBBS Degree <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex items-center justify-center w-full">
+                    {attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl ? (
+                      <div className="relative w-full">
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl}
+                            alt="MBBS degree preview"
+                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeAttachment(attachments.find(att => att.title === "mbbs-degree")?.id || "")}
+                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                          >
+                            Change Document
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="mbbs-degree"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-semibold">Click to upload</span> MBBS degree
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            JPG, JPEG, PNG, PDF (MAX. 3MB)
+                          </p>
+                        </div>
+                        <input
+                          id="mbbs-degree"
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              let attachmentId = attachments.find(att => att.title === "mbbs-degree")?.id;
+                              
+                              if (!attachmentId) {
+                                attachmentId = Date.now().toString();
+                                setAttachments(prev => [...prev, {
+                                  id: attachmentId,
+                                  title: "mbbs-degree",
+                                  file: null,
+                                  attachmentUrl: ""
+                                }]);
+                              }
+                              
+                              updateAttachmentFile(attachmentId, file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {fileErrors["attachment-mbbs-degree"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-mbbs-degree"]}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Case-specific Documents */}
+              <div className="space-y-4">
+                
+                {/* Show Internship/House Job Certificate for Case A and B */}
+                {(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB")) && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Internship/House Job Certificate <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex items-center justify-center w-full">
+                      {attachments.find(att => att.title === "internship-certificate")?.attachmentUrl ? (
+                        <div className="relative w-full">
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={attachments.find(att => att.title === "internship-certificate")?.attachmentUrl}
+                              alt="Internship certificate preview"
+                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeAttachment(attachments.find(att => att.title === "internship-certificate")?.id || "")}
+                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                            >
+                              Change Document
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="internship-certificate"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                              <span className="font-semibold">Click to upload</span> internship certificate
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              JPG, JPEG, PNG, PDF (MAX. 3MB)
+                            </p>
+                          </div>
+                          <input
+                            id="internship-certificate"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                let attachmentId = attachments.find(att => att.title === "internship-certificate")?.id;
+                                
+                                if (!attachmentId) {
+                                  attachmentId = Date.now().toString();
+                                  setAttachments(prev => [...prev, {
+                                    id: attachmentId,
+                                    title: "internship-certificate",
+                                    file: null,
+                                    attachmentUrl: ""
+                                  }]);
+                                }
+                                
+                                updateAttachmentFile(attachmentId, file);
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
                     </div>
-                  </>
-                ))}
+                    {fileErrors["attachment-internship-certificate"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-internship-certificate"]}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Show Experience Certificate for Case B and C */}
+                {(currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Experience Certificate <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex items-center justify-center w-full">
+                      {attachments.find(att => att.title === "experience-certificate")?.attachmentUrl ? (
+                        <div className="relative w-full">
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={attachments.find(att => att.title === "experience-certificate")?.attachmentUrl}
+                              alt="Experience certificate preview"
+                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeAttachment(attachments.find(att => att.title === "experience-certificate")?.id || "")}
+                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                            >
+                              Change Document
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="experience-certificate"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                              <span className="font-semibold">Click to upload</span> experience certificate
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              JPG, JPEG, PNG, PDF (MAX. 3MB)
+                            </p>
+                          </div>
+                          <input
+                            id="experience-certificate"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                let attachmentId = attachments.find(att => att.title === "experience-certificate")?.id;
+                                
+                                if (!attachmentId) {
+                                  attachmentId = Date.now().toString();
+                                  setAttachments(prev => [...prev, {
+                                    id: attachmentId,
+                                    title: "experience-certificate",
+                                    file: null,
+                                    attachmentUrl: ""
+                                  }]);
+                                }
+                                
+                                updateAttachmentFile(attachmentId, file);
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                    {fileErrors["attachment-experience-certificate"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["attachment-experience-certificate"]}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+      )}
     </div>
   );
 }

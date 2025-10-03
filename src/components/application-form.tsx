@@ -629,6 +629,32 @@ export function ApplicationForm() {
           setIsSubmitting(false);
           return;
         }
+
+        // Validate required documents based on eligibility
+        const requiredDocs = ["signature", "passport-bio-page", "valid-license", "mbbs-degree"];
+        
+        // Add case-specific documents
+        if (aktData.eligibilityA || aktData.eligibilityB) {
+          requiredDocs.push("internship-certificate");
+        }
+        if (aktData.eligibilityB || aktData.eligibilityC) {
+          requiredDocs.push("experience-certificate");
+        }
+
+        // Check if all required documents are uploaded
+        const missingDocs = requiredDocs.filter(doc => 
+          !attachments.find(att => att.title === doc && att.attachmentUrl)
+        );
+
+        if (missingDocs.length > 0) {
+          toast({
+            title: "Missing Required Documents",
+            description: `Please upload: ${missingDocs.join(", ")}`,
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // Show confirmation dialog
@@ -1271,12 +1297,8 @@ export function ApplicationForm() {
       return false;
     }
 
-    // For queued uploads, return the local preview URL
-    if (!applicationId) {
-      return localPreviewUrl;
-    }
-
-    return true;
+    // Always return the local preview URL for immediate preview
+    return localPreviewUrl;
   };
   // console.error("validateFile:", validateFile);
 
@@ -1425,6 +1447,7 @@ export function ApplicationForm() {
                   setPassportPreview={setPassportPreview}
                   passportPreview={passportPreview}
                   fileErrors={fileErrors}
+                  setFileErrors={setFileErrors}
                   validateFile={validateFile}
                   selectedExam={selectedExam}
                   attachmentUrl={attachmentUrl}
