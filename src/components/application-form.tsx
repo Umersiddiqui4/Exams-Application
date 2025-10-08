@@ -792,7 +792,6 @@ export function ApplicationForm() {
           gender: "MALE", // Default, could be added to form
           previousAKTAttempts:
             (data as AktsFormValues).previousAktsAttempts || 0,
-          graduatingSchoolName: (data as AktsFormValues).schoolName || "",
           graduatingSchoolLocation:
             (data as AktsFormValues).schoolLocation || "",
           dateOfQualification: (data as AktsFormValues).QualificationDate
@@ -826,12 +825,8 @@ export function ApplicationForm() {
           registrationDate: data.dateOfRegistration
             ? new Date(data.dateOfRegistration).toISOString().split("T")[0]
             : "",
-          // date: data.agreementDate
-            // ? new Date(data.agreementDate).toISOString().split("T")[0]
-            // : "",
+        
           usualForename: data.fullName.split(" ")[0] || "",
-          // gender: "MALE",
-          previousAKTAttempts: 0,
           aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
           preferenceDate1: data.preferenceDate1 || "00/00/0000",

@@ -62,7 +62,6 @@ interface AktsFieldsProps {
 }
 
 
-const genderCategory = ["Male", "Female", "Other"];
 
 
 export function AktFeilds(props: AktsFieldsProps) {
@@ -351,45 +350,7 @@ export function AktFeilds(props: AktsFieldsProps) {
               />
              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={currentForm.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Gender <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.gender
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
-                          >
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                          {genderCategory.map((date: any) => (
-                            <SelectItem
-                              key={date}
-                              value={date}
-                              className="dark:text-slate-200 dark:focus:bg-slate-700"
-                            >
-                              {date}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              
 
                 <FormField
                   control={currentForm.control}
