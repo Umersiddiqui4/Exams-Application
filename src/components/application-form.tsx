@@ -450,8 +450,32 @@ export function ApplicationForm() {
           let fileName = file.name;
 
           if (selectedExamType) {
-            // For AKT attachments, use the inputId as filename
-            fileName = inputId;
+            // For AKT attachments, use descriptive names
+            switch (inputId) {
+              case "passport-image":
+                fileName = "passport-image";
+                break;
+              case "signature":
+                fileName = "signature";
+                break;
+              case "passport-bio-page":
+                fileName = "passport bio page";
+                break;
+              case "valid-license":
+                fileName = "valid license";
+                break;
+              case "mbbs-degree":
+                fileName = "MBBS degree";
+                break;
+              case "internship-certificate":
+                fileName = "internship/house job certificate";
+                break;
+              case "experience-certificate":
+                fileName = "experience certificate";
+                break;
+              default:
+                fileName = file.name; // fallback to original name
+            }
           } else if (!selectedExamType) {
             // For OSCE applications, use standard titles for all file types
             switch (inputId) {
