@@ -164,7 +164,7 @@ export const formDefaultValues: FormValues = {
   medicalLicense: undefined,
   passportBioPage: undefined,
   signature: undefined,
-  agreementDate: new Date(),
+  // agreementDate: new Date(),
   termsAgreed: true,
 };
 export const aktsFormDefaultValues: AktsFormValues = {
@@ -194,7 +194,7 @@ export const aktsFormDefaultValues: AktsFormValues = {
   preferenceDate2: formDefaultValues.preferenceDate2,
   preferenceDate3: formDefaultValues.preferenceDate3,
   agreementName: formDefaultValues.agreementName,
-  agreementDate: formDefaultValues.agreementDate,
+  // agreementDate: formDefaultValues.agreementDate,
   eligibilityA: false,
   eligibilityB: false,
   eligibilityC: false,

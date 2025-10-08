@@ -1661,6 +1661,10 @@ export const ApplicationPDFCompleteAktPreview = ({
   image,
   images,
 }: any) => {
+  console.log("image", image);
+  console.log("images", images);
+  console.log("data", data);
+  
   return (
     <Document>
       {/* Main application form page */}
@@ -2004,7 +2008,7 @@ export const ApplicationPDFCompleteAktPreview = ({
       {/* Each document on its own page */}
 
       {/* Additional Attachments Pages */}
-      {image &&
+      {/* {image &&
         image.length > 0 &&
         image.map((attachment: any, index: number) => (
           <Page key={attachment.id} size="A4" style={styles.page}>
@@ -2029,7 +2033,48 @@ export const ApplicationPDFCompleteAktPreview = ({
               </View>
             </View>
           </Page>
-        ))}
+        ))} */}
+
+{images &&
+        Object.entries(images).map(([key, value], index) => {
+          const label =
+            key === "passport"
+              ? "Passport Photo"
+              : key === "medicalLicense"
+                ? "Medical License"
+                : key === "part1Email"
+                  ? "Part 1 Passing Email"
+                  : key === "passportBio"
+                    ? "Passport Bio Page"
+                    : key === "signature"
+                      ? "Signature"
+                      : `Attachment ${index + 1}`
+
+         const image: string[] = Array.isArray(value)
+   ? value
+   : value
+     ? [value]
+     : [];
+
+ if (image.length === 0) return null;
+
+ return image.map((imgSrc: string, pageIndex: number) => (
+   <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
+       <View style={styles.watermarkContainer} fixed>
+          <Text style={styles.watermarkText}>Preview</Text>
+        </View>
+     <View style={styles.documentPage}>
+       <Text style={styles.documentPageTitle}>{label}</Text>
+       <Image src={imgSrc} style={styles.documentPageImagePrev} />
+       <View style={styles.documentPageFooter}>
+         <Text style={styles.documentPageFooterText}>
+           {data.fullName} - Candidate ID: {data.candidateId}
+         </Text>
+       </View>
+     </View>
+   </Page>
+ ));
+       })}
     </Document>
   );
 };

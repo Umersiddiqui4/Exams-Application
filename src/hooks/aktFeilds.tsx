@@ -1335,9 +1335,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                                     file: file,
                                     attachmentUrl: ""
                                   };
-                                  setAttachments(prev => [...prev, newAttachment]);
+                                  setAttachments(prev => {
+                                    const updated = [...prev, newAttachment];
+                                    // Call validateFile after state is updated
+                                    setTimeout(() => validateFile(file, "signature"), 0);
+                                    return updated;
+                                  });
+                                } else {
+                                  validateFile(file, "signature");
                                 }
-                                validateFile(file, "signature");
                               }
                             }}
                         />
@@ -1406,9 +1412,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                                     file: file,
                                     attachmentUrl: ""
                                   };
-                                  setAttachments(prev => [...prev, newAttachment]);
+                                  setAttachments(prev => {
+                                    const updated = [...prev, newAttachment];
+                                    // Call validateFile after state is updated
+                                    setTimeout(() => validateFile(file, "passport-bio-page"), 0);
+                                    return updated;
+                                  });
+                                } else {
+                                  validateFile(file, "passport-bio-page");
                                 }
-                                validateFile(file, "passport-bio-page");
                               }
                             }}
                         />
@@ -1477,9 +1489,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                                     file: file,
                                     attachmentUrl: ""
                                   };
-                                  setAttachments(prev => [...prev, newAttachment]);
+                                  setAttachments(prev => {
+                                    const updated = [...prev, newAttachment];
+                                    // Call validateFile after state is updated
+                                    setTimeout(() => validateFile(file, "valid-license"), 0);
+                                    return updated;
+                                  });
+                                } else {
+                                  validateFile(file, "valid-license");
                                 }
-                                validateFile(file, "valid-license");
                               }
                             }}
                         />
@@ -1548,9 +1566,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                                     file: file,
                                     attachmentUrl: ""
                                   };
-                                  setAttachments(prev => [...prev, newAttachment]);
+                                  setAttachments(prev => {
+                                    const updated = [...prev, newAttachment];
+                                    // Call validateFile after state is updated
+                                    setTimeout(() => validateFile(file, "mbbs-degree"), 0);
+                                    return updated;
+                                  });
+                                } else {
+                                  validateFile(file, "mbbs-degree");
                                 }
-                                validateFile(file, "mbbs-degree");
                               }
                             }}
                         />
@@ -1624,9 +1648,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                                     file: file,
                                     attachmentUrl: ""
                                   };
-                                  setAttachments(prev => [...prev, newAttachment]);
+                                  setAttachments(prev => {
+                                    const updated = [...prev, newAttachment];
+                                    // Call validateFile after state is updated
+                                    setTimeout(() => validateFile(file, "internship-certificate"), 0);
+                                    return updated;
+                                  });
+                                } else {
+                                  validateFile(file, "internship-certificate");
                                 }
-                                validateFile(file, "internship-certificate");
                               }
                             }}
                           />
@@ -1697,9 +1727,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                                     file: file,
                                     attachmentUrl: ""
                                   };
-                                  setAttachments(prev => [...prev, newAttachment]);
+                                  setAttachments(prev => {
+                                    const updated = [...prev, newAttachment];
+                                    // Call validateFile after state is updated
+                                    setTimeout(() => validateFile(file, "experience-certificate"), 0);
+                                    return updated;
+                                  });
+                                } else {
+                                  validateFile(file, "experience-certificate");
                                 }
-                                validateFile(file, "experience-certificate");
                               }
                             }}
                           />

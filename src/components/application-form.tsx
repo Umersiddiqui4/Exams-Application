@@ -553,14 +553,29 @@ export function ApplicationForm() {
 
   // Prepare images for PDF
   const pdfImages = useMemo(() => {
-    return {
-      passport: passportPreview,
-      medicalLicense: medicalLicensePreview,
-      part1Email: part1EmailPreview,
-      passportBio: passportBioPreview,
-      signature: signaturePreview,
-    };
+    if (selectedExamType) {
+      // AKT form - use attachments array
+      return {
+        attachments: attachments,
+        passport: passportPreview,
+        medicalLicense: medicalLicensePreview,
+        part1Email: part1EmailPreview,
+        passportBio: passportBioPreview,
+        signature: signaturePreview,
+      };
+    } else {
+      // OSCE form - use individual preview states
+      return {
+        passport: passportPreview,
+        medicalLicense: medicalLicensePreview,
+        part1Email: part1EmailPreview,
+        passportBio: passportBioPreview,
+        signature: signaturePreview,
+      };
+    }
   }, [
+    selectedExamType,
+    attachments,
     passportPreview,
     medicalLicensePreview,
     part1EmailPreview,
@@ -787,7 +802,7 @@ export function ApplicationForm() {
           examinationCenterPreference:
             (data as AktsFormValues).examinationCenter || "null",
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
-          date: new Date().toISOString(),
+          // date: new Date().toISOString(),
           examType: examDto?.type || "AKT",
           shouldSubmit: true,
           // notes: ""
@@ -811,9 +826,9 @@ export function ApplicationForm() {
           registrationDate: data.dateOfRegistration
             ? new Date(data.dateOfRegistration).toISOString().split("T")[0]
             : "",
-          date: data.agreementDate
-            ? new Date(data.agreementDate).toISOString().split("T")[0]
-            : "",
+          // date: data.agreementDate
+            // ? new Date(data.agreementDate).toISOString().split("T")[0]
+            // : "",
           usualForename: data.fullName.split(" ")[0] || "",
           // gender: "MALE",
           previousAKTAttempts: 0,
@@ -895,7 +910,7 @@ export function ApplicationForm() {
         signatureUrl: signaturePreview || "",
         pdfUrl: "",
         status: "submitted",
-        date: new Date().toISOString(),
+        // date: new Date().toISOString(),
         name: data.fullName,
         dateOfRegistration: data.dateOfRegistration
           ? new Date(data.dateOfRegistration)
@@ -985,7 +1000,7 @@ export function ApplicationForm() {
         confirmButtonText: "OK",
       }).then(() => {
         // Redirect to main MRCGP website when user clicks OK
-        window.location.href = "https://mrcgpintsouthasia.org/";
+        // window.location.href = "https://mrcgpintsouthasia.org/";
       });
     } finally {
       setIsSubmitting(false);
@@ -1215,14 +1230,20 @@ export function ApplicationForm() {
           reader.onload = async (e) => {
             try {
               const base64Pdf = e.target?.result as string;
+              console.log("Converting PDF to images for passport-bio-page...");
               const imagesArray = await pdfToImages(base64Pdf);
+              console.log("PDF conversion result:", imagesArray);
               setPassportBioPreview(imagesArray);
               // Update attachment in array with actual preview
-              setAttachments(prev => prev.map(att => 
-                att.title === "passport-bio-page" 
-                  ? { ...att, attachmentUrl: imagesArray[0] }
-                  : att
-              ));
+              setAttachments(prev => {
+                const updated = prev.map(att => 
+                  att.title === "passport-bio-page" 
+                    ? { ...att, attachmentUrl: imagesArray[0] }
+                    : att
+                );
+                console.log("Updated attachments for passport-bio-page:", updated);
+                return updated;
+              });
             } catch (error) {
               console.error("PDF conversion error:", error);
               // Keep placeholder on error
