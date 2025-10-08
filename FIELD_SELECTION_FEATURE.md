@@ -127,7 +127,15 @@ The component follows the existing design system:
 - Shows appropriate error messages via toast notifications
 - Graceful handling of API errors
 
-### 9. Accessibility
+### 9. Known Issues & Solutions
+
+#### Cursor Offset During Drag
+- **Issue**: The dragged element may appear far from the cursor during drag operations
+- **Cause**: This is a known issue with the `@hello-pangea/dnd` library in certain browser configurations
+- **Solution**: CSS fixes have been applied in `src/globals.css` to minimize this issue
+- **Workaround**: Use the up/down arrow buttons as an alternative to drag and drop
+
+### 10. Accessibility
 
 - Proper ARIA labels
 - Keyboard navigation support

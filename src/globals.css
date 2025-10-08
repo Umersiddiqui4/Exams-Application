@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Drag and drop cursor styling */
+.cursor-grab {
+  cursor: grab !important;
+}
+
+.cursor-grabbing {
+  cursor: grabbing !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

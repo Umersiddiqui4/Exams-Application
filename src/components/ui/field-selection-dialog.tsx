@@ -13,12 +13,25 @@ import {
   DialogFooter,
 } from "./dialog"
 import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "@hello-pangea/dnd"
-import { GripVertical, Plus, Trash2, Download } from "lucide-react"
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import {
+  useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { GripVertical, Trash2, Download } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 
 export interface FieldConfig {
@@ -81,6 +94,82 @@ const AVAILABLE_FIELDS: FieldConfig[] = [
 
 const DEFAULT_SHEET_NAME = "Applications"
 
+// Sortable item component
+function SortableItem({ field, index, totalItems, onMoveUp, onMoveDown, onRemove }: {
+  field: FieldConfig
+  index: number
+  totalItems: number
+  onMoveUp: (index: number) => void
+  onMoveDown: (index: number) => void
+  onRemove: (fieldKey: string) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.key })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center space-x-2 p-2 bg-background border rounded-md ${
+        isDragging ? "shadow-lg opacity-90" : ""
+      }`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab hover:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
+      
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium">{field.displayName}</div>
+        <div className="text-xs text-muted-foreground">{field.key}</div>
+      </div>
+      
+      <div className="flex items-center space-x-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onMoveUp(index)}
+          disabled={index === 0}
+          className="h-6 w-6 p-0"
+        >
+          ↑
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onMoveDown(index)}
+          disabled={index === totalItems - 1}
+          className="h-6 w-6 p-0"
+        >
+          ↓
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(field.key)}
+          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function FieldSelectionDialog({
   isOpen,
   onClose,
@@ -93,6 +182,13 @@ export function FieldSelectionDialog({
   const [searchQuery, setSearchQuery] = useState("")
   const [includeWaitingList, setIncludeWaitingList] = useState(true)
   const [includeRejected, setIncludeRejected] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   // Initialize with default fields if none selected
   useEffect(() => {
@@ -120,14 +216,17 @@ export function FieldSelectionDialog({
     })
   }
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
 
-    const items = Array.from(selectedFields)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
+    if (over && active.id !== over.id) {
+      setSelectedFields((items) => {
+        const oldIndex = items.findIndex((item) => item.key === active.id)
+        const newIndex = items.findIndex((item) => item.key === over.id)
 
-    setSelectedFields(items)
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
   }
 
   const handleMoveUp = (index: number) => {
@@ -188,9 +287,10 @@ export function FieldSelectionDialog({
     onClose()
   }
 
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Configure Excel Export Fields
@@ -310,79 +410,32 @@ export function FieldSelectionDialog({
                   No fields selected. Choose fields from the left panel.
                 </div>
               ) : (
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <Droppable droppableId="selected-fields">
-                    {(provided) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className="border rounded-md max-h-96 overflow-y-auto"
-                      >
-                        <div className="p-2 space-y-1">
-                          {selectedFields.map((field, index) => (
-                            <Draggable
-                              key={field.key}
-                              draggableId={field.key}
-                              index={index}
-                            >
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  className={`flex items-center space-x-2 p-2 bg-background border rounded-md ${
-                                    snapshot.isDragging ? "shadow-lg" : ""
-                                  }`}
-                                >
-                                  <div
-                                    {...provided.dragHandleProps}
-                                    className="cursor-grab hover:cursor-grabbing"
-                                  >
-                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                  </div>
-                                  
-                                  <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium">{field.displayName}</div>
-                                    <div className="text-xs text-muted-foreground">{field.key}</div>
-                                  </div>
-                                  
-                                  <div className="flex items-center space-x-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleMoveUp(index)}
-                                      disabled={index === 0}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      ↑
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleMoveDown(index)}
-                                      disabled={index === selectedFields.length - 1}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      ↓
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleRemoveField(field.key)}
-                                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={selectedFields.map(field => field.key)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="border rounded-md max-h-96 overflow-y-auto">
+                      <div className="p-2 space-y-1">
+                        {selectedFields.map((field, index) => (
+                          <SortableItem
+                            key={field.key}
+                            field={field}
+                            index={index}
+                            totalItems={selectedFields.length}
+                            onMoveUp={handleMoveUp}
+                            onMoveDown={handleMoveDown}
+                            onRemove={handleRemoveField}
+                          />
+                        ))}
                       </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </div>
           </div>
