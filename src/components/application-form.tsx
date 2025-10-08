@@ -663,7 +663,7 @@ export function ApplicationForm() {
           registrationNumber: data.registrationNumber,
           registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString() : "",
           usualForename: data.fullName.split(' ')[0] || "",
-          gender: "MALE", // Default, could be added to form
+          // gender: "MALE", // Default, could be added to form
           previousAKTAttempts: (data as AktsFormValues).previousAktsAttempts || 0,
           graduatingSchoolName: (data as AktsFormValues).schoolName || "",
           graduatingSchoolLocation: (data as AktsFormValues).schoolLocation || "",
@@ -671,7 +671,7 @@ export function ApplicationForm() {
           aktEligibility: "A", // Default, could be mapped from eligibility fields
           examinationCenterPreference: (data as AktsFormValues).examinationCenter || "null",
           aktCandidateStatement: "A", // Default, could be mapped from candidateStatement fields
-          date: new Date().toISOString(),
+          // date: new Date().toISOString(),
           examType: examDto?.type || "AKT",
           "shouldSubmit": true,
           // notes: ""
@@ -693,7 +693,7 @@ export function ApplicationForm() {
           registrationAuthority: data.registrationAuthority,
           registrationNumber: data.registrationNumber,
           registrationDate: data.dateOfRegistration ? new Date(data.dateOfRegistration).toISOString().split('T')[0] : "",
-          date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
+          // date: data.agreementDate ? new Date(data.agreementDate).toISOString().split('T')[0] : "",
           usualForename: data.fullName.split(' ')[0] || "",
           // gender: "MALE",
           previousAKTAttempts: 0,
@@ -762,7 +762,7 @@ export function ApplicationForm() {
         signatureUrl: signaturePreview || "",
         pdfUrl: "",
         status: "submitted",
-        date: new Date().toISOString(),
+        // date: new Date().toISOString(),
         name: data.fullName,
         dateOfRegistration: data.dateOfRegistration
           ? new Date(data.dateOfRegistration)
