@@ -52,6 +52,7 @@ import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
 import * as pdfjsLib from "pdfjs-dist/";
+import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -70,9 +71,7 @@ export default function ApplicationTable() {
   const [isExporting, setIsExporting] = useState(false)
   // const [searchQuery, setSearchQuery] = useState<string>("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
-  const [includeWaitingList, setIncludeWaitingList] = useState(true)
-  const [includeRejected, setIncludeRejected] = useState(false)
+  const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
   const { items: examOccurrences } = useExamOccurrences()
   const [pageSize, setPageSize] = useState(10)
   const {
@@ -351,16 +350,26 @@ export default function ApplicationTable() {
   }
 
   const handleExport = () => {
-    setIsExportDialogOpen(true)
+    setIsFieldSelectionOpen(true)
   }
 
-  const handleConfirmExport = async () => {
+  const handleConfirmExport = async (fieldConfig: ExportFieldConfig, includeWaitingList: boolean, includeRejected: boolean) => {
     setIsExporting(true)
-    setIsExportDialogOpen(false)
+    setIsFieldSelectionOpen(false)
 
     try {
       const token = localStorage.getItem("auth_token")
-      const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?includeWaitingList=${includeWaitingList}&includeRejected=${includeRejected}`
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        includeWaitingList: includeWaitingList.toString(),
+        includeRejected: includeRejected.toString(),
+      })
+
+      // Add field configuration
+      params.append("fieldConfig", JSON.stringify(fieldConfig))
+
+      const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?${params.toString()}`
 
       const response = await fetch(url, {
         method: "GET",
@@ -386,6 +395,11 @@ export default function ApplicationTable() {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
+
+      toast({
+        title: "Export Successful",
+        description: `Applications exported successfully with ${fieldConfig?.fields.length || 'default'} fields.`,
+      })
     } catch (error) {
       console.error("Export error:", error)
       Swal.fire({
@@ -1120,56 +1134,13 @@ export default function ApplicationTable() {
         </CardContent>
       </Card>
 
-      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Export Applications</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includeWaitingList"
-                checked={includeWaitingList}
-                onCheckedChange={(checked) => setIncludeWaitingList(checked === true)}
-              />
-              <label
-                htmlFor="includeWaitingList"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Include Waiting List
-              </label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includeRejected"
-                checked={includeRejected}
-                onCheckedChange={(checked) => setIncludeRejected(checked === true)}
-              />
-              <label
-                htmlFor="includeRejected"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Include Rejected
-              </label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmExport} disabled={isExporting}>
-              {isExporting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                "Export"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Field Selection Dialog */}
+      <FieldSelectionDialog
+        isOpen={isFieldSelectionOpen}
+        onClose={() => setIsFieldSelectionOpen(false)}
+        onExport={handleConfirmExport}
+        isExporting={isExporting}
+      />
     </div>
   )
 }
