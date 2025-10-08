@@ -53,6 +53,7 @@ import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
 import * as pdfjsLib from "pdfjs-dist/";
 import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog";
+import { ApplicationPDFCompleteAktApp } from "./pdf-generator";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -414,7 +415,9 @@ export default function ApplicationTable() {
   }
 
   const generatePdfBlob = async (data: any) => {
-    const doc = <ApplicationPDF data={data} />
+    // Check exam type and use appropriate PDF generator
+    const isAKT = data.examOccurrence.type === "AKT"
+    const doc = isAKT ? <ApplicationPDFCompleteAktApp data={data} /> : <ApplicationPDF data={data} />
     const asPdf = pdf()
     asPdf.updateContainer(doc)
     const blob = await asPdf.toBlob()
@@ -435,9 +438,7 @@ export default function ApplicationTable() {
               <div className="text-center">
                 <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
                 <Text style={styles.subtitle}>
-                  {data.examOccurrence.type === "AKT"
-                    ? "AKT Examination Application"
-                    : "Part 2 (OSCE)} Examination Application"}
+                  Part 2 (OSCE) Examination Application
                 </Text>
               </div>
             </View>

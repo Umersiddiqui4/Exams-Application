@@ -809,16 +809,18 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             <View style={styles.titleContainer}>
               <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
               <Text style={styles.subtitle}>
-                Part 2 (OSCE) Examination Application
+                AKT Examination Application
               </Text>
             </View>
           </View>
-          {data.passportUrl && (
-            <Image
-              src={data.passportUrl || "/placeholder.svg"}
-              style={styles.passportImage}
-            />
-          )}
+          {(() => {
+            const passportAttachment = data.attachments?.find(
+              (att: any) => att.fileName === "passport-image" && att.base64Data,
+            )
+            return passportAttachment ? (
+              <Image src={passportAttachment.base64Data || "/placeholder.svg"} style={styles.passportImage} />
+            ) : null
+          })()}
         </View>
 
         <View style={styles.section}>
@@ -844,12 +846,6 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
                       {data.fullName || "Not provided"}
                     </Text>
                   </View>
-                  <View style={styles.fieldRow}>
-                    <Text style={styles.fieldLabel}>Gender:</Text>
-                    <Text style={styles.fieldValue}>
-                      {data.gender || "Not provided"}
-                    </Text>
-                  </View>
                 </View>
               </View>
             </View>
@@ -866,7 +862,7 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>WhatsApp:</Text>
                     <Text style={styles.fieldValue}>
-                      {data.whatsapp || "Not provided"}
+                      {data.personalContact || "Not provided"}
                     </Text>
                   </View>
                   <View style={styles.fieldRow}>
@@ -895,9 +891,9 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
               <View style={styles.row}>
                 <View style={styles.column}>
                   <View style={styles.fieldRow}>
-                    <Text style={styles.fieldLabel}>Post Box:</Text>
+                    <Text style={styles.fieldLabel}>Street Address:</Text>
                     <Text style={styles.fieldValue}>
-                      {data.poBox || "No address"}
+                      {data.streetAddress || "No address"}
                     </Text>
                   </View>
                   <View style={styles.fieldRow}>
@@ -921,6 +917,35 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             </View>
           </View>
 
+          {/* Education section - AKT specific */}
+          <View style={styles.resumeSection}>
+            <View style={styles.resumeHeader}>
+              <Text style={styles.resumeSectionTitle}>EDUCATION</Text>
+            </View>
+            <View style={styles.resumeBody}>
+              <View style={styles.fieldRow}>
+                <Text style={styles.fieldLabel}>School Name:</Text>
+                <Text style={styles.fieldValue}>
+                  {data.aktDetails?.graduatingSchoolName || "Not provided"}
+                </Text>
+              </View>
+              <View style={styles.fieldRow}>
+                <Text style={styles.fieldLabel}>School Location:</Text>
+                <Text style={styles.fieldValue}>
+                  {data.aktDetails?.graduatingSchoolLocation || "Not provided"}
+                </Text>
+              </View>
+              <View style={styles.fieldRow}>
+                <Text style={styles.fieldLabel}>Qualification Date:</Text>
+                <Text style={styles.fieldValue}>
+                  {data.aktDetails?.dateOfQualification
+                    ? format(new Date(data.aktDetails.dateOfQualification), "PPP")
+                    : "Not provided"}
+                </Text>
+              </View>
+            </View>
+          </View>
+
           {/* Experience section */}
           <View style={styles.resumeSection}>
             <View style={styles.resumeHeader}>
@@ -928,39 +953,21 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Date of passing Part 1:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.dateOfPassingPart1 || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Previous AKT attempts:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.previousAktsAttempts || "Not provided"}
+                  {data.aktDetails?.previousAKTAttempts || "Not provided"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Country of experience:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.countryOfExperience || "Not provided"}
+                  {data.clinicalExperienceCountry || "Not provided"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Country of origin:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.countryOfOrigin || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>School Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.schoolName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>School Location:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.schoolLocation || "Not provided"}
+                  {data.originCountry || "Not provided"}
                 </Text>
               </View>
             </View>
@@ -987,163 +994,87 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Date of registration:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.dateOfRegistration
-                    ? format(new Date(data.dateOfRegistration), "PPP")
+                  {data.registrationDate
+                    ? format(new Date(data.registrationDate), "PPP")
                     : "Not provided"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Exam Details */}
+          {/* Examination Center Preference - AKT specific */}
           <View style={styles.resumeSection}>
             <View style={styles.resumeHeader}>
-              <Text style={styles.resumeSectionTitle}>EXAM DETAILS</Text>
+              <Text style={styles.resumeSectionTitle}>EXAMINATION CENTER PREFERENCE</Text>
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Exam Name:</Text>
+                <Text style={styles.fieldLabel}>Preferred Center:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.examName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Examination Center:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.examinationCenter || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Qualification Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.qualificationDate
-                    ? format(new Date(data.qualificationDate), "PPP")
+                  {data.aktDetails?.examinationCenterPreference && data.aktDetails.examinationCenterPreference !== "null"
+                    ? data.aktDetails.examinationCenterPreference
                     : "Not provided"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* OSCE Session Preferences */}
+          {/* AKT Eligibility - AKT specific */}
           <View style={styles.resumeSection}>
             <View style={styles.resumeHeader}>
               <Text style={styles.resumeSectionTitle}>
-                OSCE SESSION PREFERENCES
+                ELIGIBILITY
               </Text>
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 1:</Text>
+                <Text style={styles.fieldLabel}>Eligibility Criteria:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate1 && data.preferenceDate1 !== " "
-                    ? format(new Date(data.preferenceDate1), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 2:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate2 && data.preferenceDate2 !== " "
-                    ? format(new Date(data.preferenceDate2), "PPP")
-                    : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Preference Date 3:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.preferenceDate3 && data.preferenceDate3 !== " "
-                    ? format(new Date(data.preferenceDate3), "PPP")
+                  {data.aktDetails?.aktEligibility && data.aktDetails.aktEligibility.length > 0
+                    ? data.aktDetails.aktEligibility.join(", ")
                     : "Not provided"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Eligibility Statements */}
+          {/* Candidate Statement - AKT specific */}
           <View style={styles.resumeSection}>
             <View style={styles.resumeHeader}>
               <Text style={styles.resumeSectionTitle}>
-                ELIGIBILITY & STATEMENTS
+                CANDIDATE STATEMENT
               </Text>
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Eligibility A:</Text>
+                <Text style={styles.fieldLabel}>Statements Agreed:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.eligibilityA ? "✓ Confirmed" : "✗ Not confirmed"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Eligibility B:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.eligibilityB ? "✓ Confirmed" : "✗ Not confirmed"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Eligibility C:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.eligibilityC ? "✓ Confirmed" : "✗ Not confirmed"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Candidate Statement A:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.candidateStatementA ? "✓ Agreed" : "✗ Not agreed"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Candidate Statement B:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.candidateStatementB ? "✓ Agreed" : "✗ Not agreed"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Candidate Statement C:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.candidateStatementC ? "✓ Agreed" : "✗ Not agreed"}
+                  {data.aktDetails?.aktCandidateStatement && data.aktDetails.aktCandidateStatement.length > 0
+                    ? data.aktDetails.aktCandidateStatement.join(", ")
+                    : data.candidateStatement ? "✓ Agreed" : "✗ Not agreed"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Agreement */}
+          {/* Status Information */}
           <View style={styles.resumeSection}>
             <View style={styles.resumeHeader}>
-              <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
+              <Text style={styles.resumeSectionTitle}>APPLICATION STATUS</Text>
             </View>
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Applicant Name:</Text>
+                <Text style={styles.fieldLabel}>Application Status:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.applicantName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Agreement Name:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementName || "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Agreement Date:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.agreementDate
-                    ? format(new Date(data.agreementDate), "PPP")
-                    : "Not provided"}
+                  {data.status || "Pending"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Submitted Date:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.submittedDate
-                    ? format(new Date(data.submittedDate), "PPP")
+                  {data.createdAt
+                    ? format(new Date(data.createdAt), "PPP")
                     : "Not provided"}
-                </Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Status:</Text>
-                <Text style={styles.fieldValue}>
-                  {data.status || "Pending"}
                 </Text>
               </View>
             </View>
@@ -1188,30 +1119,25 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
                 <Text style={styles.note}>
-                  I hereby apply to sit the South Asia MRCGP [INT.] Part 2
-                  (OSCE) Examination, success in which will allow me to apply
-                  for International Membership of the UK's Royal College of
-                  General Practitioners. Detailed information on the membership
-                  application process can be found on the RCGP website: Member
-                  Ship I have read and agree to abide by the conditions set out
-                  in the South Asia MRCGP [INT.] Examination Rules and
-                  Regulations as published on the MRCGP [INT.] South Asia
-                  website: www.mrcgpintsouthasia.org If accepted for
-                  International Membership, I undertake to continue approved
-                  postgraduate study while I remain in active general
-                  practice/family practice, and to uphold and promote the aims
-                  of the RCGP to the best of my ability. I understand that, on
-                  being accepted for International Membership, an annual
-                  subscription fee is to be payable to the RCGP. I understand
-                  that only registered International Members who maintain their
-                  RCGP subscription are entitled to use the post-nominal
-                  designation "MRCGP [INT]". Success in the exam does not give
-                  me the right to refer to myself as MRCGP [INT.]. I attach a
-                  banker's draft made payable to "MRCGP [INT.] South Asia", I
-                  also understand and agree that my personal data will be
-                  handled by the MRCGP [INT.] South Asia Board and I also give
-                  permission for my personal data to be handled by the regional
-                  MRCGP [INT.] South Asia co-ordinators..
+                  I hereby apply to sit the South Asia MRCGP [INT.] AKT Examination, 
+                  success in which will allow me to apply for International Membership 
+                  of the UK's Royal College of General Practitioners. Detailed information 
+                  on the membership application process can be found on the RCGP website. 
+                  I have read and agree to abide by the conditions set out in the South 
+                  Asia MRCGP [INT.] Examination Rules and Regulations as published on the 
+                  MRCGP [INT.] South Asia website: www.mrcgpintsouthasia.org If accepted 
+                  for International Membership, I undertake to continue approved postgraduate 
+                  study while I remain in active general practice/family practice, and to 
+                  uphold and promote the aims of the RCGP to the best of my ability. I 
+                  understand that, on being accepted for International Membership, an annual 
+                  subscription fee is to be payable to the RCGP. I understand that only 
+                  registered International Members who maintain their RCGP subscription are 
+                  entitled to use the post-nominal designation "MRCGP [INT]". Success in the 
+                  exam does not give me the right to refer to myself as MRCGP [INT.]. I attach 
+                  a banker's draft made payable to "MRCGP [INT.] South Asia", I also understand 
+                  and agree that my personal data will be handled by the MRCGP [INT.] South Asia 
+                  Board and I also give permission for my personal data to be handled by the 
+                  regional MRCGP [INT.] South Asia co-ordinators.
                 </Text>
               </View>
             </View>
@@ -1219,31 +1145,65 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
         </View>
       </Page>
 
-      {/* Each document on its own page */}
-
-      {/* Additional Attachments Pages */}
+      {/* Each attachment on its own page */}
       {data.attachments &&
-        data.attachments.map((attachment: any, index: number) => (
-          <Page key={attachment.id} size="A4" style={styles.page}>
-            <View style={styles.documentPage}>
-              <Text style={styles.documentPageTitle}>
-                {attachment.title || ` Attachment ${index + 1}`}
-              </Text>
-              <Image
-                src={attachment.attachmentUrl || "/placeholder.svg"}
-                style={styles.documentPageImage}
-              />
-              <View style={styles.documentPageFooter}>
-                <Text style={styles.documentPageFooterText}>
-                  {data.fullName} - Candidate ID: {data.candidateId}
+        data.attachments.flatMap((attachment: any, index: number) => {
+          // Build a friendly label based on fileName
+          const fileName = attachment.fileName || "";
+          let label = "";
+
+          // Map attachment names based on fileName or category
+          if (fileName === "passport-image") {
+            label = "Passport Photo";
+          } else if (fileName === "signature") {
+            label = "Signature";
+          } else if (fileName === "passport-bio-page") {
+            label = "Passport Bio Page";
+          } else if (fileName === "valid-license") {
+            label = "Valid Medical License";
+          } else if (fileName === "mbbs-degree") {
+            label = "MBBS Degree";
+          } else if (fileName === "internship-certificate") {
+            label = "Internship Certificate";
+          } else if (fileName === "experience-certificate") {
+            label = "Experience Certificate";
+          } else if (fileName.toLowerCase().includes("license")) {
+            label = "Medical License";
+          } else if (fileName.toLowerCase().includes("degree")) {
+            label = "Degree Certificate";
+          } else {
+            label = `Attachment ${index + 1}`;
+          }
+
+          // Normalize base64Data to an array to support multi-page PDFs
+          const images: string[] = Array.isArray(attachment.base64Data)
+            ? attachment.base64Data
+            : attachment.base64Data
+              ? [attachment.base64Data]
+              : []
+
+          // If we have no image data, skip rendering a page for this attachment
+          if (images.length === 0) return []
+
+          // Render one PDF page per image
+          return images.map((imgSrc: string, pageIndex: number) => (
+            <Page key={`${attachment.id || index}-${pageIndex}`} size="A4" style={styles.page}>
+              <View style={styles.documentPage}>
+                <Text style={styles.documentPageTitle}>
+                  {label}
+                  {images.length > 1 ? ` - Page ${pageIndex + 1}` : ""}
                 </Text>
-                <Text style={styles.documentPageFooterText}>
-                  Document: {attachment.title || `Attachment ${index + 1}`}
-                </Text>
+                <Image src={imgSrc || "/placeholder.svg"} style={styles.documentPageImage} />
+                <View style={styles.documentPageFooter}>
+                  <Text style={styles.documentPageFooterText}>
+                    {data.fullName} - Candidate ID: {data.candidateId}
+                  </Text>
+                  <Text style={styles.documentPageFooterText}>{fileName}</Text>
+                </View>
               </View>
-            </View>
-          </Page>
-        ))}
+            </Page>
+          ))
+        })}
     </Document>
   );
 };
