@@ -203,10 +203,11 @@ export function FieldSelectionDialog({
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Available Fields */}
           <div className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               <Label htmlFor="search">Search Fields</Label>
               <Input
                 id="search"
+                className="ml-1"
                 placeholder="Search available fields..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
