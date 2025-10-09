@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "./select";
 
-import { Calendar, Download, Filter, Loader2, Search, Settings } from "lucide-react";
+import { Calendar, Download, Loader2, Search, Settings } from "lucide-react";
 import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
 import { useApplications } from "@/lib/useApplications";
