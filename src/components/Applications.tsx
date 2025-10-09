@@ -15,6 +15,9 @@ export default function Applications() {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  // Removed handleDetailViewOpen since detail view now opens in new tab
+
   
 
   return (
@@ -51,9 +54,9 @@ export default function Applications() {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
-          <ApplicationTable />
-        </main>
+                <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
+                  <ApplicationTable />
+                </main>
       </div>
     </div>
   );

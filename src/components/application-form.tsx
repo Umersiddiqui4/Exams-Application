@@ -458,7 +458,7 @@ export function ApplicationForm() {
               case "signature":
                 fileName = "signature";
                 break;
-              case "passport-bio-page":
+              case "passport_bio_page":
                 fileName = "passport bio page";
                 break;
               case "valid-license":
@@ -736,7 +736,7 @@ export function ApplicationForm() {
         // Validate required documents based on eligibility
         const requiredDocs = [
           "signature",
-          "passport-bio-page",
+          "passport_bio_page",
           "valid-license",
           "mbbs-degree",
         ];
@@ -1094,7 +1094,7 @@ export function ApplicationForm() {
               setSignaturePreview(null);
               setSignatureIsPdf(null);
               break;
-            case "passport-bio-page":
+            case "passport_bio_page":
               setPassportBioPreview(null);
               setPassportBioIsPdf(null);
               break;
@@ -1162,7 +1162,7 @@ export function ApplicationForm() {
             setSignaturePreview(null);
             setSignatureIsPdf(null);
             break;
-          case "passport-bio-page":
+          case "passport_bio_page":
             setPassportBioPreview(null);
             setPassportBioIsPdf(null);
             break;
@@ -1234,14 +1234,14 @@ export function ApplicationForm() {
         setPassportBioIsPdf(isPdf);
         break;
       // AKT attachment fields
-      case "passport-bio-page":
+      case "passport_bio_page":
         if (isPdf) {
           // Set immediate placeholder for PDF
           setPassportBioPreview([pdfPlaceholder]);
           setPassportBioIsPdf(isPdf);
           // Update attachment in array with placeholder
           setAttachments(prev => prev.map(att => 
-            att.title === "passport-bio-page" 
+            att.title === "passport_bio_page" 
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
@@ -1251,18 +1251,18 @@ export function ApplicationForm() {
           reader.onload = async (e) => {
             try {
               const base64Pdf = e.target?.result as string;
-              console.log("Converting PDF to images for passport-bio-page...");
+              console.log("Converting PDF to images for passport_bio_page...");
               const imagesArray = await pdfToImages(base64Pdf);
               console.log("PDF conversion result:", imagesArray);
               setPassportBioPreview(imagesArray);
               // Update attachment in array with actual preview
               setAttachments(prev => {
                 const updated = prev.map(att => 
-                  att.title === "passport-bio-page" 
+                  att.title === "passport_bio_page" 
                     ? { ...att, attachmentUrl: imagesArray[0] }
                     : att
                 );
-                console.log("Updated attachments for passport-bio-page:", updated);
+                console.log("Updated attachments for passport_bio_page:", updated);
                 return updated;
               });
             } catch (error) {
@@ -1275,7 +1275,7 @@ export function ApplicationForm() {
           setPassportBioPreview([localPreviewUrl]);
           // Update attachment in array
           setAttachments(prev => prev.map(att => 
-            att.title === "passport-bio-page" 
+            att.title === "passport_bio_page" 
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1647,7 +1647,7 @@ export function ApplicationForm() {
             setSignaturePreview(null);
             setSignatureIsPdf(null);
             break;
-          case "passport-bio-page":
+          case "passport_bio_page":
             setPassportBioPreview(null);
             setPassportBioIsPdf(null);
             break;
@@ -1717,7 +1717,7 @@ export function ApplicationForm() {
           setSignaturePreview(null);
           setSignatureIsPdf(null);
           break;
-        case "passport-bio-page":
+        case "passport_bio_page":
           setPassportBioPreview(null);
           setPassportBioIsPdf(null);
           break;

@@ -1322,11 +1322,11 @@ export function AktFeilds(props: AktsFieldsProps) {
                     Passport Bio Page (Valid) <span className="text-red-500">*</span>
                   </Label>
                   <div className="flex items-center justify-center w-full">
-                    {attachments.find(att => att.title === "passport-bio-page")?.attachmentUrl ? (
+                    {attachments.find(att => att.title === "passport_bio_page")?.attachmentUrl ? (
                       <div className="relative w-full">
                         <div className="flex flex-col items-center">
                           <img
-                            src={attachments.find(att => att.title === "passport-bio-page")?.attachmentUrl}
+                            src={attachments.find(att => att.title === "passport_bio_page")?.attachmentUrl}
                             alt="Passport bio page preview"
                             className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
                           />
@@ -1334,7 +1334,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => removeAttachment(attachments.find(att => att.title === "passport-bio-page")?.id || "")}
+                            onClick={() => removeAttachment(attachments.find(att => att.title === "passport_bio_page")?.id || "")}
                             className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                           >
                             Change Document
@@ -1343,7 +1343,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                       </div>
                     ) : (
                       <label
-                        htmlFor="passport-bio-page"
+                        htmlFor="passport_bio_page"
                         className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                       >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -1356,7 +1356,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                           </p>
                         </div>
                         <input
-                          id="passport-bio-page"
+                          id="passport_bio_page"
                           type="file"
                           className="hidden"
                           accept=".pdf,.jpg,.jpeg,.png"
@@ -1364,23 +1364,23 @@ export function AktFeilds(props: AktsFieldsProps) {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
                                 // Check if attachment already exists
-                                const existingAttachment = attachments.find(att => att.title === "passport-bio-page");
+                                const existingAttachment = attachments.find(att => att.title === "passport_bio_page");
                                 if (!existingAttachment) {
                                   // Create new attachment
                                   const newAttachment = {
                                     id: crypto.randomUUID(),
-                                    title: "passport-bio-page",
+                                    title: "passport_bio_page",
                                     file: file,
                                     attachmentUrl: ""
                                   };
                                   setAttachments(prev => {
                                     const updated = [...prev, newAttachment];
                                     // Call validateFile after state is updated
-                                    setTimeout(() => validateFile(file, "passport-bio-page"), 0);
+                                    setTimeout(() => validateFile(file, "passport_bio_page"), 0);
                                     return updated;
                                   });
                                 } else {
-                                  validateFile(file, "passport-bio-page");
+                                  validateFile(file, "passport_bio_page");
                                 }
                               }
                             }}

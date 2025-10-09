@@ -1152,25 +1152,29 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
           const fileName = attachment.fileName || "";
           let label = "";
 
-          // Map attachment names based on fileName or category
-          if (fileName === "passport-image") {
+          // Map attachment names based on fileName or category with flexible matching
+          const lowerFileName = fileName.toLowerCase();
+          
+          if (fileName === "passport-image" || (lowerFileName.includes("passport") && lowerFileName.includes("photo"))) {
             label = "Passport Photo";
-          } else if (fileName === "signature") {
+          } else if (fileName === "signature" || lowerFileName.includes("signature")) {
             label = "Signature";
-          } else if (fileName === "passport-bio-page") {
+          } else if (fileName === "passport_bio_page" || lowerFileName.includes("passport") && (lowerFileName.includes("bio") || lowerFileName.includes("bio_page"))) {
             label = "Passport Bio Page";
-          } else if (fileName === "valid-license") {
+          } else if (fileName === "valid-license" || lowerFileName.includes("valid-license") || (lowerFileName.includes("medical") && lowerFileName.includes("license"))) {
             label = "Valid Medical License";
-          } else if (fileName === "mbbs-degree") {
+          } else if (fileName === "mbbs-degree" || lowerFileName.includes("mbbs") || lowerFileName.includes("degree")) {
             label = "MBBS Degree";
-          } else if (fileName === "internship-certificate") {
+          } else if (fileName === "internship-certificate" || lowerFileName.includes("internship")) {
             label = "Internship Certificate";
-          } else if (fileName === "experience-certificate") {
+          } else if (fileName === "experience-certificate" || lowerFileName.includes("experience")) {
             label = "Experience Certificate";
-          } else if (fileName.toLowerCase().includes("license")) {
+          } else if (lowerFileName.includes("license")) {
             label = "Medical License";
-          } else if (fileName.toLowerCase().includes("degree")) {
+          } else if (lowerFileName.includes("degree")) {
             label = "Degree Certificate";
+          } else if (lowerFileName.includes("passport")) {
+            label = "Passport Document";
           } else {
             label = `Attachment ${index + 1}`;
           }

@@ -47,6 +47,8 @@ import { useToast } from "@/components/ui/use-toast";
 import * as pdfjsLib from "pdfjs-dist/";
 import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog";
 import { ApplicationPDFCompleteAktApp } from "./pdf-generator";
+import { PDFPreviewPanel } from "./pdf-preview-panel";
+import { ApplicationDetailView } from "./application-detail-view";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -55,7 +57,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.js", import.meta.url).toString()
 
-export default function ApplicationTable() {
+interface ApplicationTableProps {
+  // Removed onDetailViewOpen since we're opening in new tab now
+}
+
+export default function ApplicationTable({}: ApplicationTableProps) {
   const { toast } = useToast()
 
   const searchQuery = ""
@@ -66,6 +72,9 @@ export default function ApplicationTable() {
   // const [searchQuery, setSearchQuery] = useState<string>("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
   const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false)
+  const [selectedApplicationData, setSelectedApplicationData] = useState<any>(null)
+  const [detailViewOpen, setDetailViewOpen] = useState<boolean>(false)
   const { items: examOccurrences } = useExamOccurrences()
   const [pageSize, setPageSize] = useState(10)
   const {
@@ -89,6 +98,8 @@ export default function ApplicationTable() {
     if (currentExamOccurrence && currentExamOccurrence.id) {
       setSelectedExamOccurrence(currentExamOccurrence.id.toString())
     }
+    
+    // Removed message listener since we're using routes now
   }, [examOccurrences])
 
   const actionColumn = {
@@ -227,6 +238,12 @@ export default function ApplicationTable() {
 
   const handlePdfGenerate = async (row: any) => {
     setGeneratingIds((prev) => new Set(prev).add(row.original.id))
+    
+    // Clear previous application data and close any open panels
+    setSelectedApplicationData(null)
+    setPdfPreviewOpen(false)
+    setDetailViewOpen(false)
+    
     try {
       // Call start-review API if status is SUBMITTED
       if (row.original.status === "SUBMITTED") {
@@ -320,11 +337,12 @@ export default function ApplicationTable() {
         ...detailedData.data,
         attachments: attachmentsWithImages,
       }
-      const blob = await generatePdfBlob(dataWithImages)
-      const url = URL.createObjectURL(blob)
-      window.open(url, "_blank")
 
-      // Refetch applications after PDF opens
+      // Set the application data and show the preview panel
+      setSelectedApplicationData(dataWithImages)
+      setPdfPreviewOpen(true)
+
+      // Refetch applications after loading data
       await reload()
     } catch (error) {
       console.error("Error generating PDF:", error)
@@ -345,6 +363,49 @@ export default function ApplicationTable() {
 
   const handleExport = () => {
     setIsFieldSelectionOpen(true)
+  }
+
+  const handleDownloadPDF = async () => {
+    if (!selectedApplicationData) return;
+    
+    try {
+      const blob = await generatePdfBlob(selectedApplicationData)
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank")
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      Swal.fire({
+        title: "Error",
+        text: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+        icon: "error",
+        confirmButtonText: "OK",
+      })
+    }
+  }
+
+  const handleDetailView = () => {
+    if (selectedApplicationData?.id) {
+      // Open the detail view in a new tab using the route
+      const detailUrl = `/applications/${selectedApplicationData.id}/details`
+      window.open(detailUrl, '_blank')
+    }
+  }
+
+  const handleDetailViewClose = () => {
+    setDetailViewOpen(false)
+    setSelectedApplicationData(null)
+    setPdfPreviewOpen(false)
+  }
+
+  const handlePdfPreviewClose = () => {
+    setPdfPreviewOpen(false)
+    setSelectedApplicationData(null)
+    setDetailViewOpen(false)
+  }
+
+  const handleDetailViewBack = () => {
+    setDetailViewOpen(false)
+    setPdfPreviewOpen(true)
   }
 
   const handleConfirmExport = async (fieldConfig: ExportFieldConfig, includeWaitingList: boolean, includeRejected: boolean) => {
@@ -1134,6 +1195,25 @@ export default function ApplicationTable() {
         onClose={() => setIsFieldSelectionOpen(false)}
         onExport={handleConfirmExport}
         isExporting={isExporting}
+      />
+
+      {/* PDF Preview Panel */}
+      <PDFPreviewPanel
+        isOpen={pdfPreviewOpen}
+        onClose={handlePdfPreviewClose}
+        applicationData={selectedApplicationData}
+        onDownloadPDF={handleDownloadPDF}
+        onDetailView={handleDetailView}
+        isLoading={generatingIds.size > 0}
+      />
+
+      {/* Application Detail View */}
+      <ApplicationDetailView
+        isOpen={detailViewOpen}
+        onClose={handleDetailViewClose}
+        applicationData={selectedApplicationData}
+        onDownloadPDF={handleDownloadPDF}
+        onBack={handleDetailViewBack}
       />
     </div>
   )
