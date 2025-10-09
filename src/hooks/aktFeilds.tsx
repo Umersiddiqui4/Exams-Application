@@ -916,7 +916,6 @@ export function AktFeilds(props: AktsFieldsProps) {
                 under the following criterion – please choose at least ONE:
               </p>
            
-
               <div className="space-y-4">
                 <FormField
                   control={currentForm.control}
@@ -964,6 +963,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                           along with a further 2 years of clinical experience.
                         </FormLabel>
                       </div>
+
                     </FormItem>
                   )}
                 />
@@ -1032,24 +1032,22 @@ export function AktFeilds(props: AktsFieldsProps) {
           <AccordionTrigger className="px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
             <div className="flex items-center text-lg font-semibold text-slate-800 dark:text-slate-200">
               <MapPin className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
-              EXAMINATION CENTER PREFERENCE
+              EXAMINATION CENTER PREFERENCE<span className="text-red-500 ml-1">*</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
               <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">
                 Please choose below the examination centre where you would like
-                to take the Part 1 examination. Candidates will be assigned to
-                an examination centre on the basis of availability of their
-                choice, otherwise alternate centre will be offered.
+                to take the Part 1 examination.
               </p>
-              <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">
+              {/* <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">
                 <strong>Note:</strong> Limited seats at each venue are available
                 for the computer-based exam administered by Pearson VUE and will
                 be allocated on a <strong>first come first served basis</strong>
                 . Others will be accommodated in a paper-based exam administered
                 by British Council.
-              </p>
+              </p> */}
 
               <FormField
                 control={currentForm.control}
@@ -1136,9 +1134,9 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <p className="text-green-700 dark:text-green-300">
                           {format(new Date(selectedExam.examSlots[0].startDate), "EEEE, MMMM do, yyyy")}
                         </p>
-                        <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                        {/* <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                           Time: 9:00 AM - 5:00 PM
-                        </p>
+                        </p> */}
                       </div>
                     </div>
                   </div>
@@ -1153,12 +1151,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                 </div>
               )}
 
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
+              {/* <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
                   <strong>Important:</strong> The AKT is a computer-based examination held on a single day. 
                   Please ensure you are available on the scheduled exam date.
                 </p>
-              </div>
+              </div> */}
             </div>
           </AccordionContent>
         </AccordionItem>

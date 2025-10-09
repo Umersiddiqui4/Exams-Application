@@ -46,13 +46,13 @@ const aktsFormSchema = z.object({
     required_error: "Exam date is required",
   }),
 
-  // Eligibility (for AKTs)
+  // Eligibility (for AKTs) - At least one must be selected
   eligibilityA: z.boolean().optional(),
   eligibilityB: z.boolean().optional(),
   eligibilityC: z.boolean().optional(),
 
 //   Examination Center Preference (for AKTs)
-  examinationCenter: z.string().optional(),
+  examinationCenter: z.string().min(1, "Examination center is required"),
 
   // Candidate Statement (for AKTs)
   candidateStatementA: z.boolean().optional(),
@@ -66,6 +66,12 @@ const aktsFormSchema = z.object({
   agreementName: z.string().optional(),
   agreementDate: z.date().optional(),
   attachments: z.array(z.any()).optional()
+}).refine((data) => {
+  // At least one eligibility option must be selected
+  return data.eligibilityA === true || data.eligibilityB === true || data.eligibilityC === true;
+}, {
+  message: "Please select at least one eligibility option",
+  path: ["eligibilityA"], // This will show the error on the first eligibility field
 })
 
 
