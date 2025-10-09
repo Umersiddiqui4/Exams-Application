@@ -328,12 +328,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Graduating School Name:{" "}
+                        Name of medical school:{" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter Graduating School Name"
+                          placeholder="Enter name of medical school"
                           {...field}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                             currentForm.formState.errors.schoolName
@@ -353,12 +353,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Graduating School Location:{" "}
+                        Country of medical school:{" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter Graduating School Location"
+                          placeholder="Enter country of medical school"
                           {...field}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
                             currentForm.formState.errors.schoolLocation
@@ -377,28 +377,35 @@ export function AktFeilds(props: AktsFieldsProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Date Of Qualification:{" "}
+                        Year of Qualification:{" "}
                         <span className="text-red-500">*</span>
                       </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Select qualification date"
-                          type="date"
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            const selectedDate = e.target.value;
-
-                            // Store as ISO date string (YYYY-MM-DD format)
-                            field.onChange(selectedDate);
-                          }}
-                          max={new Date().toISOString().split("T")[0]} // Prevent future dates
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.QualificationDate
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
-                        />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
+                              currentForm.formState.errors.QualificationDate
+                                ? "border-red-500 dark:border-red-700"
+                                : ""
+                            }`}
+                          >
+                            <SelectValue placeholder="Select year of qualification" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 50 }, (_, i) => {
+                            const year = new Date().getFullYear() - i;
+                            return (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -704,6 +711,30 @@ export function AktFeilds(props: AktsFieldsProps) {
                             className="dark:text-slate-200 dark:focus:bg-slate-700"
                           >
                             2
+                          </SelectItem>
+                          <SelectItem
+                            value="3"
+                            className="dark:text-slate-200 dark:focus:bg-slate-700"
+                          >
+                            3
+                          </SelectItem>
+                          <SelectItem
+                            value="4"
+                            className="dark:text-slate-200 dark:focus:bg-slate-700"
+                          >
+                            4
+                          </SelectItem>
+                          <SelectItem
+                            value="5"
+                            className="dark:text-slate-200 dark:focus:bg-slate-700"
+                          >
+                            5
+                          </SelectItem>
+                          <SelectItem
+                            value="5+"
+                            className="dark:text-slate-200 dark:focus:bg-slate-700"
+                          >
+                            5+
                           </SelectItem>
                         </SelectContent>
                       </Select>

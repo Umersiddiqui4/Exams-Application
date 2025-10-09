@@ -13,9 +13,9 @@ const aktsFormSchema = z.object({
     .optional(),
   passportImage: z.any(),
   fullName: z.string().min(2, "Full name is required").transform(formatName),
-  schoolName: z.string().min(1, "School name is required").transform(formatAddress),
-  schoolLocation: z.string().min(1, "School location is required").transform(formatAddress),
-  QualificationDate: z.string().min(1, "Qualification date is required"),
+  schoolName: z.string().min(1, "Name of medical school is required").transform(formatAddress),
+  schoolLocation: z.string().min(1, "Country of medical school is required").transform(formatAddress),
+  QualificationDate: z.string().min(1, "Year of qualification is required"),
 
   // Address
   poBox: z.string().min(1, "P.O. Box is required").transform(formatAddress),
@@ -178,7 +178,7 @@ export const aktsFormDefaultValues: AktsFormValues = {
   fullName: formDefaultValues.fullName,
   schoolName: "Educator",
   schoolLocation: "Defence",
-  QualificationDate: "12/12/2022",
+  QualificationDate: "2022",
    
   poBox: formDefaultValues.poBox,
   district: formDefaultValues.district,

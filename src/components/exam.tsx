@@ -149,7 +149,7 @@ const defaultOsceFormState = {
 
 const defaultAktFormState = {
   name: "",
-  location: "",
+  location: aktsLocationOptions.map(loc => loc.value).join(', '), // Set default locations
   applicationsDateRange: { from: "", to: "" },
   applicationsLimit: "",
   waitingLimit: "",
@@ -188,8 +188,14 @@ export function Exam() {
       form.reset(defaultOsceFormState as any)
       setSelectedLocations([])
     } else {
+      // For AKT, set default locations
       form.reset(defaultAktFormState as any)
-      setSelectedLocations([])
+      const defaultLocations = aktsLocationOptions.map(loc => ({
+        value: loc.value,
+        label: loc.label
+      }))
+      setSelectedLocations(defaultLocations)
+      form.setValue("location", aktsLocationOptions.map(loc => loc.value).join(', '))
     }
   }
   // Initialize form with React Hook Form
@@ -210,6 +216,18 @@ export function Exam() {
       setCurrentExam(exam || null)
     }
   }, [exams, examType])
+
+  // Initialize default locations for AKT exams
+  useEffect(() => {
+    if (examType === "AKTs" && selectedLocations.length === 0) {
+      const defaultLocations = aktsLocationOptions.map(loc => ({
+        value: loc.value,
+        label: loc.label
+      }))
+      setSelectedLocations(defaultLocations)
+      form.setValue("location", aktsLocationOptions.map(loc => loc.value).join(', '))
+    }
+  }, [examType, selectedLocations.length, form])
 
   // Watch slot dates to calculate minimum dates for subsequent slots
   const slot1DateRange = form.watch("slot1DateRange")
