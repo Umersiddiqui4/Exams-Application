@@ -855,7 +855,7 @@ export function ApplicationForm() {
 
   const validateFile = async (file: File, inputId: string, title?: string, attachmentId?: string) => {
     // List of input IDs that require validation
-    const validateThese = ["passport-image"];
+    const validateThese = ["passport-image", "medical-license", "part1-email", "passport-bio", "signature"];
 
     let fieldName: string;
     if (attachmentId) {
@@ -875,10 +875,23 @@ export function ApplicationForm() {
     if (validateThese.includes(inputId) || isPdf) {
       // Check file type for images
       if (!isPdf) {
-        const validTypes = ["image/jpeg", "image/jpg", "image/png" ];
+        // Define valid types based on input type
+        let validTypes: string[];
+        let errorMessage: string;
+        
+        if (title === "passport-image" || inputId === "attachment") {
+          // AKT passport images allow more formats
+          validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+          errorMessage = "Invalid file format. Only JPG, JPEG, PNG, GIF and WebP formats are supported.";
+        } else {
+          // OSCE fields only allow JPG, JPEG, PNG
+          validTypes = ["image/jpeg", "image/jpg", "image/png"];
+          errorMessage = "Invalid file format. Only JPG, JPEG and PNG formats are supported.";
+        }
+        
         const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
         if (!validTypes.includes(file.type)) {
-          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: Invalid file format. Only JPG, JPEG and PNG formats are supported.` }));
+          setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: ${errorMessage}` }));
           const fileInput = document.getElementById(inputId) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
           // Clear the preview on validation error
@@ -914,14 +927,29 @@ export function ApplicationForm() {
           return false;
         }
       } else {
-        // For PDFs, reject for passport-image
-        if (inputId === "passport-image") {
+
+        // this changes is made for hide the pdf upload  functionality //
+
+        // For PDFs, only reject for passport-image and medical-license
+        const pdfNotAllowed = ["passport-image", "medical-license","part1-email", "passport-bio", "signature"];
+        if (pdfNotAllowed.includes(inputId) || title === "passport-image") {
           const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
           setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: PDF files are not allowed for this field.` }));
           const fileInput = document.getElementById(inputId) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
-          setPassportPreview(null);
+          
+          // Clear the appropriate preview
+          if (title === "passport-image" || inputId === "passport-image") {
+            setPassportPreview(null);
+          } else if (inputId === "medical-license") {
+            setMedicalLicensePreview(null);
+            setMedicalLicenseIsPdf(null);
+          }
+         
           return false;
+          
+        // this changes is made for hide the pdf upload  functionality //
+
         }
       }
 
