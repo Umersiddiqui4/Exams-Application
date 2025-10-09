@@ -82,7 +82,7 @@ export type ApplicationData = {
   registrationNumber: string;
   registrationDate: string;
   date: string;
-  status: "APPROVED" | "REJECTED" | "PENDING" | "WAITING" | "SUBMITTED";
+  status: "APPROVED" | "REJECTED" | "PENDING" | "WAITING" | "SUBMITTED" | "DRAFT";
   isWaiting: boolean;
   notes?: string;
   adminNotes?: string;
@@ -118,7 +118,7 @@ export type ApplicationData = {
 
 export type CreateApplicationDto = Omit<ApplicationData, "id" | "submittedDate">;
 export type UpdateApplicationDto = Partial<CreateApplicationDto>;
-export type UpdateApplicationStatusDto = { status: "APPROVED" | "REJECTED" | "PENDING" | "WAITING" };
+export type UpdateApplicationStatusDto = { status: "APPROVED" | "REJECTED" | "PENDING" | "WAITING" | "DRAFT" };
 
 const BASE = "/api/v1/applications";
 

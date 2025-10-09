@@ -11,6 +11,7 @@ import ExamComponent from './components/examComponent';
 import { LoginForm } from './components/LoginForm';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Applications from './components/Applications';
+import DraftApplications from './components/DraftApplications';
 import { ApplicationDetailPage } from './components/ui/ApplicationDetailPage';
 import { ThemeToggleDemo } from './components/ThemeToggleDemo';
 import Settings from './components/settings';
@@ -45,6 +46,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Applications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/draft-applications"
+            element={
+              <ProtectedRoute>
+                <DraftApplications />
               </ProtectedRoute>
             }
           />
