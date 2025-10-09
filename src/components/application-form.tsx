@@ -808,6 +808,9 @@ export function ApplicationForm() {
       dispatch(addApplication(application));
       dispatch(incrementApplicationsCount(examOccurrence.examId));
 
+      // Enable preview mode to render PDFDownloadLink
+      setPreviewMode(true);
+
       // Success Alert
       Swal.fire({
         html: `
@@ -830,7 +833,25 @@ export function ApplicationForm() {
             .getElementById("pdf-preview-link")
             ?.addEventListener("click", (e) => {
               e.preventDefault();
-              document.getElementById("pdf-download-link")?.click();
+              
+              // Function to check if PDF is ready and click
+              const clickPdfLink = () => {
+                const pdfLink = document.getElementById("pdf-download-link") as HTMLAnchorElement;
+                if (pdfLink && pdfLink.href && pdfLink.href !== "about:blank") {
+                  // PDF is ready, click it
+                  pdfLink.click();
+                } else {
+                  console.error("PDF download link not ready yet");
+                  toast({
+                    title: "Please wait",
+                    description: "PDF is still being generated. Please try again in a moment.",
+                    variant: "default",
+                  });
+                }
+              };
+              
+              // Wait a bit for PDF to be ready, then click
+              setTimeout(clickPdfLink, 1000);
             });
         },
       }).then(() => {
