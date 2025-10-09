@@ -381,7 +381,7 @@ export function PDFPreviewPanel({
             onClick={onDetailView}
             disabled={isLoading || !applicationData}
             variant="outline"
-            className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="flex-1 border-slate-600 text-slate-600 hover:bg-slate-600"
           >
             <Eye className="h-4 w-4 mr-2" />
             Detail View
