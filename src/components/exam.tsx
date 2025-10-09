@@ -37,7 +37,7 @@ const aktsLocationOptions = [
   { value: "Kathmandu", label: "Kathmandu" },
 ]
 
-// Zod schema for form validation
+// Unified Zod schema for both OSCE and AKT exams
 const formSchema = z.object({
   name: z.string().min(1, "Required"),
   location: z.string().min(1, "Required"),
@@ -47,21 +47,24 @@ const formSchema = z.object({
   }),
   applicationsLimit: z.string().min(1, "Required"),
   waitingLimit: z.string().min(1, "Required"),
+  // OSCE fields - optional for AKT
   slot1DateRange: z.object({
-    from: z.string().min(1, "Required"),
-    to: z.string().min(1, "Required"),
-  }),
+    from: z.string().optional(),
+    to: z.string().optional(),
+  }).optional(),
   slot2DateRange: z.object({
     from: z.string().optional(),
     to: z.string().optional(),
-  }),
+  }).optional(),
   slot3DateRange: z.object({
     from: z.string().optional(),
     to: z.string().optional(),
-  }),
+  }).optional(),
+  // AKT field - optional for OSCE
+  examDate: z.string().optional(),
 })
 
-type FormValues = z.infer<typeof formSchema>
+// type FormValues = z.infer<typeof formSchema>
 
 function DateRangePickerWithRange({
   className,
@@ -132,7 +135,7 @@ function DateRangePickerWithRange({
   )
 }
 
-const defaultFormState = {
+const defaultOsceFormState = {
   name: "",
   location: "",
   applicationsDateRange: { from: "", to: "" },
@@ -141,7 +144,22 @@ const defaultFormState = {
   slot1DateRange: { from: "", to: "" },
   slot2DateRange: { from: "", to: "" },
   slot3DateRange: { from: "", to: "" },
+  examDate: "", // Include for unified schema
 }
+
+const defaultAktFormState = {
+  name: "",
+  location: "",
+  applicationsDateRange: { from: "", to: "" },
+  applicationsLimit: "",
+  waitingLimit: "",
+  examDate: "",
+  slot1DateRange: { from: "", to: "" }, // Include for unified schema
+  slot2DateRange: { from: "", to: "" }, // Include for unified schema
+  slot3DateRange: { from: "", to: "" }, // Include for unified schema
+}
+
+const defaultFormState = defaultOsceFormState
 
 export function Exam() {
    const [editMode, setEditMode] = useState(false)
@@ -164,16 +182,18 @@ export function Exam() {
     const examName = newExamType === "OSCE" ? "OSCE" : "AKT"
     const exam = exams.find((e: any) => e.name === examName)
     setCurrentExam(exam || null)
+    
+    // Reset form with appropriate defaults based on exam type
     if (newExamType === "OSCE") {
-      form.setValue("location", "")
+      form.reset(defaultOsceFormState as any)
       setSelectedLocations([])
     } else {
-      form.setValue("location", "")
+      form.reset(defaultAktFormState as any)
       setSelectedLocations([])
     }
   }
   // Initialize form with React Hook Form
-  const form = useForm<FormValues>({
+  const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormState,
     mode: "onSubmit",
@@ -260,37 +280,52 @@ export function Exam() {
     }
   }
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: any) => {
     if (editMode && editId !== null) {
       try {
-        const examSlots = [
-          {
-            slotNumber: 1,
-            startDate: `${data.slot1DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot1DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Morning Session"
+        let examSlots;
+        
+        // Handle AKT single date vs OSCE multiple slots
+        if (examType === "AKTs") {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.examDate}T09:00:00Z`,
+              endDate: `${data.examDate}T17:00:00Z`,
+              isActive: true,
+              description: "AKT Exam"
+            }
+          ];
+        } else {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.slot1DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot1DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Morning Session"
+            }
+          ];
+
+          if (data.slot2DateRange?.from && data.slot2DateRange?.to) {
+            examSlots.push({
+              slotNumber: 2,
+              startDate: `${data.slot2DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot2DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Afternoon Session"
+            });
           }
-        ];
 
-        if (data.slot2DateRange.from && data.slot2DateRange.to) {
-          examSlots.push({
-            slotNumber: 2,
-            startDate: `${data.slot2DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot2DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Afternoon Session"
-          });
-        }
-
-        if (data.slot3DateRange.from && data.slot3DateRange.to) {
-          examSlots.push({
-            slotNumber: 3,
-            startDate: `${data.slot3DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot3DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Evening Session"
-          });
+          if (data.slot3DateRange?.from && data.slot3DateRange?.to) {
+            examSlots.push({
+              slotNumber: 3,
+              startDate: `${data.slot3DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot3DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Evening Session"
+            });
+          }
         }
 
         await updateOccurrence(editId, {
@@ -312,40 +347,58 @@ export function Exam() {
     } else {
       try {
         const regEnd = `${data.applicationsDateRange.to}T23:59:59Z`
-        const examStart = `${data.slot1DateRange.from}T09:00:00Z`
+        const examStart = examType === "AKTs" 
+          ? `${data.examDate}T09:00:00Z`
+          : `${data.slot1DateRange.from}T09:00:00Z`
+          
         if (new Date(regEnd) >= new Date(examStart)) {
           toast({ title: "Invalid dates", description: "Exam date must be after applications end date", variant: "destructive" })
           return
         }
 
-        const examSlots = [
-          {
-            slotNumber: 1,
-            startDate: `${data.slot1DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot1DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Morning Session"
+        let examSlots;
+        
+        // Handle AKT single date vs OSCE multiple slots
+        if (examType === "AKTs") {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.examDate}T09:00:00Z`,
+              endDate: `${data.examDate}T17:00:00Z`,
+              isActive: true,
+              description: "AKT Exam"
+            }
+          ];
+        } else {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.slot1DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot1DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Morning Session"
+            }
+          ];
+
+          if (data.slot2DateRange?.from && data.slot2DateRange?.to) {
+            examSlots.push({
+              slotNumber: 2,
+              startDate: `${data.slot2DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot2DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Afternoon Session"
+            });
           }
-        ];
 
-        if (data.slot2DateRange.from && data.slot2DateRange.to) {
-          examSlots.push({
-            slotNumber: 2,
-            startDate: `${data.slot2DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot2DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Afternoon Session"
-          });
-        }
-
-        if (data.slot3DateRange.from && data.slot3DateRange.to) {
-          examSlots.push({
-            slotNumber: 3,
-            startDate: `${data.slot3DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot3DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Evening Session"
-          });
+          if (data.slot3DateRange?.from && data.slot3DateRange?.to) {
+            examSlots.push({
+              slotNumber: 3,
+              startDate: `${data.slot3DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot3DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Evening Session"
+            });
+          }
         }
 
         await createExamOccurrence({
@@ -368,7 +421,7 @@ export function Exam() {
       }
     }
 
-    form.reset(defaultFormState)
+    form.reset(examType === "AKTs" ? defaultAktFormState as any : defaultOsceFormState as any)
   }
 
   const toggleBlock = async (id: string, current: boolean) => {
@@ -381,10 +434,14 @@ export function Exam() {
   }
 
   const handleEdit = (exam: any) => {
+    // Set exam type based on exam type
+    const isAKT = exam.type === "AKT"
+    setExamType(isAKT ? "AKTs" : "OSCE")
+    
     // Handle location based on exam type
     let locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
     let selectedLocs: any[] = []
-    if (exam.type === "AKT" && Array.isArray(exam.location)) {
+    if (isAKT && Array.isArray(exam.location)) {
       selectedLocs = exam.location.map((loc: string) => ({ value: loc, label: loc }))
     } else {
       selectedLocs = []
@@ -393,32 +450,49 @@ export function Exam() {
     // Parse exam slots
     const slots = exam.examSlots || []
     const slot1 = slots.find((s: any) => s.slotNumber === 1)
-    const slot2 = slots.find((s: any) => s.slotNumber === 2)
-    const slot3 = slots.find((s: any) => s.slotNumber === 3)
 
-    // Set form data with parsed dates
-    form.reset({
-      name: exam.title,
-      location: locationValue,
-      applicationsDateRange: {
-        from: exam.registrationStartDate?.substring(0, 10),
-        to: exam.registrationEndDate?.substring(0, 10),
-      },
-      applicationsLimit: String(exam.applicationLimit ?? ""),
-      waitingLimit: String(exam.waitingListLimit ?? ""),
-      slot1DateRange: {
-        from: slot1?.startDate?.substring(0, 10) || "",
-        to: slot1?.endDate?.substring(0, 10) || "",
-      },
-      slot2DateRange: {
-        from: slot2?.startDate?.substring(0, 10) || "",
-        to: slot2?.endDate?.substring(0, 10) || "",
-      },
-      slot3DateRange: {
-        from: slot3?.startDate?.substring(0, 10) || "",
-        to: slot3?.endDate?.substring(0, 10) || "",
-      },
-    })
+    // Set form data based on exam type
+    if (isAKT) {
+      // For AKT, use single exam date
+      form.reset({
+        name: exam.title,
+        location: locationValue,
+        applicationsDateRange: {
+          from: exam.registrationStartDate?.substring(0, 10),
+          to: exam.registrationEndDate?.substring(0, 10),
+        },
+        applicationsLimit: String(exam.applicationLimit ?? ""),
+        waitingLimit: String(exam.waitingListLimit ?? ""),
+        examDate: slot1?.startDate?.substring(0, 10) || "",
+      } as any)
+    } else {
+      // For OSCE, use multiple slots
+      const slot2 = slots.find((s: any) => s.slotNumber === 2)
+      const slot3 = slots.find((s: any) => s.slotNumber === 3)
+      
+      form.reset({
+        name: exam.title,
+        location: locationValue,
+        applicationsDateRange: {
+          from: exam.registrationStartDate?.substring(0, 10),
+          to: exam.registrationEndDate?.substring(0, 10),
+        },
+        applicationsLimit: String(exam.applicationLimit ?? ""),
+        waitingLimit: String(exam.waitingListLimit ?? ""),
+        slot1DateRange: {
+          from: slot1?.startDate?.substring(0, 10) || "",
+          to: slot1?.endDate?.substring(0, 10) || "",
+        },
+        slot2DateRange: {
+          from: slot2?.startDate?.substring(0, 10) || "",
+          to: slot2?.endDate?.substring(0, 10) || "",
+        },
+        slot3DateRange: {
+          from: slot3?.startDate?.substring(0, 10) || "",
+          to: slot3?.endDate?.substring(0, 10) || "",
+        },
+      } as any)
+    }
 
     setSelectedLocations(selectedLocs)
     setEditMode(true)
@@ -429,7 +503,7 @@ export function Exam() {
   }
 
   const cancelEdit = () => {
-    form.reset(defaultFormState)
+    form.reset(examType === "AKTs" ? defaultAktFormState as any : defaultOsceFormState as any)
     setEditMode(false)
     setEditId(null)
   }
@@ -580,7 +654,7 @@ const selectStyles = {
                 <DateRangePickerWithRange
                   value={form.watch("applicationsDateRange")}
                   onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
-                  isError={!!errors.applicationsDateRange?.from || !!errors.applicationsDateRange?.to}
+                  isError={!!(errors as any).applicationsDateRange?.from || !!(errors as any).applicationsDateRange?.to}
                 />
               </div>
 
@@ -630,7 +704,7 @@ const selectStyles = {
                   <DateRangePickerWithRange
                     value={form.watch("slot1DateRange")}
                     onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
-                    isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
+                    isError={!!(errors as any).slot1DateRange?.from || !!(errors as any).slot1DateRange?.to}
                     minDate={getSlot1MinDate()}
                   />
                 </div>
@@ -733,7 +807,7 @@ const selectStyles = {
                                <DateRangePickerWithRange
                                  value={form.watch("applicationsDateRange")}
                                  onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
-                                 isError={!!errors.applicationsDateRange?.from || !!errors.applicationsDateRange?.to}
+                                 isError={!!(errors as any).applicationsDateRange?.from || !!(errors as any).applicationsDateRange?.to}
                                />
                              </div>
            
@@ -773,51 +847,34 @@ const selectStyles = {
                              </div>
                            </div>
            
-                           <div className="space-y-4">
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                               <div className="space-y-2">
-                                 <Label className="dark:text-slate-200 flex items-center">
-                                   <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                                   Exam Slot One <span className="text-red-500 ml-1">*</span>
-                                 </Label>
-                                 <DateRangePickerWithRange
-                                   value={form.watch("slot1DateRange")}
-                                   onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
-                                   isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
-                                 />
-                               </div>
-           
-                               <div className="space-y-2">
-                                 <Label className="dark:text-slate-200 flex items-center">
-                                   <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                                   Exam Slot Two (optional)
-                                 </Label>
-                                 <DateRangePickerWithRange
-                                   value={{
-                                     from: form.watch("slot2DateRange")?.from || "",
-                                     to: form.watch("slot2DateRange")?.to || "",
-                                   }}
-                                   onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
-                                   minDate={getSlot2MinDate()}
-                                 />
-                               </div>
-           
-                               <div className="space-y-2">
-                                 <Label className="dark:text-slate-200 flex items-center">
-                                   <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                                   Exam Slot Three (optional)
-                                 </Label>
-                                 <DateRangePickerWithRange
-                                   value={{
-                                     from: form.watch("slot3DateRange")?.from || "",
-                                     to: form.watch("slot3DateRange")?.to || "",
-                                   }}
-                                   onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
-                                   minDate={getSlot3MinDate()}
-                                 />
-                               </div>
-                             </div>
-                           </div>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="examDate" className="dark:text-slate-200 flex items-center">
+                                <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                Exam Date (Single Day) <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input
+                                id="examDate"
+                                type="date"
+                                {...form.register("examDate")}
+                                min={
+                                  form.watch("applicationsDateRange")?.to 
+                                    ? format(addDays(parseISO(form.watch("applicationsDateRange").to), 1), "yyyy-MM-dd")
+                                    : undefined
+                                }
+                                className={cn(
+                                  "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                  (errors as any).examDate && "border-red-500 focus:ring-red-500",
+                                )}
+                              />
+                              {(errors as any).examDate && (
+                                <p className="text-sm text-red-500">{(errors as any).examDate.message}</p>
+                              )}
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                AKT is a single-day examination. Select the date when the exam will be held.
+                              </p>
+                            </div>
+                          </div>
            
                            <div className="flex space-x-2">
                              <Button

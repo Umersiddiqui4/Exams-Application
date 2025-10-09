@@ -821,6 +821,9 @@ export function ApplicationForm() {
           dateOfQualification: (data as AktsFormValues).QualificationDate
             ? new Date((data as AktsFormValues).QualificationDate).toISOString()
             : "",
+          examDate: (data as AktsFormValues).examDate
+            ? new Date((data as AktsFormValues).examDate).toISOString()
+            : "",
           aktEligibility: "A", // Default, could be mapped from eligibility fields
           examinationCenterPreference:
             (data as AktsFormValues).examinationCenter || "null",
@@ -853,9 +856,9 @@ export function ApplicationForm() {
           usualForename: data.fullName.split(" ")[0] || "",
           aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
-          preferenceDate1: data.preferenceDate1 || "00/00/0000",
-          preferenceDate2: data.preferenceDate2 || "00/00/0000",
-          preferenceDate3: data.preferenceDate3 || "00/00/0000",
+          preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
+          preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
+          preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
           examType: examDto?.type || "OSCE",
           shouldSubmit: true,
@@ -934,11 +937,12 @@ export function ApplicationForm() {
         dateOfRegistration: data.dateOfRegistration
           ? new Date(data.dateOfRegistration)
           : new Date(),
-        preferenceDate1: data.preferenceDate1 || "00/00/0000",
-        preferenceDate2: data.preferenceDate2 || "00/00/0000",
-        preferenceDate3: data.preferenceDate3 || "00/00/0000",
         ...(selectedExamType
           ? {
+              // AKT specific fields
+              examDate: (data as AktsFormValues).examDate
+                ? new Date((data as AktsFormValues).examDate).toISOString()
+                : "",
               eligibilityA: (data as AktsFormValues).eligibilityA || false,
               eligibilityB: (data as AktsFormValues).eligibilityB || false,
               eligibilityC: (data as AktsFormValues).eligibilityC || false,
@@ -965,6 +969,10 @@ export function ApplicationForm() {
               })),
             }
           : {
+              // OSCE specific fields
+              preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
+              preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
+              preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
               medicalLicenseUrl: medicalLicensePreview || "",
               part1EmailUrl: part1EmailPreview || "",
               passportBioUrl: passportBioPreview || "",

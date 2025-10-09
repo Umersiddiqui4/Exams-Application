@@ -40,7 +40,7 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 
 
@@ -84,6 +84,14 @@ export function AktFeilds(props: AktsFieldsProps) {
   const [whatsappPhone, setWhatsappPhone] = useState<string | undefined>();
   const [emergencyPhone, setEmergencyPhone] = useState<string | undefined>();
   const [whatsappError, setWhatsappError] = useState<string | null>(null);
+
+  // Auto-set the exam date when selectedExam changes
+  useEffect(() => {
+    if (selectedExam && selectedExam.examSlots && selectedExam.examSlots.length > 0) {
+      const examDate = new Date(selectedExam.examSlots[0].startDate);
+      currentForm.setValue("examDate", examDate);
+    }
+  }, [selectedExam, currentForm]);
   const [emergencyError, setEmergencyError] = useState<string | null>(null);
 
   const handleWhatsappBlur = () => {
@@ -107,44 +115,6 @@ export function AktFeilds(props: AktsFieldsProps) {
   };
 
   console.log("attachments", attachments);
-  
-
-  useEffect(() => {
-    if (selectedExam && selectedExam.examSlots) {
-      const allDates: Date[] = [];
-      const ranges: {start: Date, end: Date, label: string}[] = [];
-
-      selectedExam.examSlots.forEach((slot: any, index: number) => {
-        if (slot.startDate && slot.endDate) {
-          const startDate = new Date(slot.startDate);
-          const endDate = new Date(slot.endDate);
-
-          // Create slot range
-          const slotLabel = `Slot ${index + 1}: ${format(startDate, "MMM d")} - ${format(endDate, "MMM d, yyyy")}`;
-          ranges.push({ start: startDate, end: endDate, label: slotLabel });
-
-          // Generate all dates between start and end (inclusive)
-          const currentDate = new Date(startDate);
-          while (currentDate <= endDate) {
-            allDates.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
-          }
-        }
-      });
-
-      const uniqueDatesStr = [
-        ...new Set(
-          allDates
-            .filter((date) => date instanceof Date && !isNaN(date.getTime()))
-            .map((date) => date.toISOString().split('T')[0]) // Use date only, not time
-        ),
-      ];
-      const uniqueDates = uniqueDatesStr.map((dateStr) => new Date(dateStr));
-
-      uniqueDates.sort((a, b) => a.getTime() - b.getTime());
-
-    }
-  }, [selectedExam]);
 
 
   const removeAttachment = async (id: string) => {
@@ -1124,6 +1094,69 @@ export function AktFeilds(props: AktsFieldsProps) {
                   only possible in exceptional circumstances and subject to
                   availability. Requests after the registration closing deadline
                   may not be accommodated.
+                </p>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      {/* AKT Exam Date - Single Day Exam */}
+      <Accordion
+        type="single"
+        collapsible
+        defaultValue="exam-date"
+        className="w-full mb-4"
+      >
+        <AccordionItem
+          value="exam-date"
+          className="border dark:border-slate-700 rounded-lg overflow-hidden shadow-sm"
+        >
+          <AccordionTrigger className="px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+            <div className="flex items-center text-lg font-semibold text-slate-800 dark:text-slate-200">
+              <Calendar className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
+              EXAM DATE
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
+            <div className="space-y-6">
+              <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">
+                The AKT examination is a single-day exam. The exam date has been scheduled as shown below.
+              </p>
+
+              {selectedExam && selectedExam.examSlots && selectedExam.examSlots.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800">
+                    <div className="flex items-center">
+                      <Calendar className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+                          Scheduled Exam Date
+                        </h3>
+                        <p className="text-green-700 dark:text-green-300">
+                          {format(new Date(selectedExam.examSlots[0].startDate), "EEEE, MMMM do, yyyy")}
+                        </p>
+                        <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                          Time: 9:00 AM - 5:00 PM
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                 
+                </div>
+              ) : (
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    <strong>Note:</strong> No exam date has been scheduled yet. Please contact the exam administrator.
+                  </p>
+                </div>
+              )}
+
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>Important:</strong> The AKT is a computer-based examination held on a single day. 
+                  Please ensure you are available on the scheduled exam date.
                 </p>
               </div>
             </div>

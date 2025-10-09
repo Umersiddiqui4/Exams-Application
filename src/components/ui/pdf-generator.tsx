@@ -1016,6 +1016,15 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
                     : "Not provided"}
                 </Text>
               </View>
+
+              {data.aktDetails?.examDate && (
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Exam Date:</Text>
+                  <Text style={styles.fieldValue}>
+                    {format(new Date(data.aktDetails.examDate), "PPP")}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
 

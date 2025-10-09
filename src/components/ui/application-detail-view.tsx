@@ -887,6 +887,14 @@ export function ApplicationDetailView({
                           </p>
                         </div>
                       )}
+                      {applicationData?.aktDetails?.examDate && (
+                        <div>
+                          <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Date</label>
+                          <p className="text-slate-900 dark:text-slate-100">
+                            {format(new Date(applicationData.aktDetails.examDate), 'PPP')}
+                          </p>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>

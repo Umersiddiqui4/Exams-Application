@@ -27,6 +27,7 @@ export type AktDetails = {
   graduatingSchoolName: string;
   graduatingSchoolLocation: string;
   dateOfQualification: string;
+  examDate: string;
   aktEligibility: any[];
   examinationCenterPreference: string;
   aktCandidateStatement: any[];

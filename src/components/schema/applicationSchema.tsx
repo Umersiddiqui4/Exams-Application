@@ -41,10 +41,10 @@ const aktsFormSchema = z.object({
     required_error: "Date of registration is required",
   }),
 
-  // AKTs Session
-  preferenceDate1: z.string().optional(),
-  preferenceDate2: z.string().optional(),
-  preferenceDate3: z.string().optional(),
+  // AKTs Session - Single exam date
+  examDate: z.date({
+    required_error: "Exam date is required",
+  }),
 
   // Eligibility (for AKTs)
   eligibilityA: z.boolean().optional(),
@@ -188,9 +188,7 @@ export const aktsFormDefaultValues: AktsFormValues = {
   registrationAuthority: formDefaultValues.registrationAuthority,
   registrationNumber: formDefaultValues.registrationNumber,
   dateOfRegistration: formDefaultValues.dateOfRegistration,
-  preferenceDate1: formDefaultValues.preferenceDate1,
-  preferenceDate2: formDefaultValues.preferenceDate2,
-  preferenceDate3: formDefaultValues.preferenceDate3,
+  examDate: new Date(),
   agreementName: formDefaultValues.agreementName,
   // agreementDate: formDefaultValues.agreementDate,
   eligibilityA: false,
