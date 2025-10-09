@@ -42,6 +42,10 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
   const [pdfPages, setPdfPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoadingPdf, setIsLoadingPdf] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const getDocumentName = (fileName: string) => {
     switch (fileName) {
@@ -56,6 +60,8 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
   };
 
   const handlePreview = async () => {
+    setIsZoomed(false); // Reset zoom when opening preview
+    setPosition({ x: 0, y: 0 });
     if (attachment.fileType === 'document' && attachment.base64Data) {
       setIsLoadingPdf(true);
       setIsPreviewOpen(true);
@@ -78,6 +84,40 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
       // For images, just open the preview
       setIsPreviewOpen(true);
     }
+  };
+
+  const handleDoubleClick = () => {
+    if (isZoomed) {
+      // Zoom out
+      setIsZoomed(false);
+      setPosition({ x: 0, y: 0 });
+    } else {
+      // Zoom in
+      setIsZoomed(true);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isZoomed) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && isZoomed) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const isImage = attachment.fileType === 'image' && attachment.base64Data;
@@ -139,46 +179,94 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
               <p className="ml-2 text-slate-400">Loading PDF...</p>
             </div>
           ) : isImage ? (
-            <div className="flex justify-center">
-              <img
-                src={attachment.base64Data}
-                alt={getDocumentName(attachment.fileName)}
-                className="max-w-full h-auto rounded border border-slate-200 dark:border-slate-700"
-              />
+            <div className="space-y-4">
+              {/* Helper Text */}
+              <div className="text-center p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Double-click to {isZoomed ? 'zoom out' : 'zoom in'}{isZoomed ? ' • Drag to pan' : ''}
+                </p>
+              </div>
+
+              {/* Image Display with Interactive Zoom */}
+              <div 
+                className="flex justify-center overflow-hidden max-h-[70vh] relative"
+                style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
+              >
+                <img
+                  src={attachment.base64Data}
+                  alt={getDocumentName(attachment.fileName)}
+                  className="rounded border border-slate-200 dark:border-slate-700 select-none"
+                  style={{ 
+                    transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
+                    transition: isDragging ? 'none' : 'transform 0.3s ease',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                  onDoubleClick={handleDoubleClick}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  draggable={false}
+                />
+              </div>
             </div>
           ) : isPdf && pdfPages.length > 0 ? (
             <div className="space-y-4">
-              {/* PDF Navigation */}
-              {pdfPages.length > 1 && (
-                <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    Page {currentPage + 1} of {pdfPages.length}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.min(pdfPages.length - 1, currentPage + 1))}
-                    disabled={currentPage === pdfPages.length - 1}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
+              {/* PDF Navigation and Helper Text */}
+              <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded flex-wrap gap-2">
+                {/* PDF Navigation */}
+                {pdfPages.length > 1 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                      disabled={currentPage === 0}
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Page {currentPage + 1} of {pdfPages.length}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(pdfPages.length - 1, currentPage + 1))}
+                      disabled={currentPage === pdfPages.length - 1}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Helper Text */}
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Double-click to {isZoomed ? 'zoom out' : 'zoom in'}{isZoomed ? ' • Drag to pan' : ''}
+                </p>
+              </div>
               
-              {/* PDF Page Display */}
-              <div className="flex justify-center">
+              {/* PDF Page Display with Interactive Zoom */}
+              <div 
+                className="flex justify-center overflow-hidden max-h-[70vh] relative"
+                style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
+              >
                 <img
                   src={pdfPages[currentPage]}
                   alt={`Page ${currentPage + 1}`}
-                  className="max-w-full h-auto rounded border border-slate-200 dark:border-slate-700 shadow-lg"
+                  className="rounded border border-slate-200 dark:border-slate-700 shadow-lg select-none"
+                  style={{ 
+                    transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
+                    transition: isDragging ? 'none' : 'transform 0.3s ease',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                  onDoubleClick={handleDoubleClick}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  draggable={false}
                 />
               </div>
             </div>
