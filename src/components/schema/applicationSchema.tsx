@@ -1,5 +1,5 @@
 import * as z from "zod"
-import { formatName, formatAddress } from "../../lib/utils"
+import { formatName, formatAddress } from "@/lib/utils"
 
 
 
