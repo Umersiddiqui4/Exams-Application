@@ -28,7 +28,7 @@ export type SignupRequest = {
 	lastName: string;
 	email: string;
 	password: string;
-	phone: string;
+	phone?: string;
 };
 
 export type SignupResponse = {
@@ -42,10 +42,6 @@ export type SignupResponse = {
 			email: string;
 			phone: string;
 			role: string;
-		};
-		tokens: {
-			access: { token: string; expiresIn: string };
-			refresh: { token: string; expiresIn: string };
 		};
 	};
 	message: string;
@@ -61,6 +57,36 @@ export async function loginWithEmailPassword(email: string, password: string): P
 export async function signupWithEmail(data: SignupRequest): Promise<SignupResponse> {
 	const baseUrl = import.meta.env.VITE_API_BASE_URL;
 	return apiRequest<SignupResponse>("/api/v1/auth/email/signup", "POST", data, { baseUrl });
+}
+
+export type EmailVerificationResponse = {
+	message: string;
+	statusCode: number;
+	success: boolean;
+	data?: {
+		user: {
+			id: string;
+			email: string;
+			role: string;
+		};
+	};
+};
+
+export async function verifyEmail(token: string): Promise<EmailVerificationResponse> {
+	const baseUrl = import.meta.env.VITE_API_BASE_URL;
+	return apiRequest<EmailVerificationResponse>(`/api/v1/auth/email/verify?token=${token}`, "GET", undefined, { baseUrl });
+}
+
+export type ResendEmailResponse = {
+	data: {};
+	message: string;
+	statusCode: number;
+	success: boolean;
+};
+
+export async function resendConfirmationEmail(email: string): Promise<ResendEmailResponse> {
+	const baseUrl = import.meta.env.VITE_API_BASE_URL;
+	return apiRequest<ResendEmailResponse>(`/api/v1/auth/email/resend?email=${email}`, "GET", undefined, { baseUrl });
 }
 
 export type UploadImageRequest = {

@@ -97,6 +97,9 @@ const CountrySelect = ({
             country={selectedCountry}
             countryName={selectedCountry}
           />
+          <span className="text-sm font-medium">
+            +{RPNInput.getCountryCallingCode(selectedCountry)}
+          </span>
           <ChevronsUpDown
             className={cn(
               "-mr-2 size-4 opacity-50",

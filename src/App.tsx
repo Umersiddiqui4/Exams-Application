@@ -9,6 +9,10 @@ import {Dashboard} from './components/dashboard';
 import {ApplicationForm} from './components/application-form';
 import ExamComponent from './components/examComponent';
 import { LoginForm } from './components/LoginForm';
+import { SignupForm } from './components/SignupForm';
+import { EmailVerification } from './components/EmailVerification';
+import { EmailVerificationTest } from './components/EmailVerificationTest';
+import { PhoneInputTest } from './components/PhoneInputTest';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Applications from './components/Applications';
 import DraftApplications from './components/DraftApplications';
@@ -27,6 +31,10 @@ function App() {
        
         <Routes>
           <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<SignupForm />} />
+          <Route path="/auth/confirm-email" element={<EmailVerification />} />
+          <Route path="/test-email-verification" element={<EmailVerificationTest />} />
+          <Route path="/test-phone-input" element={<PhoneInputTest />} />
           <Route
             path="/"
             element={

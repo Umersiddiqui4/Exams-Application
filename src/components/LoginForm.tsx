@@ -5,16 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { User, Lock } from 'lucide-react';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/Slice';
 import { loginWithEmailPassword } from "@/api/authApi";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { RootState } from '../redux/rootReducer';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -121,16 +122,29 @@ export function LoginForm() {
                 <Lock className="w-4 h-4" />
                 Password
               </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
           </CardContent>
           <CardFooter>
@@ -150,6 +164,15 @@ export function LoginForm() {
             </Button>
           </CardFooter>
         </form>
+        <div className="text-center text-sm text-gray-600 mb-6">
+          Don't have an account?{' '}
+          <Link 
+            to="/signup" 
+            className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+          >
+            Sign up here
+          </Link>
+        </div>
       </Card>
     </div>
   );
