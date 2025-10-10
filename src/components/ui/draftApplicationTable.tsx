@@ -33,9 +33,9 @@ import {
 import { Calendar, Download, Loader2, Search, Settings } from "lucide-react";
 import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
-import { useApplications } from "@/lib/useApplications";
-import { useExamOccurrences } from "@/lib/useExamOccurrences";
-import { getApplication } from "@/lib/applicationsApi";
+import { useApplications } from "@/hooks/useApplications";
+import { useExamOccurrences } from "@/hooks/useExamOccurrences";
+import { getApplication } from "@/api/applicationsApi";
 import { columns } from "../columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";

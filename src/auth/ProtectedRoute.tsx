@@ -3,7 +3,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { detectBrowser } from '../lib/browserDetection';
-import { redirectToLoginIfUnauthenticated } from "../lib/apiClient";
+import { redirectToLoginIfUnauthenticated } from "@/api/clients/apiClient";
 import { logout } from "../redux/Slice";
 import { BrowserRestriction } from '../components/BrowserRestriction';
 import { RootState } from '../redux/rootReducer';

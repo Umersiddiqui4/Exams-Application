@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	Exam,
-	createExam,
-	deleteExam,
-	listExams,
-	updateExam,
-} from "./examApi";
+	AktPastExam,
+	createAktPastExam,
+	deleteAktPastExam,
+	listAktPastExams,
+	updateAktPastExam,
+} from "@/api/aktPastExamsApi";
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
-export function useExams() {
-	const [items, setItems] = useState<Exam[]>([]);
+export function useAktPastExams() {
+	const [items, setItems] = useState<AktPastExam[]>([]);
 	const [loadState, setLoadState] = useState<LoadState>("idle");
 	const [error, setError] = useState<string | null>(null);
 	const [created1, setCreated1] = useState<boolean>(true);
@@ -18,15 +18,10 @@ export function useExams() {
 	useEffect(() => {
 		let mounted = true;
 		setLoadState("loading");
-		listExams()
-			.then((data: Exam[] | { data: Exam[] }) => {
+		listAktPastExams()
+			.then((data: any) => {
 				if (!mounted) return;
-				const normalized: Exam[] = Array.isArray(data)
-					? data
-					: Array.isArray((data as { data: Exam[] }).data)
-						? (data as { data: Exam[] }).data
-						: [];
-				setItems(normalized);
+				setItems(data.data);
 				setLoadState("success");
 				setCreated1(true);
 			})
@@ -41,35 +36,32 @@ export function useExams() {
 	}, [created1]);
 
 	const create = useCallback(async (name: string, description?: string) => {
-		const created = await createExam({ name, description });
+		const created = await createAktPastExam({ name, description });
 		setItems((prev) => [created, ...prev]);
 		setCreated1(false);
 		return created;
 	}, []);
 
-	const update = useCallback(async (id: string, changes: Partial<Pick<Exam, "name" | "description">>) => {
-		const next = await updateExam(id, changes);
+	const update = useCallback(async (id: string, changes: Partial<Pick<AktPastExam, "name" | "description">>) => {
+		const next = await updateAktPastExam(id, changes);
 		setItems((prev) => prev.map((e) => (e.id === id ? next : e)));
-		setCreated1(false);
-
 		return next;
 	}, []);
 
 	const remove = useCallback(async (id: string) => {
-		await deleteExam(id);
+		await deleteAktPastExam(id);
 		setItems((prev) => prev.filter((e) => e.id !== id));
 	}, []);
 
-	const reload = useCallback(() => {
-		setCreated1(prev => !prev);
-	}, []);
 
-	return useMemo(() => ({ items, loadState, error, create, update, remove, reload }), [items, loadState, error, create, update, remove, reload]);
+
+
+
+	return useMemo(() => ({ items, loadState, error, create, update, remove }), [items, loadState, error, create, update, remove]);
 }
 
 
 
-export type { Exam } from "./examApi";
-
+export type { AktPastExam } from "@/api/aktPastExamsApi";
 
 

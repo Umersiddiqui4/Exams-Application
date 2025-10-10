@@ -47,7 +47,7 @@ import {
   Availability,
   getExamOccurrence,
   ExamOccurrence,
-} from "@/lib/examOccurrencesApi";
+} from "@/api/examOccurrencesApi";
 import ExamClosed from "./ui/examClosed";
 import { pdfToImages } from "./ui/pdfToImage";
 

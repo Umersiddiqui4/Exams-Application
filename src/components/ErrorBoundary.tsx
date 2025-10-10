@@ -4,7 +4,7 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { logUnhandledError } from '../lib/errorHandler';
+import { logUnhandledError } from '@/lib/errorHandler';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';

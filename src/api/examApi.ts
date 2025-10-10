@@ -1,4 +1,4 @@
-import { apiRequest } from "./apiClient";
+import { apiRequest } from "./clients/apiClient";
 
 export type Exam = {
 	id: string;

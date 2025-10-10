@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
-import { getApplication } from '@/lib/applicationsApi';
+import { getApplication } from '@/api/applicationsApi';
 import { useToast } from './use-toast';
 import * as pdfjsLib from "pdfjs-dist/";
 import { pdf } from '@react-pdf/renderer';

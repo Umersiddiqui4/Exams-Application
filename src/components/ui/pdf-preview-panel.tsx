@@ -46,10 +46,9 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
   const getDocumentName = (fileName: string) => {
     switch (fileName) {
       case 'passport-image': return 'Passport Photo';
-      case 'signature': return 'Signature';
-      case 'passport_bio_page': return 'Passport Bio Page';
-      case 'passport_bio_page': return 'Passport Bio Page';
-      case 'medical_license': return 'Medical License';
+        case 'signature': return 'Signature';
+        case 'passport_bio_page': return 'Passport Bio Page';
+        case 'medical_license': return 'Medical License';
       case 'part_1_passing_email': return 'Part 1 Passing Email';
       default: return `Document ${index + 1}`;
     }

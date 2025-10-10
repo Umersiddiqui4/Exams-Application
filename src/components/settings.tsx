@@ -28,11 +28,11 @@ import { Menu } from "lucide-react";
 import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
 import { GooeyMenu } from "./GooeyMenu";
-// import { useAktPastExams } from "../lib/useAktPastExams";
-// import { useExams } from "../lib/useExam";
+// import { useAktPastExams } from "@/hooks/useAktPastExams";
+// import { useExams } from "@/hooks/useExam";
 import { useLocation } from "react-router-dom";
-// import { useEmailTemplates } from "../lib/useEmailTemplates";
-// import { signupWithEmail, uploadImage } from "../lib/authApi";
+// import { useEmailTemplates } from "@/hooks/useEmailTemplates";
+// import { signupWithEmail, uploadImage } from "@/api/authApi";
 
 // type CandidateTemplate = {
 //   type: string;

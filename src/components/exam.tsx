@@ -14,12 +14,12 @@ import { FileText, Edit, Calendar, MapPin, Users, Clock, BookOpen } from "lucide
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { cn } from "@/lib/utils"
 import { useToast } from "./ui/use-toast"
-import { createExamOccurrence } from "@/lib/examOccurrencesApi"
-import { useExamOccurrences } from "@/lib/useExamOccurrences"
+import { createExamOccurrence } from "@/api/examOccurrencesApi"
+import { useExamOccurrences } from "@/hooks/useExamOccurrences"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GraduationCap } from "lucide-react"
 import CreatableSelect from "react-select/creatable"
-import { useExams } from "@/lib/useExam"
+import { useExams } from "@/hooks/useExam"
 interface DateRange {
   from: Date | undefined
   to?: Date | undefined

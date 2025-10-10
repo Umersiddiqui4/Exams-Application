@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { listExamOccurrences } from './examOccurrencesApi';
-import { apiRequest } from './apiClient';
-import { logger } from './logger';
+import { listExamOccurrences } from '@/api/examOccurrencesApi';
+import { apiRequest } from '@/api/clients/apiClient';
+import { logger } from '@/lib/logger';
 
 interface StatisticsResponse {
   totalApplications: number;

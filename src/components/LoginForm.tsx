@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { User, Lock } from 'lucide-react';
 import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/Slice';
-import { loginWithEmailPassword } from "../lib/authApi";
+import { loginWithEmailPassword } from "@/api/authApi";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { RootState } from '../redux/rootReducer';

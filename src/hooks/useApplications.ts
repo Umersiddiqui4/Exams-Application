@@ -10,7 +10,7 @@ import {
   updateApplicationStatus,
   reviewApplication,
   deleteApplication,
-} from "./applicationsApi";
+} from "@/api/applicationsApi";
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
@@ -126,4 +126,4 @@ export function useApplications(examOccurrenceId?: string, status?: string, page
   }), [items, loadState, error, pagination, create, update, updateStatus, review, remove, reload, setPageSize, setPageIndex]);
 }
 
-export type { ApplicationData } from "./applicationsApi";
+export type { ApplicationData } from "@/api/applicationsApi";

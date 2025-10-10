@@ -6,7 +6,7 @@ import {
 	listEmailTemplates,
 	updateEmailTemplate,
 	createEmailTemplate,
-} from "./emailTemplatesApi";
+} from "@/api/emailTemplatesApi";
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
@@ -57,6 +57,6 @@ export function useEmailTemplates() {
 	return useMemo(() => ({ items, loadState, error, create, update, remove, reload }), [items, loadState, error, create, update, remove, reload]);
 }
 
-export type { EmailTemplate } from "./emailTemplatesApi";
+export type { EmailTemplate } from "@/api/emailTemplatesApi";
 
 

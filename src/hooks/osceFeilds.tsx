@@ -41,7 +41,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { useAktPastExams } from "@/lib/useAktPastExams";
+import { useAktPastExams } from "@/hooks/useAktPastExams";
 
 
 

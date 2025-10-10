@@ -8,7 +8,7 @@ import {
 	updateExamOccurrence,
 	deleteExamOccurrence,
 	toggleActiveExamOccurrence,
-} from "./examOccurrencesApi";
+} from "@/api/examOccurrencesApi";
 
 type LoadState = "idle" | "loading" | "success" | "error";
 
@@ -67,6 +67,6 @@ export function useExamOccurrences() {
 	return useMemo(() => ({ items, loadState, error, create, update, remove, toggleActive, reload }), [items, loadState, error, create, update, remove, toggleActive, reload]);
 }
 
-export type { ExamOccurrence } from "./examOccurrencesApi";
+export type { ExamOccurrence } from "@/api/examOccurrencesApi";
 
 

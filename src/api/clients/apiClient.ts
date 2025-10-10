@@ -1,5 +1,5 @@
-import { logger } from './logger';
-import { safeLocalStorage } from './errorHandler';
+import { logger } from '@/lib/logger';
+import { safeLocalStorage } from '@/lib/errorHandler';
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
