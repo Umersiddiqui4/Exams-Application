@@ -43,7 +43,7 @@ class Logger {
   /**
    * Format log message with timestamp and prefix
    */
-  private formatMessage(level: LogLevel, message: string, ...args: unknown[]): string {
+  private formatMessage(level: LogLevel): string {
     const timestamp = new Date().toISOString();
     const prefix = this.config.prefix || '';
     return `${timestamp} ${prefix} [${level.toUpperCase()}]`;
@@ -54,7 +54,7 @@ class Logger {
    */
   debug(message: string, ...args: unknown[]): void {
     if (this.shouldLog('debug')) {
-      console.debug(this.formatMessage('debug', message), message, ...args);
+      console.debug(this.formatMessage('debug'), message, ...args);
     }
   }
 
@@ -63,7 +63,7 @@ class Logger {
    */
   info(message: string, ...args: unknown[]): void {
     if (this.shouldLog('info')) {
-      console.info(this.formatMessage('info', message), message, ...args);
+      console.info(this.formatMessage('info'), message, ...args);
     }
   }
 
@@ -72,7 +72,7 @@ class Logger {
    */
   warn(message: string, ...args: unknown[]): void {
     if (this.shouldLog('warn')) {
-      console.warn(this.formatMessage('warn', message), message, ...args);
+      console.warn(this.formatMessage('warn'), message, ...args);
     }
   }
 
@@ -81,7 +81,7 @@ class Logger {
    */
   error(message: string, error?: unknown, ...args: unknown[]): void {
     if (this.shouldLog('error')) {
-      console.error(this.formatMessage('error', message), message, error, ...args);
+      console.error(this.formatMessage('error'), message, error, ...args);
     }
   }
 
