@@ -457,7 +457,7 @@ export function Exam() {
     setExamType(isAKT ? "AKTs" : "OSCE")
     
     // Handle location based on exam type
-    let locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
+    const locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
     let selectedLocs: any[] = []
     if (isAKT && Array.isArray(exam.location)) {
       selectedLocs = exam.location.map((loc: string) => ({ value: loc, label: loc }))

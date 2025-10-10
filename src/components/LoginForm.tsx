@@ -33,7 +33,7 @@ export function LoginForm() {
     if (error && errorType) {
       let toastTitle = 'Login Failed';
       let toastDescription = error;
-      let toastVariant: 'default' | 'destructive' = 'destructive';
+      const toastVariant: 'default' | 'destructive' = 'destructive';
 
       switch (errorType) {
         case 'invalid_username':
