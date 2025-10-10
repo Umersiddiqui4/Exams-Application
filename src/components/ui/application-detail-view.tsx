@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
+import { logger } from '@/lib/logger';
 import { 
   X, 
   Download, 
@@ -101,9 +102,9 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
           setPdfPages([attachment.base64Data]);
         }
       } catch (error) {
-        console.error('Error loading PDF:', error);
+        logger.error('Error loading PDF', error);
         setPdfPages([]);
-      } finally {
+      } finally{
         setIsLoadingPdf(false);
       }
     } else {

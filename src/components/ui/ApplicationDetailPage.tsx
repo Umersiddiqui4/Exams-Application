@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
+import { logger } from '@/lib/logger';
 import { 
   Download, 
   ArrowLeft,
@@ -75,7 +76,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
           setPdfPages([attachment.base64Data]);
         }
       } catch (error) {
-        console.error('Error loading PDF:', error);
+        logger.error('Error loading PDF', error);
         setPdfPages([]);
       } finally {
         setIsLoadingPdf(false);
@@ -356,7 +357,7 @@ export function ApplicationDetailPage() {
                 return { ...attachment, base64Data };
               }
             } catch (error) {
-              console.error(`Failed to load attachment ${attachment.fileName}:`, error);
+              logger.error(`Failed to load attachment ${attachment.fileName}`, error);
               return { ...attachment, base64Data: null };
             }
           }) || [];
@@ -377,7 +378,7 @@ export function ApplicationDetailPage() {
           navigate('/applications');
         }
       } catch (error) {
-        console.error('Error fetching application:', error);
+        logger.error('Error fetching application', error);
         toast({
           title: "Error",
           description: "Failed to load application details",
@@ -417,18 +418,20 @@ export function ApplicationDetailPage() {
     // Transform data to match PDF generator expectations
     const transformedData = transformDataForPDF(data);
     
-    console.log('Original data keys:', Object.keys(data));
-    console.log('Transformed data keys:', Object.keys(transformedData));
-    console.log('Sample transformed fields:', {
-      whatsapp: transformedData.whatsapp,
-      dateOfRegistration: transformedData.dateOfRegistration,
-      countryOfOrigin: transformedData.countryOfOrigin,
-      previousOsceAttempts: transformedData.previousOsceAttempts
+    logger.debug('PDF Data Transformation', {
+      originalKeys: Object.keys(data),
+      transformedKeys: Object.keys(transformedData),
+      sampleFields: {
+        whatsapp: transformedData.whatsapp,
+        dateOfRegistration: transformedData.dateOfRegistration,
+        countryOfOrigin: transformedData.countryOfOrigin,
+        previousOsceAttempts: transformedData.previousOsceAttempts
+      }
     });
     
     // For OSCE, we need to prepare the images object with all attachment data
     if (!isAKT) {
-      console.log('All attachments:', data.attachments?.map((att: any) => ({ fileName: att.fileName, hasBase64: !!att.base64Data })));
+      logger.debug('All attachments', data.attachments?.map((att: any) => ({ fileName: att.fileName, hasBase64: !!att.base64Data })));
       
       // Process all attachments and create images object
       const images: any = {};
@@ -438,39 +441,39 @@ export function ApplicationDetailPage() {
           if (attachment.base64Data) {
             const fileName = attachment.fileName?.toLowerCase() || '';
             
-            console.log(`Processing attachment: ${attachment.fileName} (${fileName})`);
+            logger.debug(`Processing attachment: ${attachment.fileName} (${fileName})`);
             
             // Map attachment types to image keys with comprehensive pattern matching
             if (fileName === 'passport-image' || fileName.includes('passport') && fileName.includes('photo')) {
               images.passport = attachment.base64Data;
-              console.log('Mapped to passport');
+              logger.debug('Mapped to passport');
             } else if (fileName.includes('medical_license') || fileName.includes('license') || fileName.includes('medical') || fileName.includes('valid-license')) {
               images.medicalLicense = attachment.base64Data;
-              console.log('Mapped to medicalLicense');
+              logger.debug('Mapped to medicalLicense');
             } else if (fileName.includes('part_1_passing_email') || fileName.includes('part1') || fileName.includes('part_1') || fileName.includes('mbbs-degree')) {
               images.part1Email = attachment.base64Data;
-              console.log('Mapped to part1Email');
+              logger.debug('Mapped to part1Email');
             } else if (fileName.includes('passport_bio_page') || fileName.includes('passport_bio') || fileName.includes('bio') || fileName.includes('passport-bio') || fileName.includes('passportbio')) {
               images.passportBio = attachment.base64Data;
-              console.log('Mapped to passportBio');
+              logger.debug('Mapped to passportBio');
             } else if (fileName.includes('signature')) {
               images.signature = attachment.base64Data;
-              console.log('Mapped to signature');
+              logger.debug('Mapped to signature');
             } else if (fileName.includes('internship') || fileName.includes('experience')) {
               // Map internship and experience certificates to part1Email for now
               images.part1Email = attachment.base64Data;
-              console.log('Mapped to part1Email (internship/experience)');
+              logger.debug('Mapped to part1Email (internship/experience)');
             } else {
               // For other attachments, add them with a generic key
               const genericKey = `attachment_${attachment.id || attachment.fileName}`;
               images[genericKey] = attachment.base64Data;
-              console.log(`Mapped to generic key: ${genericKey}`);
+              logger.debug(`Mapped to generic key: ${genericKey}`);
             }
           }
         });
       }
       
-      console.log('Images object for PDF:', Object.keys(images));
+      logger.debug('Images object for PDF', Object.keys(images));
       
       const doc = <ApplicationPDFComplete data={transformedData} images={images} />;
       const asPdf = pdf();
@@ -479,7 +482,7 @@ export function ApplicationDetailPage() {
       return blob;
     } else {
       // For AKT, no images object needed but let's debug the attachments
-      console.log('AKT Application - All attachments:', data.attachments?.map((att: any) => ({ 
+      logger.debug('AKT Application - All attachments', data.attachments?.map((att: any) => ({ 
         fileName: att.fileName, 
         hasBase64: !!att.base64Data,
         category: att.category 
@@ -529,7 +532,7 @@ export function ApplicationDetailPage() {
         description: "PDF downloaded successfully",
       });
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      logger.error("Error generating PDF", error);
       toast({
         title: "Error",
         description: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,

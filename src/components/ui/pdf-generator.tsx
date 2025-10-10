@@ -7,10 +7,11 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
+import { logger } from '@/lib/logger';
 
 
 export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
-  console.log("Rendering PDF with data:", data, images);
+  logger.debug("Rendering PDF with data", { data, images });
   
   return (
     <Document>
@@ -1634,9 +1635,7 @@ export const ApplicationPDFCompleteAktPreview = ({
   image,
   images,
 }: any) => {
-  console.log("image", image);
-  console.log("images", images);
-  console.log("data", data);
+  logger.debug("PDF generation data", { image, images, data });
   
   return (
     <Document>

@@ -114,8 +114,6 @@ export function AktFeilds(props: AktsFieldsProps) {
     }
   };
 
-  console.log("attachments", attachments);
-
 
   const removeAttachment = async (id: string) => {
     // Find the attachment to get its title for API deletion

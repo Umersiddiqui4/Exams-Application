@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { listExamOccurrences } from './examOccurrencesApi';
 import { apiRequest } from './apiClient';
+import { logger } from './logger';
 
 interface StatisticsResponse {
   totalApplications: number;
@@ -106,7 +107,7 @@ export function useDashboardData(): DashboardData {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
+        logger.error('Failed to fetch dashboard data', error);
       }
     };
 

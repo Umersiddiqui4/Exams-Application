@@ -24,6 +24,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMemo } from "react";
 import NotFound from "./ui/notFound";
 import "../App.css";
+import { logger } from "@/lib/logger";
 
 import {
   ApplicationPDFComplete,
@@ -181,7 +182,7 @@ export function ApplicationForm() {
           setExamDto(examData?.data);
         } catch (error) {
           setOccurrenceError("Failed to load exam occurrence.");
-          console.error(error);
+          logger.error("Failed to load exam occurrence", error);
         } finally {
           setOccurrenceLoading(false);
         }
@@ -262,9 +263,7 @@ export function ApplicationForm() {
               variant: "destructive",
             });
 
-            console.warn(
-              `Auto-application creation failed: ${response.status} ${response.statusText}`
-            );
+            logger.warn(`Auto-application creation failed: ${response.status} ${response.statusText}`);
             return; // Don't throw error, just log and continue
           }
 
@@ -286,7 +285,7 @@ export function ApplicationForm() {
             variant: "destructive",
           });
 
-          console.warn("Auto-application creation error:", error);
+          logger.warn("Auto-application creation error", error);
         } finally {
           setIsCreatingApplication(false);
           setTriggerApplicationCheck(false); // Reset the trigger
@@ -387,7 +386,7 @@ export function ApplicationForm() {
         });
       }
     } catch (error) {
-      console.error("Eligibility check error:", error);
+      logger.error("Eligibility check error", error);
       toast({
         title: "Eligibility Check Error",
         description: "Unable to verify eligibility. Please try again.",
@@ -434,15 +433,10 @@ export function ApplicationForm() {
               );
 
               if (!deleteResponse.ok) {
-                console.warn(
-                  `Failed to delete existing file ${existingFileId} for ${inputId}`
-                );
+                logger.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
               }
             } catch (error) {
-              console.warn(
-                `Error deleting existing file for ${inputId}:`,
-                error
-              );
+              logger.warn(`Error deleting existing file for ${inputId}`, error);
             }
           }
 
@@ -540,7 +534,7 @@ export function ApplicationForm() {
 
           try {
             if (!response.ok) {
-              console.error(`Upload failed for ${inputId}`);
+              logger.error(`Upload failed for ${inputId}`);
               continue;
             }
 
@@ -556,7 +550,7 @@ export function ApplicationForm() {
 
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
-            console.error(`Upload error for ${inputId}:`, error);
+            logger.error(`Upload error for ${inputId}`, error);
             const fieldName = title
               ? title.replace("-", " ").toUpperCase()
               : inputId.replace("-", " ").toUpperCase();
@@ -630,9 +624,7 @@ export function ApplicationForm() {
         );
 
         if (!deleteResponse.ok) {
-          console.warn(
-            `Failed to delete existing file ${existingFileId} for ${inputId}`
-          );
+          logger.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
         } else {
           setUploadedFileIds((prev) => {
             const newState = { ...prev };
@@ -641,7 +633,7 @@ export function ApplicationForm() {
           });
         }
       } catch (error) {
-        console.warn(`Error deleting existing file for ${inputId}:`, error);
+        logger.warn(`Error deleting existing file for ${inputId}`, error);
       }
     }
   };
@@ -903,10 +895,7 @@ export function ApplicationForm() {
 
           break; // Success, exit retry loop
         } catch (error) {
-          console.warn(
-            `Confirmation attempt ${confirmationAttempts} failed:`,
-            error
-          );
+          logger.warn(`Confirmation attempt ${confirmationAttempts} failed`, error);
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
             const errorMessage = `${
@@ -1015,7 +1004,7 @@ export function ApplicationForm() {
         );
       });
     } catch (err) {
-      console.error("Submission error:", err);
+      logger.error("Submission error", err);
       const errorMessage = err instanceof Error ? err.message : "Something went wrong during submission.";
       const isLimitsReached = errorMessage.toLowerCase().includes("limits reached");
       
@@ -1259,9 +1248,9 @@ export function ApplicationForm() {
           reader.onload = async (e) => {
             try {
               const base64Pdf = e.target?.result as string;
-              console.log("Converting PDF to images for passport_bio_page...");
+              logger.debug("Converting PDF to images for passport_bio_page");
               const imagesArray = await pdfToImages(base64Pdf);
-              console.log("PDF conversion result:", imagesArray);
+              logger.debug("PDF conversion result", imagesArray);
               setPassportBioPreview(imagesArray);
               // Update attachment in array with actual preview
               setAttachments(prev => {
@@ -1270,11 +1259,11 @@ export function ApplicationForm() {
                     ? { ...att, attachmentUrl: imagesArray[0] }
                     : att
                 );
-                console.log("Updated attachments for passport_bio_page:", updated);
+                logger.debug("Updated attachments for passport_bio_page", updated);
                 return updated;
               });
             } catch (error) {
-              console.error("PDF conversion error:", error);
+              logger.error("PDF conversion error", error);
               // Keep placeholder on error
             }
           };
@@ -1316,7 +1305,7 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              console.error("PDF conversion error:", error);
+              logger.error("PDF conversion error", error);
               // Keep placeholder on error
             }
           };
@@ -1358,7 +1347,7 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              console.error("PDF conversion error:", error);
+              logger.error("PDF conversion error", error);
               // Keep placeholder on error
             }
           };
@@ -1399,7 +1388,7 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              console.error("PDF conversion error:", error);
+              logger.error("PDF conversion error", error);
               // Keep placeholder on error
             }
           };
@@ -1439,7 +1428,7 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              console.error("PDF conversion error:", error);
+              logger.error("PDF conversion error", error);
               // Keep placeholder on error
             }
           };
@@ -1480,7 +1469,7 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              console.error("PDF conversion error:", error);
+              logger.error("PDF conversion error", error);
               // Keep placeholder on error
             }
           };
@@ -1556,12 +1545,10 @@ export function ApplicationForm() {
           );
 
           if (!deleteResponse.ok) {
-            console.warn(
-              `Failed to delete existing file ${existingFileId} for ${inputId}`
-            );
+            logger.warn(`Failed to delete existing file ${existingFileId} for ${inputId}`);
           }
         } catch (error) {
-          console.warn(`Error deleting existing file for ${inputId}:`, error);
+          logger.warn(`Error deleting existing file for ${inputId}`, error);
         }
       }
     }
@@ -1754,7 +1741,6 @@ export function ApplicationForm() {
     // Always return the local preview URL for immediate preview
     return localPreviewUrl;
   };
-  // console.error("validateFile:", validateFile);
 
   useEffect(() => {
     // Cleanup function to revoke object URLs when component unmounts

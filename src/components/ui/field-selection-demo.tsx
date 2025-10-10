@@ -4,15 +4,14 @@ import { useState } from "react"
 import { Button } from "./button"
 import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog"
 import { useToast } from "./use-toast"
+import { logger } from '@/lib/logger'
 
 export function FieldSelectionDemo() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
 
   const handleExport = (config: ExportFieldConfig, includeWaitingList: boolean, includeRejected: boolean) => {
-    console.log("Export configuration:", config)
-    console.log("Include waiting list:", includeWaitingList)
-    console.log("Include rejected:", includeRejected)
+    logger.debug("Export configuration", { config, includeWaitingList, includeRejected })
     
     toast({
       title: "Export Configuration",

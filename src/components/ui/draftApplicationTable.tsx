@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "./card";
 import { Input } from "./input";
+import { logger } from '@/lib/logger';
 // import {
 //   DropdownMenu,
 //   DropdownMenuContent,
@@ -208,7 +209,7 @@ export default function DraftApplicationTable({}: DraftApplicationTableProps) {
               return { ...attachment, base64Data }
             }
           } catch (error) {
-            console.error(`Failed to load image ${attachment.fileName}:`, error)
+            logger.error(`Failed to load image ${attachment.fileName}`, error)
             return { ...attachment, base64Data: null }
           }
         }) || []
@@ -227,7 +228,7 @@ export default function DraftApplicationTable({}: DraftApplicationTableProps) {
       // Refetch applications after loading data
       await reload()
     } catch (error) {
-      console.error("Error generating PDF:", error)
+      logger.error("Error generating PDF", error)
       Swal.fire({
         title: "Error",
         text: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -255,7 +256,7 @@ export default function DraftApplicationTable({}: DraftApplicationTableProps) {
       const url = URL.createObjectURL(blob)
       window.open(url, "_blank")
     } catch (error) {
-      console.error("Error generating PDF:", error)
+      logger.error("Error generating PDF", error)
       Swal.fire({
         title: "Error",
         text: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -338,7 +339,7 @@ export default function DraftApplicationTable({}: DraftApplicationTableProps) {
         description: `Draft applications exported successfully with ${fieldConfig?.fields.length || 'default'} fields.`,
       })
     } catch (error) {
-      console.error("Export error:", error)
+      logger.error("Export error", error)
       Swal.fire({
         title: "Error",
         text: `Failed to export: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -361,7 +362,7 @@ export default function DraftApplicationTable({}: DraftApplicationTableProps) {
   }
 
   const ApplicationPDF = ({ data }: any) => {
-    console.log("Generating PDF for data:", data);
+    logger.debug("Generating PDF for data", data);
     
     return (
       <Document>

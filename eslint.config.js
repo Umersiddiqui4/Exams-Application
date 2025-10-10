@@ -29,6 +29,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off', // Too strict for gradual migration
       '@typescript-eslint/no-unsafe-call': 'off', // Too strict for gradual migration
       '@typescript-eslint/no-unsafe-return': 'off', // Too strict for gradual migration
+      // Console usage warnings
+      'no-console': ['warn', { allow: ['warn', 'error'] }], // Warn on console.log but allow console.warn/error for backwards compatibility
     },
   },
 )
