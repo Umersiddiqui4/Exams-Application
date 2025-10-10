@@ -1,3 +1,6 @@
+import { logger } from './logger';
+import { safeLocalStorage } from './errorHandler';
+
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 export type ApiClientOptions = {
@@ -44,12 +47,11 @@ export async function apiRequest<T>(
 	}
 	if (!res.ok) {
 		if (res.status === 401) {
-			try {
-            localStorage.removeItem("auth_token");
-            localStorage.removeItem("refresh_token");
-            // Immediate redirect if a request hits 401 without successful refresh
-            redirectToLoginIfUnauthenticated();
-			} catch {}
+			safeLocalStorage(() => {
+				localStorage.removeItem("auth_token");
+				localStorage.removeItem("refresh_token");
+			}, 'Failed to clear auth tokens');
+			// Immediate redirect if a request hits 401 without successful refresh
 			redirectToLoginIfUnauthenticated();
 		}
 		const text = await res.text().catch(() => "");
@@ -70,14 +72,14 @@ async function refreshAccessToken(baseUrl: string, maxAttempts: number = 4): Pro
 			const refreshToken = typeof localStorage !== "undefined" ? localStorage.getItem("refresh_token") : null;
 			if (!refreshToken) return null;
 
-			// Generate device token if not exists
-			let deviceToken = typeof localStorage !== "undefined" ? localStorage.getItem("device_token") : null;
-			if (!deviceToken) {
-				deviceToken = crypto.randomUUID();
-				try {
-					localStorage.setItem("device_token", deviceToken);
-				} catch {}
-			}
+		// Generate device token if not exists
+		let deviceToken = typeof localStorage !== "undefined" ? localStorage.getItem("device_token") : null;
+		if (!deviceToken) {
+			deviceToken = crypto.randomUUID();
+			safeLocalStorage(() => {
+				localStorage.setItem("device_token", deviceToken!);
+			}, 'Failed to save device token');
+		}
 
 			// Get timezone
 			const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -119,20 +121,20 @@ async function refreshAccessToken(baseUrl: string, maxAttempts: number = 4): Pro
 					data?.refreshToken ||
 					data?.refresh?.token ||
 					null;
-				if (accessToken) {
-					try {
-						localStorage.setItem("auth_token", accessToken as string);
-						if (nextRefreshToken) localStorage.setItem("refresh_token", nextRefreshToken as string);
-					} catch {}
-					return accessToken as string;
-				}
-				// If response had no token, try next attempt
+			if (accessToken) {
+				safeLocalStorage(() => {
+					localStorage.setItem("auth_token", accessToken as string);
+					if (nextRefreshToken) localStorage.setItem("refresh_token", nextRefreshToken as string);
+				}, 'Failed to save auth tokens');
+				return accessToken as string;
 			}
-			return null;
-		} catch {
-			// Swallow and let caller handle
-			return null;
-		} finally {
+				// If response had no token, try next attempt
+		}
+		return null;
+	} catch (error) {
+		logger.warn('Token refresh failed', error);
+		return null;
+	} finally {
 			const t = refreshingPromise;
 			refreshingPromise = null;
 			void t; // no-op
@@ -147,7 +149,9 @@ export function redirectToLoginIfUnauthenticated() {
 		if (!token && window.location.pathname !== "/login") {
 			window.location.replace("/login");
 		}
-	} catch {}
+	} catch (error) {
+		logger.warn('Failed to check authentication status', error);
+	}
 }
 
 
