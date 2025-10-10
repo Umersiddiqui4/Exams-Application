@@ -78,7 +78,7 @@ export async function verifyEmail(token: string): Promise<EmailVerificationRespo
 }
 
 export type ResendEmailResponse = {
-	data: {};
+	data: object;
 	message: string;
 	statusCode: number;
 	success: boolean;
