@@ -1,5 +1,7 @@
 import * as pdfjsLib from "pdfjs-dist/";
-import "pdfjs-dist/build/pdf.worker.entry";
+
+// Set up the worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.js", import.meta.url).toString();
 
 export async function pdfToImages(base64Data: string): Promise<string[]> {
   // base64 ko ArrayBuffer me convert karo
@@ -25,6 +27,7 @@ export async function pdfToImages(base64Data: string): Promise<string[]> {
     canvas.height = viewport.height;
 
     await page.render({
+      canvas: null,
       canvasContext: context,
       viewport,
     }).promise;
