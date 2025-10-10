@@ -23,6 +23,12 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // TypeScript any type warnings
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'off', // Too strict for gradual migration
+      '@typescript-eslint/no-unsafe-member-access': 'off', // Too strict for gradual migration
+      '@typescript-eslint/no-unsafe-call': 'off', // Too strict for gradual migration
+      '@typescript-eslint/no-unsafe-return': 'off', // Too strict for gradual migration
     },
   },
 )

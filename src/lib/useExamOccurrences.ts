@@ -21,11 +21,11 @@ export function useExamOccurrences() {
 		setLoadState("loading");
 		setError(null);
 		try {
-			const data: any = await listExamOccurrences();
-			const normalized: ExamOccurrence[] = Array.isArray(data?.data)
-				? (data.data as ExamOccurrence[])
-				: Array.isArray(data)
-					? (data as ExamOccurrence[])
+			const data: ExamOccurrence[] | { data: ExamOccurrence[] } = await listExamOccurrences();
+			const normalized: ExamOccurrence[] = Array.isArray(data)
+				? data
+				: Array.isArray((data as { data: ExamOccurrence[] }).data)
+					? (data as { data: ExamOccurrence[] }).data
 					: [];
 			// Sort by createdAt descending (newest first)
 			normalized.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());

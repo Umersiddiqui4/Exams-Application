@@ -54,7 +54,7 @@ export function useDashboardData(): DashboardData {
     const fetchDashboardData = async () => {
       try {
         // Fetch exam occurrences sorted by createdAt (most recent first)
-        const examOccurrences: any = await listExamOccurrences("createdAt", "desc");
+        const examOccurrences = await listExamOccurrences("createdAt", "desc") as unknown as { data: Array<{ id: string; title: string }> };
 
         // Get the most recent exam occurrence
         const currentExamOccurrence = examOccurrences?.data?.[0];

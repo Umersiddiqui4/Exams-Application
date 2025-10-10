@@ -19,11 +19,11 @@ export function useEmailTemplates() {
 		setLoadState("loading");
 		setError(null);
 		try {
-			const data: any = await listEmailTemplates();
-			const normalized: EmailTemplate[] = Array.isArray(data?.data)
-				? (data.data as EmailTemplate[])
-				: Array.isArray(data)
-					? (data as EmailTemplate[])
+			const data: EmailTemplate[] | { data: EmailTemplate[] } = await listEmailTemplates();
+			const normalized: EmailTemplate[] = Array.isArray(data)
+				? data
+				: Array.isArray((data as { data: EmailTemplate[] }).data)
+					? (data as { data: EmailTemplate[] }).data
 					: [];
 			setItems(normalized);
 			setLoadState("success");

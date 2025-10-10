@@ -10,6 +10,7 @@ import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/S
 import { loginWithEmailPassword } from "../lib/authApi";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
+import { RootState } from '../redux/rootReducer';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ export function LoginForm() {
   const { toast } = useToast();
 
   // Access the authentication state
-  const { isAuthenticated, error, loading, errorType } = useSelector((state: any) => state.auth);
+  const { isAuthenticated, error, loading, errorType } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (isAuthenticated) {

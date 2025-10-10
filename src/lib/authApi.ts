@@ -76,7 +76,12 @@ export type UploadImageResponse = {
 	message: string;
 	statusCode: number;
 	success: boolean;
-	data?: any;
+	data?: {
+		id: string;
+		fileName: string;
+		fileUrl?: string;
+		fileType: string;
+	};
 };
 
 export async function uploadImage(data: UploadImageRequest): Promise<UploadImageResponse> {

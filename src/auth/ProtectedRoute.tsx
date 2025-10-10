@@ -6,6 +6,7 @@ import { detectBrowser } from '../lib/browserDetection';
 import { redirectToLoginIfUnauthenticated } from "../lib/apiClient";
 import { logout } from "../redux/Slice";
 import { BrowserRestriction } from '../components/BrowserRestriction';
+import { RootState } from '../redux/rootReducer';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Use RootState to access the state properly
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const hasToken = useMemo(() => {
     try {
       return Boolean(localStorage.getItem("auth_token"));

@@ -19,12 +19,12 @@ export function useExams() {
 		let mounted = true;
 		setLoadState("loading");
 		listExams()
-			.then((data: any) => {
+			.then((data: Exam[] | { data: Exam[] }) => {
 				if (!mounted) return;
-				const normalized: Exam[] = Array.isArray(data?.data)
-					? (data.data as Exam[])
-					: Array.isArray(data)
-						? (data as Exam[])
+				const normalized: Exam[] = Array.isArray(data)
+					? data
+					: Array.isArray((data as { data: Exam[] }).data)
+						? (data as { data: Exam[] }).data
 						: [];
 				setItems(normalized);
 				setLoadState("success");
