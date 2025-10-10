@@ -1,5 +1,7 @@
-import * as pdfjsLib from "pdfjs-dist/";
-import "pdfjs-dist/build/pdf.worker.entry";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Configure PDF.js worker for v5.x
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 export async function pdfToImages(base64Data: string): Promise<string[]> {
   // base64 ko ArrayBuffer me convert karo
@@ -27,6 +29,7 @@ export async function pdfToImages(base64Data: string): Promise<string[]> {
     await page.render({
       canvasContext: context,
       viewport,
+      canvas, // Required in v5.x
     }).promise;
 
     // Canvas ko base64 PNG me convert karo

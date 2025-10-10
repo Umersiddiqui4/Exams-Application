@@ -22,13 +22,10 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle} from './dialog';
-import * as pdfjsLib from "pdfjs-dist/";
+import * as pdfjsLib from "pdfjs-dist";
 
-// PDF.js worker setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
-).toString();
+// PDF.js worker setup for v5.x
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 interface ApplicationDetailViewProps {
   isOpen: boolean;

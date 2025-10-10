@@ -41,24 +41,17 @@ import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
-import * as pdfjsLib from "pdfjs-dist/";
+import * as pdfjsLib from "pdfjs-dist";
 import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog";
 import { ApplicationPDFCompleteAktApp } from "./pdf-generator";
 import { PDFPreviewPanel } from "./pdf-preview-panel";
 import { ApplicationDetailView } from "./application-detail-view";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
-).toString();"use client"
+// PDF.js worker setup for v5.x
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.js", import.meta.url).toString()
-
-interface DraftApplicationTableProps {
-  // Removed onDetailViewOpen since we're opening in new tab now
-}
-
-export default function DraftApplicationTable({}: DraftApplicationTableProps) {
+// No props needed - component is self-contained
+export default function DraftApplicationTable() {
   const { toast } = useToast()
 
   const searchQuery = ""
@@ -189,7 +182,7 @@ export default function DraftApplicationTable({}: DraftApplicationTableProps) {
                 canvas.height = viewport.height
                 canvas.width = viewport.width
 
-                await page.render({ canvasContext: context, viewport }).promise
+                await page.render({ canvasContext: context, viewport, canvas }).promise
 
                 const base64Data = canvas.toDataURL("image/png")
                 images.push(base64Data)

@@ -23,15 +23,12 @@ import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
 import { getApplication } from '@/api/applicationsApi';
 import { useToast } from './use-toast';
-import * as pdfjsLib from "pdfjs-dist/";
+import * as pdfjsLib from "pdfjs-dist";
 import { pdf } from '@react-pdf/renderer';
 import { ApplicationPDFCompleteAktApp, ApplicationPDFComplete } from './pdf-generator';
 
-// PDF.js worker setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
-).toString();
+// PDF.js worker setup for v5.x
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 interface DocumentPreviewCardProps {
   attachment: any;
@@ -339,7 +336,7 @@ export function ApplicationDetailPage() {
                   canvas.height = viewport.height;
                   canvas.width = viewport.width;
                   
-                  await page.render({ canvasContext: context, viewport }).promise;
+                  await page.render({ canvasContext: context, viewport, canvas }).promise;
                   const base64Data = canvas.toDataURL("image/png");
                   images.push(base64Data);
                 }
