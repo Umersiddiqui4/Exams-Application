@@ -224,7 +224,7 @@ export function ApplicationForm() {
           };
 
           const response = await fetch(
-            "https://mrcgp-api.omnifics.io/api/v1/applications",
+            `${import.meta.env.VITE_API_BASE_URL}/api/v1/applications`,
             {
               method: "POST",
               headers: {
@@ -358,7 +358,7 @@ export function ApplicationForm() {
 
     try {
       const response = await fetch(
-        "https://mrcgp-api.omnifics.io/api/v1/applications/can-apply",
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/applications/can-apply`,
         {
           method: "POST",
           headers: {
@@ -427,7 +427,7 @@ export function ApplicationForm() {
           if (existingFileId) {
             try {
               const deleteResponse = await fetch(
-                `https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/${existingFileId}`,
                 {
                   method: "DELETE",
                 }
@@ -513,7 +513,7 @@ export function ApplicationForm() {
             formData.append("fileName", fileName || file.name);
 
             response = await fetch(
-              "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document",
+              `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/upload/document`,
               {
                 method: "POST",
                 body: formData,
@@ -530,7 +530,7 @@ export function ApplicationForm() {
             formData.append("fileName", fileName);
 
             response = await fetch(
-              "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image",
+              `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/upload/image`,
               {
                 method: "POST",
                 body: formData,
@@ -623,7 +623,7 @@ export function ApplicationForm() {
     if (existingFileId) {
       try {
         const deleteResponse = await fetch(
-          `https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/${existingFileId}`,
           {
             method: "DELETE",
           }
@@ -881,7 +881,7 @@ export function ApplicationForm() {
           confirmationAttempts++;
 
           const confirmationResponse = await fetch(
-            `https://mrcgp-api.omnifics.io/api/v1/applications/${applicationId}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/v1/applications/${applicationId}`,
             {
               method: "PATCH", // Changed to PUT as per API spec
               headers: {
@@ -1549,7 +1549,7 @@ export function ApplicationForm() {
       if (existingFileId) {
         try {
           const deleteResponse = await fetch(
-            `https://mrcgp-api.omnifics.io/api/v1/attachments/${existingFileId}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/${existingFileId}`,
             {
               method: "DELETE",
             }
@@ -1580,7 +1580,7 @@ export function ApplicationForm() {
       formData.append("fileName", fileName || file.name);
 
       response = await fetch(
-        "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/document",
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/upload/document`,
         {
           method: "POST",
           body: formData,
@@ -1604,7 +1604,7 @@ export function ApplicationForm() {
       formData.append("fileName", finalFileName);
 
       response = await fetch(
-        "https://mrcgp-api.omnifics.io/api/v1/attachments/upload/image",
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/upload/image`,
         {
           method: "POST",
           body: formData,

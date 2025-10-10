@@ -54,12 +54,12 @@ export type SignupResponse = {
 };
 
 export async function loginWithEmailPassword(email: string, password: string): Promise<LoginResponse> {
-	const baseUrl = "https://mrcgp-api.omnifics.io";
+	const baseUrl = import.meta.env.VITE_API_BASE_URL;
 	return apiRequest<LoginResponse>("/api/v1/auth/email/login", "POST", { email, password }, { baseUrl });
 }
 
 export async function signupWithEmail(data: SignupRequest): Promise<SignupResponse> {
-	const baseUrl = "https://mrcgp-api.omnifics.io";
+	const baseUrl = import.meta.env.VITE_API_BASE_URL;
 	return apiRequest<SignupResponse>("/api/v1/auth/email/signup", "POST", data, { baseUrl });
 }
 
@@ -80,7 +80,7 @@ export type UploadImageResponse = {
 };
 
 export async function uploadImage(data: UploadImageRequest): Promise<UploadImageResponse> {
-	const baseUrl = "https://mrcgp-api.omnifics.io";
+	const baseUrl = import.meta.env.VITE_API_BASE_URL;
 	const url = `${baseUrl.replace(/\/$/, "")}/api/v1/attachments/upload/image`;
 
 	const formData = new FormData();

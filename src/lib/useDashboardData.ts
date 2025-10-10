@@ -60,7 +60,7 @@ export function useDashboardData(): DashboardData {
         const currentExamOccurrence = examOccurrences?.data?.[0];
 
         // Fetch statistics for all applications
-        const allStatsResponse = await apiRequest<StatisticsResponse>('/api/v1/applications/statistics', 'GET', undefined, { baseUrl: 'https://mrcgp-api.omnifics.io' });
+        const allStatsResponse = await apiRequest<StatisticsResponse>('/api/v1/applications/statistics', 'GET', undefined, { baseUrl: import.meta.env.VITE_API_BASE_URL });
         const allStats = allStatsResponse as StatisticsResponse;
 
         const allAppsStats: DashboardStats = {
@@ -74,7 +74,7 @@ export function useDashboardData(): DashboardData {
 
         if (currentExamOccurrence) {
           // Fetch statistics for current exam
-          const statsResponse = await apiRequest<StatisticsResponse>(`/api/v1/applications/statistics?examOccurrenceId=${currentExamOccurrence.id}`, 'GET', undefined, { baseUrl: 'https://mrcgp-api.omnifics.io' });
+          const statsResponse = await apiRequest<StatisticsResponse>(`/api/v1/applications/statistics?examOccurrenceId=${currentExamOccurrence.id}`, 'GET', undefined, { baseUrl: import.meta.env.VITE_API_BASE_URL });
           const stats = statsResponse as StatisticsResponse;
 
           const currentExamStats: CurrentExamStats = {

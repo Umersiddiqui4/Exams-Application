@@ -267,7 +267,7 @@ export default function ApplicationTable({}: ApplicationTableProps) {
             const token = localStorage.getItem("auth_token")
 
             // Use the API endpoint to download the attachment with authentication
-            const response = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${attachment.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/${attachment.id}`, {
               method: "GET",
               headers: {
                 Accept: "*/*",
@@ -424,7 +424,7 @@ export default function ApplicationTable({}: ApplicationTableProps) {
       // Add field configuration
       params.append("fieldConfig", JSON.stringify(fieldConfig))
 
-      const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?${params.toString()}`
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?${params.toString()}`
 
       const response = await fetch(url, {
         method: "GET",

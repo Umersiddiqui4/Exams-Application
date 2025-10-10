@@ -312,7 +312,7 @@ export function ApplicationDetailPage() {
 
             try {
               const token = localStorage.getItem("auth_token");
-              const response = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${attachment.id}`, {
+              const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/${attachment.id}`, {
                 method: "GET",
                 headers: {
                   Accept: "*/*",
