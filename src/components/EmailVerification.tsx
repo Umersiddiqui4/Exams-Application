@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2, ArrowLeft, RefreshCw } from 'lucide-react';
-import { verifyEmail, resendConfirmationEmail } from "@/api/authApi";
+import { verifyEmail } from "@/api/authApi";
 import { useToast } from './ui/use-toast';
 
 type VerificationState = 'loading' | 'success' | 'error' | 'invalid-token';
@@ -15,8 +15,7 @@ export function EmailVerification() {
   const { toast } = useToast();
   const [verificationState, setVerificationState] = useState<VerificationState>('loading');
   const [verificationMessage, setVerificationMessage] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [isResending, setIsResending] = useState(false);
+  const [isResending] = useState(false);
 
   useEffect(() => {
     const verifyEmailToken = async () => {
@@ -36,8 +35,12 @@ export function EmailVerification() {
         if (response.success) {
           setVerificationState('success');
           setVerificationMessage(response.message || 'Your email has been successfully verified!');
-          if (response.data?.user?.email) {
-            setUserEmail(response.data.user.email);
+          
+          // Check if password reset is required
+          if (response.data?.requiresPasswordReset) {
+            setVerificationMessage(
+              response.message + ' You may need to set up a new password when you log in.'
+            );
           }
           
           // Show success toast
@@ -78,42 +81,11 @@ export function EmailVerification() {
   };
 
   const handleResendVerification = async () => {
-    if (!userEmail) {
-      toast({
-        title: 'Email Required',
-        description: 'Unable to resend verification email. Please sign up again.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsResending(true);
-    try {
-      const response = await resendConfirmationEmail(userEmail);
-      
-      if (response.success) {
-        toast({
-          title: 'Verification Email Sent',
-          description: response.message || 'A new verification email has been sent to your email address.',
-          duration: 5000,
-        });
-      } else {
-        toast({
-          title: 'Failed to Resend',
-          description: response.message || 'Failed to resend verification email. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error: any) {
-      console.error('Resend verification error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to resend verification email. Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsResending(false);
-    }
+    toast({
+      title: 'Email Required',
+      description: 'Please sign up again to receive a new verification email.',
+      variant: 'destructive',
+    });
   };
 
   return (
@@ -154,11 +126,6 @@ export function EmailVerification() {
                 <p className="text-gray-600 mb-2">
                   {verificationMessage}
                 </p>
-                {userEmail && (
-                  <p className="text-sm text-gray-500">
-                    Email: <span className="font-medium">{userEmail}</span>
-                  </p>
-                )}
               </div>
               <div className="space-y-3">
                 <Button 
@@ -196,17 +163,17 @@ export function EmailVerification() {
                 <Button 
                   onClick={handleResendVerification}
                   className="w-full"
-                  disabled={isResending || !userEmail}
+                  disabled={isResending}
                 >
                   {isResending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      Resend Verification Email
+                      Sign Up Again
                     </>
                   )}
                 </Button>

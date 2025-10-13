@@ -63,18 +63,15 @@ export type EmailVerificationResponse = {
 	message: string;
 	statusCode: number;
 	success: boolean;
-	data?: {
-		user: {
-			id: string;
-			email: string;
-			role: string;
-		};
+	data: {
+		success: boolean;
+		requiresPasswordReset: boolean;
 	};
 };
 
 export async function verifyEmail(token: string): Promise<EmailVerificationResponse> {
 	const baseUrl = import.meta.env.VITE_API_BASE_URL;
-	return apiRequest<EmailVerificationResponse>(`/api/v1/auth/email/verify?token=${token}`, "GET", undefined, { baseUrl });
+	return apiRequest<EmailVerificationResponse>(`/api/v1/auth/email/verify/api?token=${token}`, "POST", undefined, { baseUrl });
 }
 
 export type ResendEmailResponse = {
