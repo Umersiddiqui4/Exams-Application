@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { changePassword } from "@/api/authApi";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
@@ -61,7 +65,7 @@ import { useLocation } from "react-router-dom";
 // };
 
 export function Settings() {
-  // const { toast } = useToast();
+  const { toast } = useToast();
   const location = useLocation();
 
   // const [candidateTemplate, setCandidateTemplate] = useState<CandidateTemplate>(defaultCandidateTemplate);
@@ -812,6 +816,12 @@ export function Settings() {
                 <></>
                 )}
 
+                {/* Change Password Section */}
+                <div className="mt-8 max-w-md">
+                  <h3 className="text-lg font-semibold mb-4">Change Password</h3>
+                  <ChangePasswordForm onSuccess={() => toast({ title: "Password changed", description: "Use your new password next login." })} />
+                </div>
+
                 {/* <AlertDialog open={examConfirmOpen} onOpenChange={setExamConfirmOpen}>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -852,4 +862,67 @@ export function Settings() {
 
 export default Settings;
 
+
+
+function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void }) {
+  const { toast } = useToast();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [logoutAll, setLogoutAll] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password || password.length < 8) {
+      toast({ title: "Weak password", description: "Use at least 8 characters.", variant: "destructive" });
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast({ title: "Passwords do not match", description: "Please re-enter.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await changePassword({ password, confirmPassword, shouldLogoutAllSessions: logoutAll });
+      toast({ title: "Password changed", description: logoutAll ? "All sessions will be logged out." : "" });
+      setPassword("");
+      setConfirmPassword("");
+      setLogoutAll(false);
+      onSuccess?.();
+    } catch (err: any) {
+      toast({ title: "Change failed", description: "Unable to change password.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="new-password">New Password</Label>
+        <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter new password" required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="confirm-password">Confirm New Password</Label>
+        <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" required />
+      </div>
+      <div className="flex items-center gap-2">
+        <input id="logout-all" type="checkbox" checked={logoutAll} onChange={(e) => setLogoutAll(e.target.checked)} />
+        <Label htmlFor="logout-all">Logout from all sessions</Label>
+      </div>
+      <div>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Updating...
+            </div>
+          ) : (
+            "Change Password"
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}
 

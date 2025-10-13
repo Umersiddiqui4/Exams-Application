@@ -89,6 +89,72 @@ export async function resendConfirmationEmail(email: string): Promise<ResendEmai
 	return apiRequest<ResendEmailResponse>(`/api/v1/auth/email/resend?email=${email}`, "GET", undefined, { baseUrl });
 }
 
+export type ForgotPasswordRequest = {
+	email: string;
+};
+
+export type ForgotPasswordResponse = {
+	data: object;
+	message: string;
+	statusCode: number;
+	success: boolean;
+};
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+	const baseUrl = import.meta.env.VITE_API_BASE_URL;
+	return apiRequest<ForgotPasswordResponse>("/api/v1/auth/password/forgot", "POST", { email }, { baseUrl });
+}
+
+export type ResetPasswordRequest = {
+    token: string;
+    password: string;
+    shouldLogoutAllSessions?: boolean;
+};
+
+export type ResetPasswordResponse = {
+    data?: object;
+    message: string;
+    statusCode: number;
+    success: boolean;
+};
+
+export async function resetPassword(params: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const query = `token=${encodeURIComponent(params.token)}`;
+    const body = {
+        password: params.password,
+        shouldLogoutAllSessions: params.shouldLogoutAllSessions ?? false,
+    };
+    return apiRequest<ResetPasswordResponse>(`/api/v1/auth/password/reset?${query}`, "POST", body, { baseUrl });
+}
+
+export type ChangePasswordRequest = {
+    password: string;
+    confirmPassword: string;
+    shouldLogoutAllSessions?: boolean;
+};
+
+export type ChangePasswordResponse = {
+    data?: object;
+    message: string;
+    statusCode: number;
+    success: boolean;
+};
+
+export async function changePassword(payload: ChangePasswordRequest): Promise<ChangePasswordResponse> {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    return apiRequest<ChangePasswordResponse>(
+        "/api/v1/auth/password/change",
+        "POST",
+        {
+            password: payload.password,
+            confirmPassword: payload.confirmPassword,
+            shouldLogoutAllSessions: payload.shouldLogoutAllSessions ?? false,
+        },
+        { baseUrl }
+    );
+}
+
 export type UploadImageRequest = {
 	examOccurrenceId?: string;
 	entityType: string;

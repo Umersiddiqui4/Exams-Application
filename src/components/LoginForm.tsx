@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/Slice';
-import { loginWithEmailPassword } from "@/api/authApi";
+import { loginWithEmailPassword, forgotPassword } from "@/api/authApi";
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { RootState } from '../redux/rootReducer';
@@ -16,6 +24,9 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -90,6 +101,44 @@ export function LoginForm() {
     }
   };
 
+  const handleForgotPasswordClick = () => {
+    // Pre-fill with the email from the login form if available
+    if (email) {
+      setForgotPasswordEmail(email);
+    }
+    setShowForgotPasswordDialog(true);
+  };
+
+  const handleSendResetEmail = async () => {
+    if (!forgotPasswordEmail || !forgotPasswordEmail.trim()) {
+      toast({
+        title: 'Email Required',
+        description: 'Please enter your email address',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSendingResetEmail(true);
+    try {
+      await forgotPassword(forgotPasswordEmail);
+      toast({
+        title: 'Success',
+        description: 'Password reset link has been sent to your email',
+      });
+      setShowForgotPasswordDialog(false);
+      setForgotPasswordEmail('');
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send reset email. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingResetEmail(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Card className="w-full max-w-md mx-auto">
@@ -118,10 +167,19 @@ export function LoginForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Password
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  Password
+                </Label>
+                <button
+                  type="button"
+                  onClick={handleForgotPasswordClick}
+                  className="text-sm text-blue-600 hover:text-blue-500 font-medium transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
@@ -174,6 +232,54 @@ export function LoginForm() {
           </Link>
         </div>
       </Card>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPasswordDialog} onOpenChange={setShowForgotPasswordDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Forgot Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="forgot-email">Email</Label>
+              <Input
+                id="forgot-email"
+                type="email"
+                placeholder="Enter your email"
+                value={forgotPasswordEmail}
+                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowForgotPasswordDialog(false)}
+              disabled={isSendingResetEmail}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendResetEmail}
+              disabled={isSendingResetEmail}
+              className="transition-all duration-200 hover:bg-blue-600"
+            >
+              {isSendingResetEmail ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Sending...
+                </div>
+              ) : (
+                'Send Reset Link'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

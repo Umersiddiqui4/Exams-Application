@@ -19,6 +19,7 @@ import DraftApplications from './components/DraftApplications';
 import { ApplicationDetailPage } from './components/ui/ApplicationDetailPage';
 import { ThemeToggleDemo } from './components/ThemeToggleDemo';
 import Settings from './components/settings';
+import ResetPassword from './components/ResetPassword';
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/auth/password-reset" element={<ResetPassword />} />
           <Route path="/auth/confirm-email" element={<EmailVerification />} />
           <Route path="/test-email-verification" element={<EmailVerificationTest />} />
           <Route path="/test-phone-input" element={<PhoneInputTest />} />
