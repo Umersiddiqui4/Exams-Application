@@ -22,13 +22,11 @@ export async function pdfToImages(base64Data: string): Promise<string[]> {
     // Canvas banake render karo
     const viewport = page.getViewport({ scale: 1.5 });
     const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d")!;
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
     await page.render({
-      canvas: null,
-      canvasContext: context,
+      canvas,
       viewport,
     }).promise;
 

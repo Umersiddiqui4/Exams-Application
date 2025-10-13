@@ -292,11 +292,10 @@ export default function ApplicationTable() {
 
                 const viewport = page.getViewport({ scale: 1.5 })
                 const canvas = document.createElement("canvas")
-                const context = canvas.getContext("2d")!
                 canvas.height = viewport.height
                 canvas.width = viewport.width
 
-                await page.render({ canvas: null, canvasContext: context, viewport }).promise
+                await page.render({ canvas, viewport }).promise
 
                 const base64Data = canvas.toDataURL("image/png")
                 images.push(base64Data)
