@@ -418,7 +418,7 @@ export default function ApplicationTable() {
       // Add field configuration
       params.append("fieldConfig", JSON.stringify(fieldConfig))
 
-      const url = `${import.meta.env.VITE_API_BASE_URL}/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?${params.toString()}`
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/v2/applications/exam-occurrence/${selectedExamOccurrence}/export?${params.toString()}`
 
       const response = await fetch(url, {
         method: "GET",
