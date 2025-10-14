@@ -10,7 +10,7 @@ export type ApiClientOptions = {
 
 function getDefaultOptions(): Required<ApiClientOptions> {
 	return {
-		baseUrl: import.meta.env.VITE_API_BASE_URL ?? "",
+		baseUrl: import.meta.env.VITE_API_BASE_URL ?? "https://mrcgp-api.omnifics.io",
 		token: (typeof localStorage !== "undefined" ? localStorage.getItem("auth_token") : null) ?? (import.meta.env.VITE_API_TOKEN ?? null),
 	};
 }

@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SidebarNav } from "./SidebarNav";
-import { Menu, Eye, EyeOff, Plus } from "lucide-react";
+import { Menu, Eye, EyeOff, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users } from "lucide-react";
 
 import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
@@ -33,6 +35,7 @@ import { useExams } from "@/hooks/useExam";
 import { useLocation } from "react-router-dom";
 import { useEmailTemplates } from "@/hooks/useEmailTemplates";
 import { signupWithEmail, uploadImage } from "@/api/authApi";
+import { useUsers } from "@/hooks/useUsers";
 
 type CandidateTemplate = {
   type: string;
@@ -99,6 +102,43 @@ export function Settings() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Users management state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("none");
+  const [sortOrder, setSortOrder] = useState("");
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [editUserData, setEditUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    role: "APPLICANT" as "ADMIN" | "APPLICANT" | "GUEST",
+  });
+  const [userConfirmOpen, setUserConfirmOpen] = useState(false);
+  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
+  const [pendingDeleteUserName, setPendingDeleteUserName] = useState<string>("");
+
+  // Users hook
+  const {
+    items: users,
+    loadState: usersLoadState,
+    error: usersError,
+    meta: usersMeta,
+    params: usersParams,
+    update: updateUser,
+    remove: removeUser,
+    reload: reloadUsers,
+    goToPage,
+    setSearch,
+    setRoleFilter: setUsersRoleFilter,
+    setSorting,
+  } = useUsers({
+    page: 1,
+    take: 10,
+  });
+
   // Determine which section to show based on URL hash
   const activeSection = useMemo(() => {
     const raw = (location.hash || "#candidates").replace("#", "");
@@ -138,6 +178,25 @@ export function Settings() {
       });
     }
   }, [emailTemplates]);
+
+  // Handle search and filter changes for users
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, setSearch]);
+
+  useEffect(() => {
+    setUsersRoleFilter(roleFilter === "all" ? "" : roleFilter);
+  }, [roleFilter, setUsersRoleFilter]);
+
+  useEffect(() => {
+    if (sortBy && sortBy !== "none" && sortOrder) {
+      setSorting(sortBy, sortOrder);
+    }
+  }, [sortBy, sortOrder, setSorting]);
+
 
   const handleAddExamDate = async () => {
     if (!newExamDate.trim()) return;
@@ -642,170 +701,449 @@ export function Settings() {
                 )}
 
                 {activeSection === "users" && (
-                <div className="mt-10 space-y-4" id="users">
-                  <h3 className="text-xl md:text-2xl font-semibold">Create User</h3>
-                  <div className="flex justify-center">
-                    <div
-                      className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
-                      onClick={() => document.getElementById('profile-image-input')?.click()}
-                    >
-                      {imagePreview ? (
-                        <img src={imagePreview} alt="Profile Preview" className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        <Plus className="h-8 w-8 text-gray-400" />
+                <div className="mt-10 space-y-6" id="users">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
+                      <Users className="h-6 w-6" />
+                      Users Management
+                    </h3>
+                    <Button onClick={() => setShowUserForm(!showUserForm)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {showUserForm ? "Hide Form" : "Create User"}
+                    </Button>
+                  </div>
+
+                  {/* Search and Filter Controls */}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Input
+                          placeholder="Search users..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={roleFilter} onValueChange={setRoleFilter}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Roles</SelectItem>
+                          <SelectItem value="ADMIN">Admin</SelectItem>
+                          <SelectItem value="APPLICANT">Applicant</SelectItem>
+                          <SelectItem value="GUEST">Guest</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No sorting</SelectItem>
+                          <SelectItem value="firstName">First Name</SelectItem>
+                          <SelectItem value="lastName">Last Name</SelectItem>
+                          <SelectItem value="email">Email</SelectItem>
+                          <SelectItem value="createdAt">Created Date</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {sortBy && (
+                        <Select value={sortOrder} onValueChange={setSortOrder}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Order" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="asc">Ascending</SelectItem>
+                            <SelectItem value="desc">Descending</SelectItem>
+                          </SelectContent>
+                        </Select>
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">First Name</label>
-                      <Input
-                        value={newUser.firstName}
-                        onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Last Name</label>
-                      <Input
-                        value={newUser.lastName}
-                        onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Email</label>
-                      <Input
-                        type="email"
-                        value={newUser.email}
-                        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Phone</label>
-                      <PhoneInput
-                        value={newUser.phone}
-                        onChange={(value) => setNewUser({ ...newUser, phone: value })}
-                      />
-                    </div>
-                    <Input
-                      id="profile-image-input"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        if (imagePreview) {
-                          URL.revokeObjectURL(imagePreview);
-                        }
-                        setProfileImage(file);
-                        if (file) {
-                          const url = URL.createObjectURL(file);
-                          setImagePreview(url);
-                        } else {
-                          setImagePreview(null);
-                        }
-                      }}
-                    />
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-1">Password</label>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          value={newUser.password}
-                          onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                      <div className="relative">
-                        <Input
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Button
-                      onClick={async () => {
-                        if (newUser.password !== confirmPassword) {
-                          toast({
-                            title: "Passwords do not match",
-                            description: "Please ensure both password fields are identical.",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-                        try {
-                          const response = await signupWithEmail(newUser);
-                          toast({ title: "User created", description: response.message });
 
-                          // Upload image if provided
-                          if (profileImage) {
-                            try {
-                              const fileName = `${newUser.firstName}-${newUser.lastName}-profile`;
-                              await uploadImage({
-                                entityType: "user",
-                                entityId: response.data.user.id,
-                                category: "user_profile",
-                                fileName,
-                                file: profileImage,
-                              });
-                              toast({ title: "Image uploaded", description: "Profile image uploaded successfully." });
-                            } catch (uploadErr: unknown) {
-                              toast({
-                                title: "Image upload failed",
-                                description: uploadErr instanceof Error ? uploadErr.message : "Failed to upload profile image",
-                                variant: "destructive",
-                              });
-                            }
-                          }
+                  {/* User Creation Form */}
+                  {showUserForm && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Create New User</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex justify-center mb-4">
+                          <div
+                            className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
+                            onClick={() => document.getElementById('profile-image-input')?.click()}
+                          >
+                            {imagePreview ? (
+                              <img src={imagePreview} alt="Profile Preview" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              <Plus className="h-8 w-8 text-gray-400" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">First Name</label>
+                            <Input
+                              value={newUser.firstName}
+                              onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Last Name</label>
+                            <Input
+                              value={newUser.lastName}
+                              onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Email</label>
+                            <Input
+                              type="email"
+                              value={newUser.email}
+                              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Phone</label>
+                            <PhoneInput
+                              value={newUser.phone}
+                              onChange={(value) => setNewUser({ ...newUser, phone: value })}
+                            />
+                          </div>
+                          <Input
+                            id="profile-image-input"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              if (imagePreview) {
+                                URL.revokeObjectURL(imagePreview);
+                              }
+                              setProfileImage(file);
+                              if (file) {
+                                const url = URL.createObjectURL(file);
+                                setImagePreview(url);
+                              } else {
+                                setImagePreview(null);
+                              }
+                            }}
+                          />
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium mb-1">Password</label>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                value={newUser.password}
+                                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowPassword(!showPassword)}
+                              >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                            <div className="relative">
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              >
+                                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-4">
+                          <Button
+                            onClick={async () => {
+                              if (newUser.password !== confirmPassword) {
+                                toast({
+                                  title: "Passwords do not match",
+                                  description: "Please ensure both password fields are identical.",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              try {
+                                const response = await signupWithEmail(newUser);
+                                toast({ title: "User created", description: response.message });
 
-                          setNewUser({
-                            firstName: "",
-                            lastName: "",
-                            email: "",
-                            password: "",
-                            phone: "",
-                          });
-                          setConfirmPassword("");
-                          setProfileImage(null);
-                          if (imagePreview) {
-                            URL.revokeObjectURL(imagePreview);
-                            setImagePreview(null);
-                          }
-                        } catch (err: unknown) {
-                          toast({
-                            title: "Failed to create user",
-                            description: err instanceof Error ? err.message : "Unknown error",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      disabled={!newUser.firstName || !newUser.lastName || !newUser.email || !newUser.password || !newUser.phone || !confirmPassword}
-                    >
-                      Create User
-                    </Button>
-                  </div>
+                                // Upload image if provided
+                                if (profileImage) {
+                                  try {
+                                    const fileName = `${newUser.firstName}-${newUser.lastName}-profile`;
+                                    await uploadImage({
+                                      entityType: "user",
+                                      entityId: response.data.user.id,
+                                      category: "user_profile",
+                                      fileName,
+                                      file: profileImage,
+                                    });
+                                    toast({ title: "Image uploaded", description: "Profile image uploaded successfully." });
+                                  } catch (uploadErr: unknown) {
+                                    toast({
+                                      title: "Image upload failed",
+                                      description: uploadErr instanceof Error ? uploadErr.message : "Failed to upload profile image",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }
+
+                                setNewUser({
+                                  firstName: "",
+                                  lastName: "",
+                                  email: "",
+                                  password: "",
+                                  phone: "",
+                                });
+                                setConfirmPassword("");
+                                setProfileImage(null);
+                                if (imagePreview) {
+                                  URL.revokeObjectURL(imagePreview);
+                                  setImagePreview(null);
+                                }
+                                setShowUserForm(false);
+                                reloadUsers();
+                              } catch (err: unknown) {
+                                toast({
+                                  title: "Failed to create user",
+                                  description: err instanceof Error ? err.message : "Unknown error",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            disabled={!newUser.firstName || !newUser.lastName || !newUser.email || !newUser.password || !newUser.phone || !confirmPassword}
+                          >
+                            Create User
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Users Table */}
+                  <Card>
+                    <CardContent className="p-0">
+                      {usersLoadState === "loading" && (
+                        <div className="text-sm text-muted-foreground p-4">Loading users…</div>
+                      )}
+                      {usersError && (
+                        <div className="text-sm text-red-600 p-4">Error: {usersError}</div>
+                      )}
+                      {usersLoadState === "success" && users.length === 0 && (
+                        <div className="text-sm text-muted-foreground p-4">No users found.</div>
+                      )}
+
+                      <div className="rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Phone</TableHead>
+                              <TableHead>Role</TableHead>
+                              <TableHead>Created</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {users.map((user) => (
+                              <TableRow key={user.id}>
+                                <TableCell className="font-medium">
+                                  {editingUser === user.id ? (
+                                    <div className="space-y-2">
+                                      <Input
+                                        value={editUserData.firstName}
+                                        onChange={(e) => setEditUserData({ ...editUserData, firstName: e.target.value })}
+                                        placeholder="First Name"
+                                        className="w-32"
+                                      />
+                                      <Input
+                                        value={editUserData.lastName}
+                                        onChange={(e) => setEditUserData({ ...editUserData, lastName: e.target.value })}
+                                        placeholder="Last Name"
+                                        className="w-32"
+                                      />
+                                    </div>
+                                  ) : (
+                                    `${user.firstName} ${user.lastName}`
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingUser === user.id ? (
+                                    <Input
+                                      value={editUserData.email}
+                                      onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
+                                      type="email"
+                                    />
+                                  ) : (
+                                    user.email
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingUser === user.id ? (
+                                    <PhoneInput
+                                      value={editUserData.phone}
+                                      onChange={(value) => setEditUserData({ ...editUserData, phone: value })}
+                                    />
+                                  ) : (
+                                    user.phone
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingUser === user.id ? (
+                                    <Select
+                                      value={editUserData.role}
+                                      onValueChange={(value: "ADMIN" | "APPLICANT" | "GUEST") => 
+                                        setEditUserData({ ...editUserData, role: value })
+                                      }
+                                    >
+                                      <SelectTrigger className="w-32">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="APPLICANT">Applicant</SelectItem>
+                                        <SelectItem value="ADMIN">Admin</SelectItem>
+                                        <SelectItem value="GUEST">Guest</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Badge variant={user.role === "ADMIN" ? "destructive" : user.role === "APPLICANT" ? "default" : "secondary"}>
+                                      {user.role}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {new Date(user.createdAt).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {editingUser === user.id ? (
+                                    <div className="flex gap-2 justify-end">
+                                      <Button
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await updateUser(user.id, editUserData);
+                                            toast({ title: "User updated", description: `${editUserData.firstName} ${editUserData.lastName} updated successfully.` });
+                                            setEditingUser(null);
+                                            reloadUsers();
+                                          } catch (err: unknown) {
+                                            toast({
+                                              title: "Update failed",
+                                              description: err instanceof Error ? err.message : "Failed to update user",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        Save
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() => setEditingUser(null)}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex gap-2 justify-end">
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={() => {
+                                          setEditingUser(user.id);
+                                          setEditUserData({
+                                            firstName: user.firstName,
+                                            lastName: user.lastName,
+                                            email: user.email,
+                                            phone: user.phone,
+                                            role: user.role,
+                                          });
+                                        }}
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={() => {
+                                          setPendingDeleteUserId(user.id);
+                                          setPendingDeleteUserName(`${user.firstName} ${user.lastName}`);
+                                          setUserConfirmOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {users.length === 0 && usersLoadState === "success" && (
+                              <TableRow>
+                                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
+                                  No users found.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Pagination */}
+                      {usersMeta && usersMeta.pageCount > 1 && (
+                        <div className="flex items-center justify-between px-4 py-3 border-t">
+                          <div className="text-sm text-muted-foreground">
+                            Showing {((usersParams.page || 1) - 1) * (usersParams.take || 10) + 1} to{" "}
+                            {Math.min((usersParams.page || 1) * (usersParams.take || 10), usersMeta.itemCount)} of{" "}
+                            {usersMeta.itemCount} results
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => goToPage((usersParams.page || 1) - 1)}
+                              disabled={!usersMeta.hasPreviousPage}
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                              Previous
+                            </Button>
+                            <span className="text-sm">
+                              Page {usersParams.page || 1} of {usersMeta.pageCount}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => goToPage((usersParams.page || 1) + 1)}
+                              disabled={!usersMeta.hasNextPage}
+                            >
+                              Next
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
                 )}
 
@@ -839,6 +1177,37 @@ export function Settings() {
                           setExamConfirmOpen(false);
                           setPendingExamDeleteId(null);
                           setPendingExamDeleteName("");
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={userConfirmOpen} onOpenChange={setUserConfirmOpen}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete user?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove "{pendingDeleteUserName}" from the system.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => {
+                        setUserConfirmOpen(false);
+                        setPendingDeleteUserId(null);
+                        setPendingDeleteUserName("");
+                      }}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={async () => {
+                          if (!pendingDeleteUserId) return;
+                          await removeUser(pendingDeleteUserId);
+                          toast({ title: "User deleted", description: pendingDeleteUserName, variant: "destructive" });
+                          setUserConfirmOpen(false);
+                          setPendingDeleteUserId(null);
+                          setPendingDeleteUserName("");
                         }}
                       >
                         Delete
