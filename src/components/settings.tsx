@@ -1002,8 +1002,9 @@ export function Settings() {
                                   {editingUser === user.id ? (
                                     <Input
                                       value={editUserData.email}
-                                      onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
                                       type="email"
+                                      disabled
+                                      className="bg-muted cursor-not-allowed"
                                     />
                                   ) : (
                                     user.email
@@ -1062,7 +1063,9 @@ export function Settings() {
                                           }
 
                                           try {
-                                            await updateUser(user.id, editUserData);
+                                            // Remove email from update data to prevent changing it
+                                            const { email, ...updateData } = editUserData;
+                                            await updateUser(user.id, updateData);
                                             toast({ title: "User updated", description: `${editUserData.firstName} ${editUserData.lastName} updated successfully.` });
                                             setEditingUser(null);
                                             reloadUsers();
