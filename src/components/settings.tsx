@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SidebarNav } from "./SidebarNav";
-import { Menu, Eye, EyeOff, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { Menu, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users } from "lucide-react";
 
 import { useMobile } from "../hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
@@ -34,7 +34,7 @@ import { useAktPastExams } from "@/hooks/useAktPastExams";
 import { useExams } from "@/hooks/useExam";
 import { useLocation } from "react-router-dom";
 import { useEmailTemplates } from "@/hooks/useEmailTemplates";
-import { signupWithEmail, uploadImage } from "@/api/authApi";
+import { uploadImage } from "@/api/authApi";
 import { useUsers } from "@/hooks/useUsers";
 import { isValidPhoneNumber } from "react-phone-number-input";
 
@@ -94,12 +94,10 @@ export function Settings() {
     firstName: "",
     lastName: "",
     email: "",
-    password: "",
     phone: "",
+    role: "APPLICANT" as "ADMIN" | "APPLICANT" | "GUEST",
   });
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // removed password fields; creation via admin uses direct user create API
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -128,6 +126,7 @@ export function Settings() {
     error: usersError,
     meta: usersMeta,
     params: usersParams,
+    create: createUser,
     update: updateUser,
     remove: removeUser,
     reload: reloadUsers,
@@ -807,6 +806,24 @@ export function Settings() {
                               onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                             />
                           </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Role</label>
+                          <Select
+                            value={newUser.role}
+                            onValueChange={(value: "ADMIN" | "APPLICANT" | "GUEST") =>
+                              setNewUser({ ...newUser, role: value })
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="APPLICANT">Applicant</SelectItem>
+                              <SelectItem value="ADMIN">Admin</SelectItem>
+                              <SelectItem value="GUEST">Guest</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                           <div>
                             <label className="block text-sm font-medium mb-1">Phone</label>
                             <PhoneInput
@@ -833,49 +850,12 @@ export function Settings() {
                               }
                             }}
                           />
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Password</label>
-                            <div className="relative">
-                              <Input
-                                type={showPassword ? "text" : "password"}
-                                value={newUser.password}
-                                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                            <div className="relative">
-                              <Input
-                                type={showConfirmPassword ? "text" : "password"}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              >
-                                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </Button>
-                            </div>
-                          </div>
+                          
                         </div>
                         <div className="flex justify-end mt-4">
                           <Button
                             onClick={async () => {
-                              // Validate phone number
+                          // Validate phone number
                               if (!newUser.phone || !isValidPhoneNumber(newUser.phone)) {
                                 toast({
                                   title: "Invalid phone number",
@@ -884,18 +864,15 @@ export function Settings() {
                                 });
                                 return;
                               }
-
-                              if (newUser.password !== confirmPassword) {
-                                toast({
-                                  title: "Passwords do not match",
-                                  description: "Please ensure both password fields are identical.",
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
                               try {
-                                const response = await signupWithEmail(newUser);
-                                toast({ title: "User created", description: response.message });
+                                const created = await createUser({
+                                  firstName: newUser.firstName,
+                                  lastName: newUser.lastName,
+                                  email: newUser.email,
+                                  phone: newUser.phone,
+                                  role: newUser.role,
+                                });
+                                toast({ title: "User created", description: `${created.firstName} ${created.lastName}` });
 
                                 // Upload image if provided
                                 if (profileImage) {
@@ -903,7 +880,7 @@ export function Settings() {
                                     const fileName = `${newUser.firstName}-${newUser.lastName}-profile`;
                                     await uploadImage({
                                       entityType: "user",
-                                      entityId: response.data.user.id,
+                                      entityId: created.id,
                                       category: "user_profile",
                                       fileName,
                                       file: profileImage,
@@ -922,10 +899,9 @@ export function Settings() {
                                   firstName: "",
                                   lastName: "",
                                   email: "",
-                                  password: "",
                                   phone: "",
+                                  role: "APPLICANT",
                                 });
-                                setConfirmPassword("");
                                 setProfileImage(null);
                                 if (imagePreview) {
                                   URL.revokeObjectURL(imagePreview);
@@ -941,7 +917,7 @@ export function Settings() {
                                 });
                               }
                             }}
-                            disabled={!newUser.firstName || !newUser.lastName || !newUser.email || !newUser.password || !newUser.phone || !confirmPassword}
+                            disabled={!newUser.firstName || !newUser.lastName || !newUser.email || !newUser.phone}
                           >
                             Create User
                           </Button>

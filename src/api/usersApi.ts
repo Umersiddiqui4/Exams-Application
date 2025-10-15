@@ -32,6 +32,21 @@ export type UsersQueryParams = {
 
 const BASE = "/api/v1/users";
 
+export type CreateUserRequest = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  role?: "ADMIN" | "APPLICANT" | "GUEST";
+};
+
+export type CreateUserResponse = {
+  data: User;
+  message: string;
+  statusCode: number;
+  success: boolean;
+};
+
 export async function getUsers(params: UsersQueryParams = {}): Promise<UsersResponse> {
   const searchParams = new URLSearchParams();
   
@@ -50,6 +65,10 @@ export async function getUsers(params: UsersQueryParams = {}): Promise<UsersResp
 
 export async function getUser(id: string): Promise<User> {
   return apiRequest<User>(`${BASE}/${id}`, "GET");
+}
+
+export async function createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
+  return apiRequest<CreateUserResponse>(`${BASE}`, "POST", data);
 }
 
 export async function updateUser(id: string, data: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User> {

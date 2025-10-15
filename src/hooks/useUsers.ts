@@ -4,6 +4,7 @@ import {
   UsersResponse,
   UsersQueryParams,
   getUsers,
+  createUser,
   updateUser,
   deleteUser,
 } from "@/api/usersApi";
@@ -44,11 +45,18 @@ export function useUsers(initialParams: UsersQueryParams = {}) {
     setParams(prev => ({ ...prev, ...newParams }));
   }, []);
 
-  const create = useCallback(async (userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
-    // This would typically call a createUser API, but since we only have signupWithEmail
-    // in authApi, we'll just reload the users list
+  const create = useCallback(async (
+    userData: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      role?: "ADMIN" | "APPLICANT" | "GUEST";
+    }
+  ) => {
+    const res = await createUser(userData);
     await fetchUsers(params);
-    return userData as User;
+    return res.data;
   }, [fetchUsers, params]);
 
   const update = useCallback(async (id: string, changes: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>) => {
