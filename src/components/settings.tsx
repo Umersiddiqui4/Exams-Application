@@ -324,7 +324,7 @@ export function Settings() {
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
-          <div className="container mx-auto px-0 py-0 max-w-5xl">
+          <div className="container mx-auto px-0 py-0 max-w-full">
             <Card className="border-0 shadow-xl">
               <CardHeader>
                 <CardTitle className="text-2xl md:text-3xl">Settings</CardTitle>
