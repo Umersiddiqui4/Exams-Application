@@ -84,6 +84,9 @@ const CountrySelect = ({
   options: countryList,
   onChange,
 }: CountrySelectProps) => {
+  // Default to 'US' if no country is selected
+  const country = selectedCountry || 'US';
+  
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -94,11 +97,11 @@ const CountrySelect = ({
           disabled={disabled}
         >
           <FlagComponent
-            country={selectedCountry}
-            countryName={selectedCountry}
+            country={country}
+            countryName={country}
           />
           <span className="text-sm font-medium">
-            +{RPNInput.getCountryCallingCode(selectedCountry)}
+            +{RPNInput.getCountryCallingCode(country)}
           </span>
           <ChevronsUpDown
             className={cn(

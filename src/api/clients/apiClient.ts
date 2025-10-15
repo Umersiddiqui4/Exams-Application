@@ -55,7 +55,24 @@ export async function apiRequest<T>(
 			redirectToLoginIfUnauthenticated();
 		}
 		const text = await res.text().catch(() => "");
-		throw new Error(`API ${method} ${url} failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
+		let errorMessage = `API ${method} ${url} failed: ${res.status} ${res.statusText}`;
+		
+		// Try to parse JSON error response and extract the message
+		if (text) {
+			try {
+				const errorData = JSON.parse(text);
+				if (errorData.message) {
+					errorMessage = errorData.message;
+				} else {
+					errorMessage = `${errorMessage} - ${text}`;
+				}
+			} catch {
+				// If not JSON, use the text as is
+				errorMessage = `${errorMessage} - ${text}`;
+			}
+		}
+		
+		throw new Error(errorMessage);
 	}
 	// Try to parse JSON; allow empty body
 	const contentType = res.headers.get("content-type") || "";

@@ -36,6 +36,7 @@ import { useLocation } from "react-router-dom";
 import { useEmailTemplates } from "@/hooks/useEmailTemplates";
 import { signupWithEmail, uploadImage } from "@/api/authApi";
 import { useUsers } from "@/hooks/useUsers";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 type CandidateTemplate = {
   type: string;
@@ -771,7 +772,7 @@ export function Settings() {
                         <CardTitle>Create New User</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex justify-center mb-4">
+                        {/* <div className="flex justify-center mb-4">
                           <div
                             className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
                             onClick={() => document.getElementById('profile-image-input')?.click()}
@@ -782,7 +783,7 @@ export function Settings() {
                               <Plus className="h-8 w-8 text-gray-400" />
                             )}
                           </div>
-                        </div>
+                        </div> */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium mb-1">First Name</label>
@@ -874,6 +875,16 @@ export function Settings() {
                         <div className="flex justify-end mt-4">
                           <Button
                             onClick={async () => {
+                              // Validate phone number
+                              if (!newUser.phone || !isValidPhoneNumber(newUser.phone)) {
+                                toast({
+                                  title: "Invalid phone number",
+                                  description: "Please enter a valid phone number with country code.",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+
                               if (newUser.password !== confirmPassword) {
                                 toast({
                                   title: "Passwords do not match",
@@ -1040,6 +1051,16 @@ export function Settings() {
                                       <Button
                                         size="sm"
                                         onClick={async () => {
+                                          // Validate phone number
+                                          if (!editUserData.phone || !isValidPhoneNumber(editUserData.phone)) {
+                                            toast({
+                                              title: "Invalid phone number",
+                                              description: "Please enter a valid phone number with country code.",
+                                              variant: "destructive",
+                                            });
+                                            return;
+                                          }
+
                                           try {
                                             await updateUser(user.id, editUserData);
                                             toast({ title: "User updated", description: `${editUserData.firstName} ${editUserData.lastName} updated successfully.` });
