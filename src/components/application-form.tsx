@@ -69,7 +69,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 export function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileErrors, setFileErrors] = useState<{ [key: string]: string }>({});
-  const [passportPreview, setPassportPreview] = useState<string | null>("https://cdn.mos.cms.futurecdn.net/v2/t:0,l:420,cw:1080,ch:1080,q:80,w:1080/Hpq4NZjKWjHRRyH9bt3Z2e.jpg");
+  const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [medicalLicensePreview, setMedicalLicensePreview] = useState<any>(null);
