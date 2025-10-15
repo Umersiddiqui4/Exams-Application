@@ -277,9 +277,16 @@ npm run test:restrictions
 
 ## 📚 Documentation
 
-### Additional Documentation
-- [Chrome Version Maintenance Guide](./CHROME_VERSION_MAINTENANCE.md)
-- [Toast Notification Demo Guide](./TOAST_DEMO.md)
+### Quick Start Guides
+- **[START_HERE.md](./START_HERE.md)** - Main navigation guide for all documentation
+- **[docs/](./docs/)** - Complete documentation library
+
+### Key Documentation
+- [Getting Started](./docs/REVIEW_SUMMARY.md) - 5-minute project overview
+- [Quick Fixes](./docs/QUICK_FIXES.md) - Immediate action items
+- [Improvement Roadmap](./docs/IMPROVEMENT_ROADMAP.md) - Long-term development plan
+- [Chrome Version Guide](./docs/CHROME_VERSION_MAINTENANCE.md) - Browser version maintenance
+- [Feature Guides](./docs/README.md) - Complete documentation index
 
 ### API Documentation
 - Authentication endpoints
