@@ -198,15 +198,13 @@ export default function ApplicationTable() {
       // Show rejection confirmation dialog with mandatory reason
       const result = await Swal.fire({
         title: "Are you sure you want to reject?",
-        imageUrl: "/icon.png", // Replace with your actual logo path
+        imageUrl: "/icon.png", 
         imageWidth: 150,
         imageHeight: 150,
         input: "textarea",
-        inputPlaceholder: "Enter reason for rejection (required)...",
-        inputValidator: (value) => {
-          if (!value) {
-            return "You need to provide a reason for rejection!"
-          }
+        inputPlaceholder: "Enter reason for rejection.",
+        inputAttributes: {
+          "aria-label": "Admin notes",
         },
         showCancelButton: true,
         confirmButtonText: "Yes, reject",
@@ -221,9 +219,9 @@ export default function ApplicationTable() {
         },
       })
 
-      if (result.isConfirmed && result.value) {
+      if (result.isConfirmed ) {
         // Call the review API with REJECTED status and reason as adminNotes
-        await review(id, "REJECTED", result.value)
+        await review(id, "REJECTED", result.value || undefined)
       }
     }
   }
