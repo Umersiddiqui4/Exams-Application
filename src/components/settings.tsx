@@ -998,21 +998,11 @@ export function Settings() {
                                 </TableCell>
                                 <TableCell>
                                   {editingUser === user.id ? (
-                                    <Select
-                                      value={editUserData.role}
-                                      onValueChange={(value: "ADMIN" | "APPLICANT" | "GUEST") => 
-                                        setEditUserData({ ...editUserData, role: value })
-                                      }
-                                    >
-                                      <SelectTrigger className="w-32">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="APPLICANT">Applicant</SelectItem>
-                                        <SelectItem value="ADMIN">Admin</SelectItem>
-                                        <SelectItem value="GUEST">Guest</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant={editUserData.role === "ADMIN" ? "destructive" : editUserData.role === "APPLICANT" ? "default" : "secondary"}>
+                                        {editUserData.role}
+                                      </Badge>
+                                    </div>
                                   ) : (
                                     <Badge variant={user.role === "ADMIN" ? "destructive" : user.role === "APPLICANT" ? "default" : "secondary"}>
                                       {user.role}
