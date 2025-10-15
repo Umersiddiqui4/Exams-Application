@@ -1,6 +1,6 @@
 import { LayoutDashboard, FileText, Settings, UserSquare, X, ChevronDown } from "lucide-react"
 import { Button } from "./ui/button"
-import { useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useMobile } from "../hooks/use-mobile"
 import { useState } from "react"
 
@@ -25,12 +25,14 @@ export function SidebarNav({ sidebarOpen, onClose }: SidebarNavProps) {
   return (
     <div className={`${isMobile ? "fixed top-0 left-0 z-50 w-64 h-full" : "w-64"} bg-[#5c347d] text-white shadow-lg transition-all duration-300 dark:bg-[#3b1f52]`}>
       <div className="p-4 flex items-center justify-between">
+        <Link to="/">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
             <img src="/icon.png" alt="404" />
           </div>
           <span className="font-bold text-lg">MRCGP INT. </span>
         </div>
+        </Link>
         {isMobile && (
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
