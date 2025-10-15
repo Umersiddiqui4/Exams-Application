@@ -4,7 +4,6 @@ import {
   UsersResponse,
   UsersQueryParams,
   getUsers,
-  getUser,
   updateUser,
   deleteUser,
 } from "@/api/usersApi";
