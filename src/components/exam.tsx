@@ -10,16 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { FileText, Edit, Calendar, MapPin, Users, Clock } from "lucide-react"
+import { FileText, Edit, Calendar, MapPin, Users, Clock, BookOpen } from "lucide-react"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { cn } from "@/lib/utils"
 import { useToast } from "./ui/use-toast"
-import { createExamOccurrence } from "@/lib/examOccurrencesApi"
-import { useExamOccurrences } from "@/lib/useExamOccurrences"
+import { createExamOccurrence } from "@/api/examOccurrencesApi"
+import { useExamOccurrences } from "@/hooks/useExamOccurrences"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GraduationCap } from "lucide-react"
 import CreatableSelect from "react-select/creatable"
-import { useExams } from "@/lib/useExam"
+import { useExams } from "@/hooks/useExam"
 interface DateRange {
   from: Date | undefined
   to?: Date | undefined
@@ -37,7 +37,7 @@ const aktsLocationOptions = [
   { value: "Kathmandu", label: "Kathmandu" },
 ]
 
-// Zod schema for form validation
+// Unified Zod schema for both OSCE and AKT exams
 const formSchema = z.object({
   name: z.string().min(1, "Required"),
   location: z.string().min(1, "Required"),
@@ -47,21 +47,24 @@ const formSchema = z.object({
   }),
   applicationsLimit: z.string().min(1, "Required"),
   waitingLimit: z.string().min(1, "Required"),
+  // OSCE fields - optional for AKT
   slot1DateRange: z.object({
-    from: z.string().min(1, "Required"),
-    to: z.string().min(1, "Required"),
-  }),
+    from: z.string().optional(),
+    to: z.string().optional(),
+  }).optional(),
   slot2DateRange: z.object({
     from: z.string().optional(),
     to: z.string().optional(),
-  }),
+  }).optional(),
   slot3DateRange: z.object({
     from: z.string().optional(),
     to: z.string().optional(),
-  }),
+  }).optional(),
+  // AKT field - optional for OSCE
+  examDate: z.string().optional(),
 })
 
-type FormValues = z.infer<typeof formSchema>
+// type FormValues = z.infer<typeof formSchema>
 
 function DateRangePickerWithRange({
   className,
@@ -123,7 +126,7 @@ function DateRangePickerWithRange({
   return (
     <div className={cn("grid gap-2", className)}>
       <div className={isError ? "border border-red-500 rounded-md" : ""}>
-        <DatePickerWithRange date={date} setDate={handleDateChange} />
+        <DatePickerWithRange date={date} setDate={handleDateChange}  />
       </div>
       {disabled && (
         <p className="text-xs text-muted-foreground">This slot will auto-start after the previous slot ends</p>
@@ -132,7 +135,7 @@ function DateRangePickerWithRange({
   )
 }
 
-const defaultFormState = {
+const defaultOsceFormState = {
   name: "",
   location: "",
   applicationsDateRange: { from: "", to: "" },
@@ -141,39 +144,62 @@ const defaultFormState = {
   slot1DateRange: { from: "", to: "" },
   slot2DateRange: { from: "", to: "" },
   slot3DateRange: { from: "", to: "" },
+  examDate: "", // Include for unified schema
 }
 
-export function Exam() {
-  const [editMode, setEditMode] = useState(false)
-  const [editId, setEditId] = useState<string | null>(null)
-  const { toast } = useToast()
-  const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence, toggleActive } = useExamOccurrences()
-  const [selectedLocations, setSelectedLocations] = useState<any[]>([])
-  const [examType, setExamType] = useState<"OSCE" | "AKTs">("OSCE")
-  const [currentExam, setCurrentExam] = useState<any>(null)
-  const { items: exams } = useExams();
+const defaultAktFormState = {
+  name: "",
+  location: aktsLocationOptions.map(loc => loc.value).join(', '), // Set default locations
+  applicationsDateRange: { from: "", to: "" },
+  applicationsLimit: "",
+  waitingLimit: "",
+  examDate: "",
+  slot1DateRange: { from: "", to: "" }, // Include for unified schema
+  slot2DateRange: { from: "", to: "" }, // Include for unified schema
+  slot3DateRange: { from: "", to: "" }, // Include for unified schema
+}
 
-  const handleLocationChange = (selectedOptions: any) => {
-    setSelectedLocations(selectedOptions || [])
-    const locationString = selectedOptions ? selectedOptions.map((option: any) => option.value).join(', ') : ''
-    form.setValue("location", locationString)
-  }
+const defaultFormState = defaultOsceFormState
+
+export function Exam() {
+   const [editMode, setEditMode] = useState(false)
+   const [editId, setEditId] = useState<string | null>(null)
+   const { toast } = useToast()
+   const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence, toggleActive } = useExamOccurrences()
+ const [selectedLocations, setSelectedLocations] = useState<any[]>([])
+ const [examType, setExamType] = useState<"OSCE" | "AKTs">("OSCE")
+ const [currentExam, setCurrentExam] = useState<any>(null)
+  const { items: exams  } = useExams();
+
+ const handleLocationChange = (selectedOptions: any) => {
+   setSelectedLocations(selectedOptions || [])
+   const locationString = selectedOptions ? selectedOptions.map((option: any) => option.value).join(', ') : ''
+   form.setValue("location", locationString)
+ }
 
   const handleExamTypeChange = (newExamType: "OSCE" | "AKTs") => {
     setExamType(newExamType)
     const examName = newExamType === "OSCE" ? "OSCE" : "AKT"
     const exam = exams.find((e: any) => e.name === examName)
     setCurrentExam(exam || null)
+    
+    // Reset form with appropriate defaults based on exam type
     if (newExamType === "OSCE") {
-      form.setValue("location", "")
+      form.reset(defaultOsceFormState as any)
       setSelectedLocations([])
     } else {
-      form.setValue("location", "")
-      setSelectedLocations([])
+      // For AKT, set default locations
+      form.reset(defaultAktFormState as any)
+      const defaultLocations = aktsLocationOptions.map(loc => ({
+        value: loc.value,
+        label: loc.label
+      }))
+      setSelectedLocations(defaultLocations)
+      form.setValue("location", aktsLocationOptions.map(loc => loc.value).join(', '))
     }
   }
   // Initialize form with React Hook Form
-  const form = useForm<FormValues>({
+  const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormState,
     mode: "onSubmit",
@@ -190,6 +216,18 @@ export function Exam() {
       setCurrentExam(exam || null)
     }
   }, [exams, examType])
+
+  // Initialize default locations for AKT exams
+  useEffect(() => {
+    if (examType === "AKTs" && selectedLocations.length === 0) {
+      const defaultLocations = aktsLocationOptions.map(loc => ({
+        value: loc.value,
+        label: loc.label
+      }))
+      setSelectedLocations(defaultLocations)
+      form.setValue("location", aktsLocationOptions.map(loc => loc.value).join(', '))
+    }
+  }, [examType, selectedLocations.length, form])
 
   // Watch slot dates to calculate minimum dates for subsequent slots
   const slot1DateRange = form.watch("slot1DateRange")
@@ -260,37 +298,52 @@ export function Exam() {
     }
   }
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: any) => {
     if (editMode && editId !== null) {
       try {
-        const examSlots = [
-          {
-            slotNumber: 1,
-            startDate: `${data.slot1DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot1DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Morning Session"
+        let examSlots;
+        
+        // Handle AKT single date vs OSCE multiple slots
+        if (examType === "AKTs") {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.examDate}T09:00:00Z`,
+              endDate: `${data.examDate}T17:00:00Z`,
+              isActive: true,
+              description: "AKT Exam"
+            }
+          ];
+        } else {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.slot1DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot1DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Morning Session"
+            }
+          ];
+
+          if (data.slot2DateRange?.from && data.slot2DateRange?.to) {
+            examSlots.push({
+              slotNumber: 2,
+              startDate: `${data.slot2DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot2DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Afternoon Session"
+            });
           }
-        ];
 
-        if (data.slot2DateRange.from && data.slot2DateRange.to) {
-          examSlots.push({
-            slotNumber: 2,
-            startDate: `${data.slot2DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot2DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Afternoon Session"
-          });
-        }
-
-        if (data.slot3DateRange.from && data.slot3DateRange.to) {
-          examSlots.push({
-            slotNumber: 3,
-            startDate: `${data.slot3DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot3DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Evening Session"
-          });
+          if (data.slot3DateRange?.from && data.slot3DateRange?.to) {
+            examSlots.push({
+              slotNumber: 3,
+              startDate: `${data.slot3DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot3DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Evening Session"
+            });
+          }
         }
 
         await updateOccurrence(editId, {
@@ -312,40 +365,58 @@ export function Exam() {
     } else {
       try {
         const regEnd = `${data.applicationsDateRange.to}T23:59:59Z`
-        const examStart = `${data.slot1DateRange.from}T09:00:00Z`
+        const examStart = examType === "AKTs" 
+          ? `${data.examDate}T09:00:00Z`
+          : `${data.slot1DateRange.from}T09:00:00Z`
+          
         if (new Date(regEnd) >= new Date(examStart)) {
           toast({ title: "Invalid dates", description: "Exam date must be after applications end date", variant: "destructive" })
           return
         }
 
-        const examSlots = [
-          {
-            slotNumber: 1,
-            startDate: `${data.slot1DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot1DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Morning Session"
+        let examSlots;
+        
+        // Handle AKT single date vs OSCE multiple slots
+        if (examType === "AKTs") {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.examDate}T09:00:00Z`,
+              endDate: `${data.examDate}T17:00:00Z`,
+              isActive: true,
+              description: "AKT Exam"
+            }
+          ];
+        } else {
+          examSlots = [
+            {
+              slotNumber: 1,
+              startDate: `${data.slot1DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot1DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Morning Session"
+            }
+          ];
+
+          if (data.slot2DateRange?.from && data.slot2DateRange?.to) {
+            examSlots.push({
+              slotNumber: 2,
+              startDate: `${data.slot2DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot2DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Afternoon Session"
+            });
           }
-        ];
 
-        if (data.slot2DateRange.from && data.slot2DateRange.to) {
-          examSlots.push({
-            slotNumber: 2,
-            startDate: `${data.slot2DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot2DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Afternoon Session"
-          });
-        }
-
-        if (data.slot3DateRange.from && data.slot3DateRange.to) {
-          examSlots.push({
-            slotNumber: 3,
-            startDate: `${data.slot3DateRange.from}T09:00:00Z`,
-            endDate: `${data.slot3DateRange.to}T17:00:00Z`,
-            isActive: true,
-            description: "Evening Session"
-          });
+          if (data.slot3DateRange?.from && data.slot3DateRange?.to) {
+            examSlots.push({
+              slotNumber: 3,
+              startDate: `${data.slot3DateRange.from}T09:00:00Z`,
+              endDate: `${data.slot3DateRange.to}T17:00:00Z`,
+              isActive: true,
+              description: "Evening Session"
+            });
+          }
         }
 
         await createExamOccurrence({
@@ -368,7 +439,7 @@ export function Exam() {
       }
     }
 
-    form.reset(defaultFormState)
+    form.reset(examType === "AKTs" ? defaultAktFormState as any : defaultOsceFormState as any)
   }
 
   const toggleBlock = async (id: string, current: boolean) => {
@@ -381,10 +452,14 @@ export function Exam() {
   }
 
   const handleEdit = (exam: any) => {
+    // Set exam type based on exam type
+    const isAKT = exam.type === "AKT"
+    setExamType(isAKT ? "AKTs" : "OSCE")
+    
     // Handle location based on exam type
-    let locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
+    const locationValue = Array.isArray(exam.location) ? exam.location.join(', ') : exam.location
     let selectedLocs: any[] = []
-    if (exam.type === "AKT" && Array.isArray(exam.location)) {
+    if (isAKT && Array.isArray(exam.location)) {
       selectedLocs = exam.location.map((loc: string) => ({ value: loc, label: loc }))
     } else {
       selectedLocs = []
@@ -393,32 +468,49 @@ export function Exam() {
     // Parse exam slots
     const slots = exam.examSlots || []
     const slot1 = slots.find((s: any) => s.slotNumber === 1)
-    const slot2 = slots.find((s: any) => s.slotNumber === 2)
-    const slot3 = slots.find((s: any) => s.slotNumber === 3)
 
-    // Set form data with parsed dates
-    form.reset({
-      name: exam.title,
-      location: locationValue,
-      applicationsDateRange: {
-        from: exam.registrationStartDate?.substring(0, 10),
-        to: exam.registrationEndDate?.substring(0, 10),
-      },
-      applicationsLimit: String(exam.applicationLimit ?? ""),
-      waitingLimit: String(exam.waitingListLimit ?? ""),
-      slot1DateRange: {
-        from: slot1?.startDate?.substring(0, 10) || "",
-        to: slot1?.endDate?.substring(0, 10) || "",
-      },
-      slot2DateRange: {
-        from: slot2?.startDate?.substring(0, 10) || "",
-        to: slot2?.endDate?.substring(0, 10) || "",
-      },
-      slot3DateRange: {
-        from: slot3?.startDate?.substring(0, 10) || "",
-        to: slot3?.endDate?.substring(0, 10) || "",
-      },
-    })
+    // Set form data based on exam type
+    if (isAKT) {
+      // For AKT, use single exam date
+      form.reset({
+        name: exam.title,
+        location: locationValue,
+        applicationsDateRange: {
+          from: exam.registrationStartDate?.substring(0, 10),
+          to: exam.registrationEndDate?.substring(0, 10),
+        },
+        applicationsLimit: String(exam.applicationLimit ?? ""),
+        waitingLimit: String(exam.waitingListLimit ?? ""),
+        examDate: slot1?.startDate?.substring(0, 10) || "",
+      } as any)
+    } else {
+      // For OSCE, use multiple slots
+      const slot2 = slots.find((s: any) => s.slotNumber === 2)
+      const slot3 = slots.find((s: any) => s.slotNumber === 3)
+      
+      form.reset({
+        name: exam.title,
+        location: locationValue,
+        applicationsDateRange: {
+          from: exam.registrationStartDate?.substring(0, 10),
+          to: exam.registrationEndDate?.substring(0, 10),
+        },
+        applicationsLimit: String(exam.applicationLimit ?? ""),
+        waitingLimit: String(exam.waitingListLimit ?? ""),
+        slot1DateRange: {
+          from: slot1?.startDate?.substring(0, 10) || "",
+          to: slot1?.endDate?.substring(0, 10) || "",
+        },
+        slot2DateRange: {
+          from: slot2?.startDate?.substring(0, 10) || "",
+          to: slot2?.endDate?.substring(0, 10) || "",
+        },
+        slot3DateRange: {
+          from: slot3?.startDate?.substring(0, 10) || "",
+          to: slot3?.endDate?.substring(0, 10) || "",
+        },
+      } as any)
+    }
 
     setSelectedLocations(selectedLocs)
     setEditMode(true)
@@ -429,12 +521,12 @@ export function Exam() {
   }
 
   const cancelEdit = () => {
-    form.reset(defaultFormState)
+    form.reset(examType === "AKTs" ? defaultAktFormState as any : defaultOsceFormState as any)
     setEditMode(false)
     setEditId(null)
   }
 
-  const selectStyles = {
+const selectStyles = {
     control: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: "hsl(var(--background))",
@@ -514,346 +606,315 @@ export function Exam() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-          <Tabs
-            value={examType}
-            onValueChange={(value) => handleExamTypeChange(value as "OSCE" | "AKTs")}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-1 mb-6 bg-slate-100 dark:bg-slate-800">
-              <TabsTrigger
-                value="OSCE"
-                className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
-              >
-                <GraduationCap className="h-4 w-4" />
-                <span>OSCE Exam</span>
-              </TabsTrigger>
-              {/* <TabsTrigger
+           <Tabs
+                      value={examType}
+                      onValueChange={(value) => handleExamTypeChange(value as "OSCE" | "AKTs")}
+                      className="w-full"
+                    >
+                      <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100 dark:bg-slate-800">
+                        <TabsTrigger
+                          value="OSCE"
+                          className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
+                        >
+                          <GraduationCap className="h-4 w-4" />
+                          <span>OSCE Exam</span>
+                        </TabsTrigger>
+                        <TabsTrigger
                           value="AKTs"
                           className="flex items-center space-x-2 data-[state=active]:bg-[#5c347d] data-[state=active]:text-white"
                         >
                           <BookOpen className="h-4 w-4" />
                           <span>AKTs Exam</span>
-                        </TabsTrigger> */}
-            </TabsList>
-            <TabsContent value="OSCE">
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="examName" className="dark:text-slate-200 flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      Exam Name <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <Input
-                      id="examName"
-                      {...form.register("name")}
-                      placeholder="Exam Name"
-                      autoComplete="off"
-                      data-form-type="other"
-                      className={cn(
-                        "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
-                        errors.name && "border-red-500 focus:ring-red-500",
-                      )}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="examLocation" className="dark:text-slate-200 flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      Exam Location <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <Input
-                      id="examLocation"
-                      {...form.register("location")}
-                      placeholder="Exam Location"
-                      autoComplete="off"
-                      data-form-type="other"
-                      className={cn(
-                        "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
-                        errors.location && "border-red-500 focus:ring-red-500",
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="applicationsDateRange" className="dark:text-slate-200 flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      Applications Receiving Dates <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <DateRangePickerWithRange
-                      value={form.watch("applicationsDateRange")}
-                      onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
-                      isError={!!errors.applicationsDateRange?.from || !!errors.applicationsDateRange?.to}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="applicationsLimit" className="dark:text-slate-200 flex items-center">
-                        <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Applications Limit <span className="text-red-500 ml-1">*</span>
-                      </Label>
-                      <Input
-                        id="applicationsLimit"
-                        type="number"
-                        {...form.register("applicationsLimit")}
-                        placeholder="Limit"
-                        autoComplete="off"
-                        data-form-type="other"
-                        className={cn(
-                          "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
-                          errors.applicationsLimit && "border-red-500 focus:ring-red-500",
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="waitingLimit" className="dark:text-slate-200 flex items-center">
-                        <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Waiting Limit <span className="text-red-500 ml-1">*</span>
-                      </Label>
-                      <Input
-                        id="waitingLimit"
-                        type="number"
-                        {...form.register("waitingLimit")}
-                        placeholder="Waiting Limit"
-                        autoComplete="off"
-                        data-form-type="other"
-                        className={cn(
-                          "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
-                          errors.waitingLimit && "border-red-500 focus:ring-red-500",
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-200 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Exam Slot One <span className="text-red-500 ml-1">*</span>
-                      </Label>
-                      <DateRangePickerWithRange
-                        value={form.watch("slot1DateRange")}
-                        onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
-                        isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
-                        minDate={getSlot1MinDate()}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-200 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Exam Slot Two (optional)
-                      </Label>
-                      <DateRangePickerWithRange
-                        value={{
-                          from: form.watch("slot2DateRange")?.from || "",
-                          to: form.watch("slot2DateRange")?.to || "",
-                        }}
-                        onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
-                        minDate={getSlot2MinDate()}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-200 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Exam Slot Three (optional)
-                      </Label>
-                      <DateRangePickerWithRange
-                        value={{
-                          from: form.watch("slot3DateRange")?.from || "",
-                          to: form.watch("slot3DateRange")?.to || "",
-                        }}
-                        onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
-                        minDate={getSlot3MinDate()}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button
-                    type="submit"
-                    className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
-                  >
-                    {editMode ? "Update Exam" : "Submit"}
-                  </Button>
-                  {editMode && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={cancelEdit}
-                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    >
-                      Cancel
-                    </Button>
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="OSCE">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="examName" className="dark:text-slate-200 flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                  Exam Name <span className="text-red-500 ml-1">*</span>
+                </Label>
+                <Input
+                  id="examName"
+                  {...form.register("name")}
+                  placeholder="Exam Name"
+                  className={cn(
+                    "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
+                    errors.name && "border-red-500 focus:ring-red-500",
                   )}
-                </div>
-              </form>
-            </TabsContent>
-            <TabsContent value="AKTs">
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="examName" className="dark:text-slate-200 flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      Exam Name <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <Input
-                      id="examName"
-                      {...form.register("name")}
-                      placeholder="AKTs Exam Name"
-                      autoComplete="nope"
-                      data-form-type="other"
-                      className={cn(
-                        "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
-                        errors.name && "border-red-500 focus:ring-red-500",
-                      )}
-                    />
-                  </div>
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="examLocations" className="dark:text-slate-200 flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      Exam Locations <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <CreatableSelect
-                      isMulti
-                      value={selectedLocations}
-                      onChange={handleLocationChange}
-                      options={aktsLocationOptions}
-                      placeholder="Select or create locations..."
-                      styles={selectStyles}
-                      className="react-select-container"
-                      classNamePrefix="react-select"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="applicationsDateRange" className="dark:text-slate-200 flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      Applications Receiving Dates <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <DateRangePickerWithRange
-                      value={form.watch("applicationsDateRange")}
-                      onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
-                      isError={!!errors.applicationsDateRange?.from || !!errors.applicationsDateRange?.to}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="applicationsLimit" className="dark:text-slate-200 flex items-center">
-                        <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Applications Limit <span className="text-red-500 ml-1">*</span>
-                      </Label>
-                      <Input
-                        id="applicationsLimit"
-                        type="number"
-                        {...form.register("applicationsLimit")}
-                        placeholder="Limit"
-                        autoComplete="nope"
-                        data-form-type="other"
-                        className={cn(
-                          "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
-                          errors.applicationsLimit && "border-red-500 focus:ring-red-500",
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="waitingLimit" className="dark:text-slate-200 flex items-center">
-                        <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Waiting Limit <span className="text-red-500 ml-1">*</span>
-                      </Label>
-                      <Input
-                        id="waitingLimit"
-                        type="number"
-                        {...form.register("waitingLimit")}
-                        placeholder="Waiting Limit"
-                        autoComplete="nope"
-                        data-form-type="other"
-                        className={cn(
-                          "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
-                          errors.waitingLimit && "border-red-500 focus:ring-red-500",
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-200 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Exam Slot One <span className="text-red-500 ml-1">*</span>
-                      </Label>
-                      <DateRangePickerWithRange
-                        value={form.watch("slot1DateRange")}
-                        onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
-                        isError={!!errors.slot1DateRange?.from || !!errors.slot1DateRange?.to}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-200 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Exam Slot Two (optional)
-                      </Label>
-                      <DateRangePickerWithRange
-                        value={{
-                          from: form.watch("slot2DateRange")?.from || "",
-                          to: form.watch("slot2DateRange")?.to || "",
-                        }}
-                        onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
-                        minDate={getSlot2MinDate()}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-200 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                        Exam Slot Three (optional)
-                      </Label>
-                      <DateRangePickerWithRange
-                        value={{
-                          from: form.watch("slot3DateRange")?.from || "",
-                          to: form.watch("slot3DateRange")?.to || "",
-                        }}
-                        onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
-                        minDate={getSlot3MinDate()}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button
-                    type="submit"
-                    className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
-                  >
-                    {editMode ? "Update Exam" : "Submit"}
-                  </Button>
-                  {editMode && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={cancelEdit}
-                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    >
-                      Cancel
-                    </Button>
+              <div className="space-y-2">
+                <Label htmlFor="examLocation" className="dark:text-slate-200 flex items-center">
+                  <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                  Exam Location <span className="text-red-500 ml-1">*</span>
+                </Label>
+                <Input
+                  id="examLocation"
+                  {...form.register("location")}
+                  placeholder="Exam Location"
+                  className={cn(
+                    "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
+                    errors.location && "border-red-500 focus:ring-red-500",
                   )}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="applicationsDateRange" className="dark:text-slate-200 flex items-center">
+                  <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                  Applications Receiving Dates <span className="text-red-500 ml-1">*</span>
+                </Label>
+                <DateRangePickerWithRange
+                  value={form.watch("applicationsDateRange")}
+                  onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
+                  isError={!!(errors as any).applicationsDateRange?.from || !!(errors as any).applicationsDateRange?.to}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="applicationsLimit" className="dark:text-slate-200 flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Applications Limit <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <Input
+                    id="applicationsLimit"
+                    type="number"
+                    {...form.register("applicationsLimit")}
+                    placeholder="Limit"
+                    className={cn(
+                      "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
+                      errors.applicationsLimit && "border-red-500 focus:ring-red-500",
+                    )}
+                  />
                 </div>
-              </form>
-            </TabsContent>
-          </Tabs>
+                <div className="space-y-2">
+                  <Label htmlFor="waitingLimit" className="dark:text-slate-200 flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Waiting Limit <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <Input
+                    id="waitingLimit"
+                    type="number"
+                    {...form.register("waitingLimit")}
+                    placeholder="Waiting Limit"
+                    className={cn(
+                      "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500",
+                      errors.waitingLimit && "border-red-500 focus:ring-red-500",
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="dark:text-slate-200 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Exam Slot One <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <DateRangePickerWithRange
+                    value={form.watch("slot1DateRange")}
+                    onChange={(value) => handleDateRangeChange("slot1DateRange", value)}
+                    isError={!!(errors as any).slot1DateRange?.from || !!(errors as any).slot1DateRange?.to}
+                    minDate={getSlot1MinDate()}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="dark:text-slate-200 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Exam Slot Two (optional)
+                  </Label>
+                  <DateRangePickerWithRange
+                    value={{
+                      from: form.watch("slot2DateRange")?.from || "",
+                      to: form.watch("slot2DateRange")?.to || "",
+                    }}
+                    onChange={(value) => handleDateRangeChange("slot2DateRange", value)}
+                    minDate={getSlot2MinDate()}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="dark:text-slate-200 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                    Exam Slot Three (optional)
+                  </Label>
+                  <DateRangePickerWithRange
+                    value={{
+                      from: form.watch("slot3DateRange")?.from || "",
+                      to: form.watch("slot3DateRange")?.to || "",
+                    }}
+                    onChange={(value) => handleDateRangeChange("slot3DateRange", value)}
+                    minDate={getSlot3MinDate()}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-2">
+              <Button
+                type="submit"
+                className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
+              >
+                {editMode ? "Update Exam" : "Submit"}
+              </Button>
+              {editMode && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={cancelEdit}
+                  className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </form>
+           </TabsContent>
+           <TabsContent value="AKTs">
+                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="space-y-2">
+                               <Label htmlFor="examName" className="dark:text-slate-200 flex items-center">
+                                 <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                 Exam Name <span className="text-red-500 ml-1">*</span>
+                               </Label>
+                               <Input
+                                 id="examName"
+                                 {...form.register("name")}
+                                 placeholder="AKTs Exam Name"
+                                 className={cn(
+                                   "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                   errors.name && "border-red-500 focus:ring-red-500",
+                                 )}
+                               />
+                             </div>
+           
+                             <div className="space-y-2">
+                               <Label htmlFor="examLocations" className="dark:text-slate-200 flex items-center">
+                                 <MapPin className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                 Exam Locations <span className="text-red-500 ml-1">*</span>
+                               </Label>
+                               <CreatableSelect
+                                 isMulti
+                                 value={selectedLocations}
+                                 onChange={handleLocationChange}
+                                 options={aktsLocationOptions}
+                                 placeholder="Select or create locations..."
+                                 styles={selectStyles}
+                                 className="react-select-container"
+                                 classNamePrefix="react-select"
+                               />
+                             </div>
+                           </div>
+           
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="space-y-2">
+                               <Label htmlFor="applicationsDateRange" className="dark:text-slate-200 flex items-center">
+                                 <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                 Applications Receiving Dates <span className="text-red-500 ml-1">*</span>
+                               </Label>
+                               <DateRangePickerWithRange
+                                 value={form.watch("applicationsDateRange")}
+                                 onChange={(value) => handleDateRangeChange("applicationsDateRange", value)}
+                                 isError={!!(errors as any).applicationsDateRange?.from || !!(errors as any).applicationsDateRange?.to}
+                               />
+                             </div>
+           
+                             <div className="grid grid-cols-2 gap-4">
+                               <div className="space-y-2">
+                                 <Label htmlFor="applicationsLimit" className="dark:text-slate-200 flex items-center">
+                                   <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Applications Limit <span className="text-red-500 ml-1">*</span>
+                                 </Label>
+                                 <Input
+                                   id="applicationsLimit"
+                                   type="number"
+                                   {...form.register("applicationsLimit")}
+                                   placeholder="Limit"
+                                   className={cn(
+                                     "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                     errors.applicationsLimit && "border-red-500 focus:ring-red-500",
+                                   )}
+                                 />
+                               </div>
+                               <div className="space-y-2">
+                                 <Label htmlFor="waitingLimit" className="dark:text-slate-200 flex items-center">
+                                   <Users className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                   Waiting Limit <span className="text-red-500 ml-1">*</span>
+                                 </Label>
+                                 <Input
+                                   id="waitingLimit"
+                                   type="number"
+                                   {...form.register("waitingLimit")}
+                                   placeholder="Waiting Limit"
+                                   className={cn(
+                                     "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                     errors.waitingLimit && "border-red-500 focus:ring-red-500",
+                                   )}
+                                 />
+                               </div>
+                             </div>
+                           </div>
+           
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="examDate" className="dark:text-slate-200 flex items-center">
+                                <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
+                                Exam Date (Single Day) <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input
+                                id="examDate"
+                                type="date"
+                                {...form.register("examDate")}
+                                min={
+                                  form.watch("applicationsDateRange")?.to 
+                                    ? format(addDays(parseISO(form.watch("applicationsDateRange").to), 1), "yyyy-MM-dd")
+                                    : undefined
+                                }
+                                className={cn(
+                                  "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
+                                  (errors as any).examDate && "border-red-500 focus:ring-red-500",
+                                )}
+                              />
+                              {(errors as any).examDate && (
+                                <p className="text-sm text-red-500">{(errors as any).examDate.message}</p>
+                              )}
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                AKT is a single-day examination. Select the date when the exam will be held.
+                              </p>
+                            </div>
+                          </div>
+           
+                           <div className="flex space-x-2">
+                             <Button
+                               type="submit"
+                               className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
+                             >
+                               {editMode ? "Update Exam" : "Submit"}
+                             </Button>
+                             {editMode && (
+                               <Button
+                                 type="button"
+                                 variant="outline"
+                                 onClick={cancelEdit}
+                                 className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                               >
+                                 Cancel
+                               </Button>
+                             )}
+                           </div>
+                         </form>
+                       </TabsContent>
+                     </Tabs>
         </CardContent>
       </Card>
 
@@ -902,7 +963,7 @@ export function Exam() {
 
                     <div className="flex items-center text-sm">
                       <Clock className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
-                      <span className="dark:text-slate-300">{exam.registrationStartDate?.substring(0, 10)} - {exam.registrationEndDate?.substring(0, 10)}</span>
+                      <span className="dark:text-slate-300">{exam.registrationStartDate?.substring(0,10)} - {exam.registrationEndDate?.substring(0,10)}</span>
                     </div>
 
                     <div className="flex items-center text-sm">
@@ -917,7 +978,7 @@ export function Exam() {
                     <div className="text-xs bg-slate-100 dark:bg-slate-700 p-1.5 rounded dark:text-slate-300 space-y-1">
                       {exam.examSlots?.map((slot: any) => (
                         <div key={slot.slotNumber}>
-                          Slot {slot.slotNumber}: {slot.startDate?.substring(0, 10)}
+                          Slot {slot.slotNumber}: {slot.startDate?.substring(0,10)}
                         </div>
                       )) || <div>No slots</div>}
                     </div>
@@ -930,8 +991,8 @@ export function Exam() {
                       rel="noopener noreferrer"
                       className="text-sm underline text-indigo-700 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                      Form Link
-                    </a>
+                        Form Link
+                      </a>
 
                     <Button
                       variant="outline"

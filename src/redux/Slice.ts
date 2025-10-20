@@ -5,7 +5,7 @@ interface AuthState {
   user: null | { name: string; email: string }
   loading: boolean
   error: string | null
-  errorType: 'invalid_username' | 'invalid_password' | 'general' | null
+  errorType: 'invalid_username' | 'invalid_password' | 'email_exists' | 'validation_error' | 'general' | null
 }
 
 const initialState: AuthState = {
@@ -39,6 +39,25 @@ const authSlice = createSlice({
       state.error = action.payload.message
       state.errorType = action.payload.type
     },
+    signupRequest(state) {
+      state.loading = true
+      state.error = null
+      state.errorType = null
+    },
+    signupSuccess(state, action) {
+      state.isAuthenticated = true
+      state.user = action.payload
+      state.loading = false
+      state.error = null
+      state.errorType = null
+    },
+    signupFailure(state, action) {
+      state.isAuthenticated = false
+      state.user = null
+      state.loading = false
+      state.error = action.payload.message
+      state.errorType = action.payload.type
+    },
     clearError(state) {
       state.error = null
       state.errorType = null
@@ -53,5 +72,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { loginRequest, loginSuccess, loginFailure, clearError, logout } = authSlice.actions
+export const { loginRequest, loginSuccess, loginFailure, signupRequest, signupSuccess, signupFailure, clearError, logout } = authSlice.actions
 export default authSlice.reducer

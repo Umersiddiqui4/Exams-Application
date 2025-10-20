@@ -1,5 +1,5 @@
 import * as z from "zod"
-import { formatName, formatAddress } from "../../lib/utils"
+import { formatName, formatAddress } from "@/lib/utils"
 
 
 
@@ -13,10 +13,9 @@ const aktsFormSchema = z.object({
     .optional(),
   passportImage: z.any(),
   fullName: z.string().min(2, "Full name is required").transform(formatName),
-  gender: z.string().min(1, "Gender is required"),
-  schoolName: z.string().min(1, "School name is required").transform(formatAddress),
-  schoolLocation: z.string().min(1, "School location is required").transform(formatAddress),
-  QualificationDate: z.string().min(1, "Qualification date is required"),
+  schoolName: z.string().min(1, "Name of medical school is required").transform(formatAddress),
+  schoolLocation: z.string().min(1, "Country of medical school is required").transform(formatAddress),
+  QualificationDate: z.string().min(1, "Year of qualification is required"),
 
   // Address
   poBox: z.string().min(1, "P.O. Box is required").transform(formatAddress),
@@ -31,7 +30,6 @@ const aktsFormSchema = z.object({
   email: z.string().email("Invalid email address"),
 
   // Experience
-  dateOfPassingPart1: z.string().min(1, "Date of passing Part 1 exam is required"),
   previousAktsAttempts: z.string().min(1, "Number of previous AKTs attempts is required"),
 
   // Experience and License
@@ -43,18 +41,18 @@ const aktsFormSchema = z.object({
     required_error: "Date of registration is required",
   }),
 
-  // AKTs Session
-  preferenceDate1: z.string().optional(),
-  preferenceDate2: z.string().optional(),
-  preferenceDate3: z.string().optional(),
+  // AKTs Session - Single exam date
+  examDate: z.date({
+    required_error: "Exam date is required",
+  }),
 
-  // Eligibility (for AKTs)
+  // Eligibility (for AKTs) - At least one must be selected
   eligibilityA: z.boolean().optional(),
   eligibilityB: z.boolean().optional(),
   eligibilityC: z.boolean().optional(),
 
-  //   Examination Center Preference (for AKTs)
-  examinationCenter: z.string().optional(),
+//   Examination Center Preference (for AKTs)
+  examinationCenter: z.string().min(1, "Examination center is required"),
 
   // Candidate Statement (for AKTs)
   candidateStatementA: z.boolean().optional(),
@@ -68,6 +66,12 @@ const aktsFormSchema = z.object({
   agreementName: z.string().optional(),
   agreementDate: z.date().optional(),
   attachments: z.array(z.any()).optional()
+}).refine((data) => {
+  // At least one eligibility option must be selected
+  return data.eligibilityA === true || data.eligibilityB === true || data.eligibilityC === true;
+}, {
+  message: "Please select at least one eligibility option",
+  path: ["eligibilityA"], // This will show the error on the first eligibility field
 })
 
 
@@ -165,38 +169,34 @@ export const formDefaultValues: FormValues = {
   medicalLicense: undefined,
   passportBioPage: undefined,
   signature: undefined,
-  agreementDate: undefined as unknown as Date,
-  termsAgreed: false,
+  // agreementDate: new Date(),
+  termsAgreed: true,
 };
 export const aktsFormDefaultValues: AktsFormValues = {
-  candidateId: "",
-  passportImage: undefined,
-  fullName: "",
-  gender: "",
-  schoolName: "",
-  schoolLocation: "",
-  QualificationDate: "",
-
-  poBox: "",
-  district: "",
-  city: "",
-  province: "",
-  country: "",
-  whatsapp: "",
-  emergencyContact: "",
-  email: "",
-  dateOfPassingPart1: "",
-  previousAktsAttempts: "",
-  countryOfExperience: "",
-  countryOfOrigin: "",
-  registrationAuthority: "",
-  registrationNumber: "",
-  dateOfRegistration: undefined as unknown as Date,
-  preferenceDate1: " ",
-  preferenceDate2: " ",
-  preferenceDate3: " ",
-  agreementName: undefined as unknown as string,
-  agreementDate: undefined as unknown as Date,
+  candidateId: formDefaultValues.candidateId,
+  passportImage: formDefaultValues.passportImage,
+  fullName: formDefaultValues.fullName,
+  schoolName: "Educator",
+  schoolLocation: "Defence",
+  QualificationDate: "2022",
+   
+  poBox: formDefaultValues.poBox,
+  district: formDefaultValues.district,
+  city: formDefaultValues.city,
+  province: formDefaultValues.province,
+  country: formDefaultValues.country,
+  whatsapp: formDefaultValues.whatsapp,
+  emergencyContact: formDefaultValues.emergencyContact,
+  email: formDefaultValues.email,
+  previousAktsAttempts: "0",
+  countryOfExperience: formDefaultValues.countryOfExperience,
+  countryOfOrigin: formDefaultValues.countryOfOrigin,
+  registrationAuthority: formDefaultValues.registrationAuthority,
+  registrationNumber: formDefaultValues.registrationNumber,
+  dateOfRegistration: formDefaultValues.dateOfRegistration,
+  examDate: new Date(),
+  agreementName: formDefaultValues.agreementName,
+  // agreementDate: formDefaultValues.agreementDate,
   eligibilityA: false,
   eligibilityB: false,
   eligibilityC: false,

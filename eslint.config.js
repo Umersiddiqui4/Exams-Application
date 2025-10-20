@@ -23,6 +23,26 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // TypeScript any type warnings
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'off', // Too strict for gradual migration
+      '@typescript-eslint/no-unsafe-member-access': 'off', // Too strict for gradual migration
+      '@typescript-eslint/no-unsafe-call': 'off', // Too strict for gradual migration
+      '@typescript-eslint/no-unsafe-return': 'off', // Too strict for gradual migration
+      // Console usage warnings (allow in logger.ts)
+      'no-console': 'off', // Disabled since we use logger utility which uses console internally
+      // Error handling warnings
+      'no-empty': ['warn', { allowEmptyCatch: false }], // Warn on empty blocks including catch
+      // Unused vars (allow in some cases)
+      '@typescript-eslint/no-unused-vars': ['warn', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
+      // TS comment directives
+      '@typescript-eslint/ban-ts-comment': ['error', {
+        'ts-ignore': 'allow-with-description',
+        'ts-expect-error': 'allow-with-description'
+      }],
     },
   },
 )

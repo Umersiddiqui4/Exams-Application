@@ -41,7 +41,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { useAktPastExams } from "@/lib/useAktPastExams";
+import { useAktPastExams } from "@/hooks/useAktPastExams";
 
 
 
@@ -384,6 +384,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                     <FormControl>
                       <Input
                         placeholder="e.g. 1234567"
+                        autoComplete="new-password"
                         {...field}
                         maxLength={7}
                         onChange={(e) => {
@@ -430,6 +431,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter P.O.Box"
+                            autoComplete="new-password"
                             {...field}
                             className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.poBox
                               ? "border-red-500 dark:border-red-700"
@@ -453,6 +455,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter District"
+                            autoComplete="new-password"
                             {...field}
                             className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.district
                               ? "border-red-500 dark:border-red-700"
@@ -477,6 +480,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter City / Town / Village"
+                            autoComplete="new-password"
                             {...field}
                             className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.city
                               ? "border-red-500 dark:border-red-700"
@@ -501,6 +505,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter Province / Region"
+                            autoComplete="new-password"
                             {...field}
                             className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.province
                               ? "border-red-500 dark:border-red-700"
@@ -524,6 +529,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter Country"
+                            autoComplete="new-password"
                             {...field}
                             className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.country
                               ? "border-red-500 dark:border-red-700"
@@ -560,6 +566,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <PhoneInput
                             international
                             countryCallingCodeEditable={true}
+                            autoComplete="new-password"
                             value={field.value}
                             onBlur={handleEmergencyBlur}
                             onChange={(value) => {
@@ -599,6 +606,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                           <PhoneInput
                             international
                             countryCallingCodeEditable={true}
+                            autoComplete="new-password"
                             value={field.value}
                             onBlur={handleWhatsappBlur}
                             onChange={(value) => {
@@ -757,6 +765,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter country of postgraduate clinical experience"
+                          autoComplete="new-password"
                           {...field}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfExperience
                             ? "border-red-500 dark:border-red-700"
@@ -781,6 +790,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter Country of ethnic origin"
+                          autoComplete="new-password"
                           {...field}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfOrigin
                             ? "border-red-500 dark:border-red-700"
@@ -805,6 +815,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter Registration authority"
+                          autoComplete="new-password"
                           {...field}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationAuthority
                             ? "border-red-500 dark:border-red-700"
@@ -829,6 +840,7 @@ export function OsceFeilds(props: OsceFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter Registration number"
+                          autoComplete="new-password"
                           {...field}
                           className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationNumber
                             ? "border-red-500 dark:border-red-700"

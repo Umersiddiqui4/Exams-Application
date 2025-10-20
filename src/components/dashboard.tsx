@@ -12,7 +12,7 @@ import {  } from "react-router-dom"
 import { StatusCard } from "./ui/status-card"
 import { GooeyMenu } from "./GooeyMenu"
 import { SidebarNav } from "./SidebarNav"
-import { useDashboardData } from "@/lib/useDashboardData"
+import { useDashboardData } from "@/hooks/useDashboardData"
 
 export function Dashboard() {
    const [sidebarOpen, setSidebarOpen] = useState(true)

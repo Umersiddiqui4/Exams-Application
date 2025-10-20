@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "./card";
 import { Input } from "./input";
+import { logger } from '@/lib/logger';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,47 +33,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "./dialog";
-import { Checkbox } from "./checkbox";
+
 import { Calendar, Download, Filter, Loader2, Search, Settings } from "lucide-react";
 import { DataTable } from "../data-table";
 import { useEffect, useState } from "react";
-import { useApplications } from "@/lib/useApplications";
-import { useExamOccurrences } from "@/lib/useExamOccurrences";
-import { getApplication, startReview } from "@/lib/applicationsApi";
+import { useApplications } from "@/hooks/useApplications";
+import { useExamOccurrences } from "@/hooks/useExamOccurrences";
+import { getApplication, startReview } from "@/api/applicationsApi";
 import { columns } from "../columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
-import * as pdfjsLib from "pdfjs-dist/";
+import * as pdfjsLib from "pdfjs-dist";
+import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog";
+import { ApplicationPDFCompleteAktApp } from "./pdf-generator";
+import { PDFPreviewPanel } from "./pdf-preview-panel";
+import { ApplicationDetailView } from "./application-detail-view";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
-  import.meta.url
-).toString(); "use client"
+// PDF.js worker setup for v5.x
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.js", import.meta.url).toString()
-
+// No props needed - component is self-contained
 export default function ApplicationTable() {
   const { toast } = useToast()
 
-  const searchQuery = ""
-  const activeFilter = "all"
-  // const [activeFilter, setActiveFilter] = useState<string>("all");
+
+  const [activeFilter, setActiveFilter] = useState<string>("all");
   const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all")
   const [isExporting, setIsExporting] = useState(false)
-  // const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
-  const [includeWaitingList, setIncludeWaitingList] = useState(true)
-  const [includeRejected, setIncludeRejected] = useState(false)
+  const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false)
+  const [selectedApplicationData, setSelectedApplicationData] = useState<any>(null)
+  const [detailViewOpen, setDetailViewOpen] = useState<boolean>(false)
   const { items: examOccurrences } = useExamOccurrences()
   const [pageSize, setPageSize] = useState(10)
   const {
@@ -96,6 +91,8 @@ export default function ApplicationTable() {
     if (currentExamOccurrence && currentExamOccurrence.id) {
       setSelectedExamOccurrence(currentExamOccurrence.id.toString())
     }
+    
+    // Removed message listener since we're using routes now
   }, [examOccurrences])
 
   const actionColumn = {
@@ -234,12 +231,18 @@ export default function ApplicationTable() {
 
   const handlePdfGenerate = async (row: any) => {
     setGeneratingIds((prev) => new Set(prev).add(row.original.id))
+    
+    // Clear previous application data and close any open panels
+    setSelectedApplicationData(null)
+    setPdfPreviewOpen(false)
+    setDetailViewOpen(false)
+    
     try {
       // Call start-review API if status is SUBMITTED
       if (row.original.status === "SUBMITTED") {
         try {
           await startReview(row.original.id)
-        } catch (error) {
+        } catch {
           // Ignore start-review API errors for now
         }
       }
@@ -257,7 +260,7 @@ export default function ApplicationTable() {
             const token = localStorage.getItem("auth_token")
 
             // Use the API endpoint to download the attachment with authentication
-            const response = await fetch(`https://mrcgp-api.omnifics.io/api/v1/attachments/${attachment.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/attachments/${attachment.id}`, {
               method: "GET",
               headers: {
                 Accept: "*/*",
@@ -296,7 +299,7 @@ export default function ApplicationTable() {
                 canvas.height = viewport.height
                 canvas.width = viewport.width
 
-                await page.render({ canvasContext: context, viewport }).promise
+                await page.render({ canvasContext: context, viewport, canvas }).promise
 
                 const base64Data = canvas.toDataURL("image/png")
                 images.push(base64Data)
@@ -316,7 +319,7 @@ export default function ApplicationTable() {
               return { ...attachment, base64Data }
             }
           } catch (error) {
-            console.error(`Failed to load image ${attachment.fileName}:`, error)
+            logger.error(`Failed to load image ${attachment.fileName}`, error)
             return { ...attachment, base64Data: null }
           }
         }) || []
@@ -327,14 +330,15 @@ export default function ApplicationTable() {
         ...detailedData.data,
         attachments: attachmentsWithImages,
       }
-      const blob = await generatePdfBlob(dataWithImages)
-      const url = URL.createObjectURL(blob)
-      window.open(url, "_blank")
 
-      // Refetch applications after PDF opens
+      // Set the application data and show the preview panel
+      setSelectedApplicationData(dataWithImages)
+      setPdfPreviewOpen(true)
+
+      // Refetch applications after loading data
       await reload()
     } catch (error) {
-      console.error("Error generating PDF:", error)
+      logger.error("Error generating PDF", error)
       Swal.fire({
         title: "Error",
         text: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -351,16 +355,69 @@ export default function ApplicationTable() {
   }
 
   const handleExport = () => {
-    setIsExportDialogOpen(true)
+    setIsFieldSelectionOpen(true)
   }
 
-  const handleConfirmExport = async () => {
+  const handleDownloadPDF = async () => {
+    if (!selectedApplicationData) return;
+    
+    try {
+      const blob = await generatePdfBlob(selectedApplicationData)
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank")
+    } catch (error) {
+      logger.error("Error generating PDF", error)
+      Swal.fire({
+        title: "Error",
+        text: `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+        icon: "error",
+        confirmButtonText: "OK",
+      })
+    }
+  }
+
+  const handleDetailView = () => {
+    if (selectedApplicationData?.id) {
+      // Open the detail view in a new tab using the route
+      const detailUrl = `/applications/${selectedApplicationData.id}/details`
+      window.open(detailUrl, '_blank')
+    }
+  }
+
+  const handleDetailViewClose = () => {
+    setDetailViewOpen(false)
+    setSelectedApplicationData(null)
+    setPdfPreviewOpen(false)
+  }
+
+  const handlePdfPreviewClose = () => {
+    setPdfPreviewOpen(false)
+    setSelectedApplicationData(null)
+    setDetailViewOpen(false)
+  }
+
+  const handleDetailViewBack = () => {
+    setDetailViewOpen(false)
+    setPdfPreviewOpen(true)
+  }
+
+  const handleConfirmExport = async (fieldConfig: ExportFieldConfig, includeWaitingList: boolean, includeRejected: boolean) => {
     setIsExporting(true)
-    setIsExportDialogOpen(false)
+    setIsFieldSelectionOpen(false)
 
     try {
       const token = localStorage.getItem("auth_token")
-      const url = `https://mrcgp-api.omnifics.io/api/v1/applications/exam-occurrence/${selectedExamOccurrence}/export?includeWaitingList=${includeWaitingList}&includeRejected=${includeRejected}`
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        includeWaitingList: includeWaitingList.toString(),
+        includeRejected: includeRejected.toString(),
+      })
+
+      // Add field configuration
+      params.append("fieldConfig", JSON.stringify(fieldConfig))
+
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/v2/applications/exam-occurrence/${selectedExamOccurrence}/export?${params.toString()}`
 
       const response = await fetch(url, {
         method: "GET",
@@ -386,8 +443,13 @@ export default function ApplicationTable() {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
+
+      toast({
+        title: "Export Successful",
+        description: `Applications exported successfully with ${fieldConfig?.fields.length || 'default'} fields.`,
+      })
     } catch (error) {
-      console.error("Export error:", error)
+      logger.error("Export error", error)
       Swal.fire({
         title: "Error",
         text: `Failed to export: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -400,7 +462,9 @@ export default function ApplicationTable() {
   }
 
   const generatePdfBlob = async (data: any) => {
-    const doc = <ApplicationPDF data={data} />
+    // Check exam type and use appropriate PDF generator
+    const isAKT = data.examOccurrence.type === "AKT"
+    const doc = isAKT ? <ApplicationPDFCompleteAktApp data={data} /> : <ApplicationPDF data={data} />
     const asPdf = pdf()
     asPdf.updateContainer(doc)
     const blob = await asPdf.toBlob()
@@ -408,7 +472,8 @@ export default function ApplicationTable() {
   }
 
   const ApplicationPDF = ({ data }: any) => {
-
+    logger.debug("Generating PDF for data", data);
+    
     return (
       <Document>
         {/* Main application form page */}
@@ -420,9 +485,7 @@ export default function ApplicationTable() {
               <div className="text-center">
                 <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
                 <Text style={styles.subtitle}>
-                  {data.examOccurrence.type === "AKT"
-                    ? "AKT Examination Application"
-                    : "Part 2 (OSCE)} Examination Application"}
+                  Part 2 (OSCE) Examination Application
                 </Text>
               </div>
             </View>
@@ -915,37 +978,37 @@ export default function ApplicationTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("all")} */
+                   onClick={() => setActiveFilter("all")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("SUBMITTED")} */
+                   onClick={() => setActiveFilter("SUBMITTED")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Submitted
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("UNDER_REVIEW")} */
+                   onClick={() => setActiveFilter("UNDER_REVIEW")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Under Review
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("APPROVED")} */
+                   onClick={() => setActiveFilter("APPROVED")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("REJECTED")} */
+                   onClick={() => setActiveFilter("REJECTED")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("waiting")} */
+                   onClick={() => setActiveFilter("waiting")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Waiting
@@ -1030,9 +1093,9 @@ export default function ApplicationTable() {
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
-                  // value={searchQuery}
+                    value={searchQuery}
 
-                  /* onChange={(e) => setSearchQuery(e.target.value)} */
+                     onChange={(e) => setSearchQuery(e.target.value)} 
                   />
                 </div>
               </div>
@@ -1119,56 +1182,32 @@ export default function ApplicationTable() {
         </CardContent>
       </Card>
 
-      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Export Applications</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includeWaitingList"
-                checked={includeWaitingList}
-                onCheckedChange={(checked) => setIncludeWaitingList(checked === true)}
-              />
-              <label
-                htmlFor="includeWaitingList"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Include Waiting List
-              </label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="includeRejected"
-                checked={includeRejected}
-                onCheckedChange={(checked) => setIncludeRejected(checked === true)}
-              />
-              <label
-                htmlFor="includeRejected"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Include Rejected
-              </label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmExport} disabled={isExporting}>
-              {isExporting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                "Export"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Field Selection Dialog */}
+      <FieldSelectionDialog
+        isOpen={isFieldSelectionOpen}
+        onClose={() => setIsFieldSelectionOpen(false)}
+        onExport={handleConfirmExport}
+        isExporting={isExporting}
+      />
+
+      {/* PDF Preview Panel */}
+      <PDFPreviewPanel
+        isOpen={pdfPreviewOpen}
+        onClose={handlePdfPreviewClose}
+        applicationData={selectedApplicationData}
+        onDownloadPDF={handleDownloadPDF}
+        onDetailView={handleDetailView}
+        isLoading={generatingIds.size > 0}
+      />
+
+      {/* Application Detail View */}
+      <ApplicationDetailView
+        isOpen={detailViewOpen}
+        onClose={handleDetailViewClose}
+        applicationData={selectedApplicationData}
+        onDownloadPDF={handleDownloadPDF}
+        onBack={handleDetailViewBack}
+      />
     </div>
   )
 }

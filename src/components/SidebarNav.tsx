@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, Settings, UserSquare, X, ChevronDown } from "lucide-react"
+import { LayoutDashboard, FileText, Settings, UserSquare, X, ChevronDown, FilePlus } from "lucide-react"
 import { Button } from "./ui/button"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useMobile } from "../hooks/use-mobile"
@@ -63,6 +63,16 @@ export function SidebarNav({ sidebarOpen, onClose }: SidebarNavProps) {
           <li>
             <Button
               variant="ghost"
+              className={`w-full justify-start text-slate-100 ${location.pathname === "/draft-applications" ? "bg-slate-500/50 dark:bg-slate-600/50" : "hover:bg-slate-700/50 dark:hover:bg-slate-800/50"}`}
+              onClick={() => nav("/draft-applications")}
+            >
+              <FilePlus className="mr-2 h-5 w-5" />
+              Draft Applications
+            </Button>
+          </li>
+          <li>
+            <Button
+              variant="ghost"
               className={`w-full justify-start text-slate-100 ${location.pathname === "/exam" ? "bg-slate-500/50 dark:bg-slate-600/50" : "hover:bg-slate-700/50 dark:hover:bg-slate-800/50"}`}
               onClick={() => nav("/exam")}
             >
@@ -99,6 +109,9 @@ export function SidebarNav({ sidebarOpen, onClose }: SidebarNavProps) {
                   <Button variant="ghost" className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50" onClick={() => {
                     nav("/settings#users");
                   }}>Users</Button>
+                  <Button variant="ghost" className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50" onClick={() => {
+                    nav("/settings#change-password");
+                  }}>Change Password</Button>
                 </div>
               )}
             </div>

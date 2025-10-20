@@ -1,4 +1,9 @@
-export async function login(prevState: any, formData: FormData) {
+interface LoginState {
+  error?: string;
+  email?: string;
+}
+
+export async function login(prevState: LoginState, formData: FormData): Promise<LoginState> {
     const email = formData.get('email')?.toString();
     const password = formData.get('password')?.toString();
     

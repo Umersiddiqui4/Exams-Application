@@ -9,10 +9,17 @@ import {Dashboard} from './components/dashboard';
 import {ApplicationForm} from './components/application-form';
 import ExamComponent from './components/examComponent';
 import { LoginForm } from './components/LoginForm';
+import { SignupForm } from './components/SignupForm';
+import { EmailVerification } from './components/EmailVerification';
+import { EmailVerificationTest } from './components/EmailVerificationTest';
+import { PhoneInputTest } from './components/PhoneInputTest';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Applications from './components/Applications';
+import DraftApplications from './components/DraftApplications';
+import { ApplicationDetailPage } from './components/ui/ApplicationDetailPage';
 import { ThemeToggleDemo } from './components/ThemeToggleDemo';
 import Settings from './components/settings';
+import ResetPassword from './components/ResetPassword';
 
 function App() {
 
@@ -25,6 +32,11 @@ function App() {
        
         <Routes>
           <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<SignupForm />} />
+          <Route path="/auth/password-reset" element={<ResetPassword />} />
+          <Route path="/auth/confirm-email" element={<EmailVerification />} />
+          <Route path="/test-email-verification" element={<EmailVerificationTest />} />
+          <Route path="/test-phone-input" element={<PhoneInputTest />} />
           <Route
             path="/"
             element={
@@ -44,6 +56,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Applications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/draft-applications"
+            element={
+              <ProtectedRoute>
+                <DraftApplications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/applications/:id/details"
+            element={
+              <ProtectedRoute>
+                <ApplicationDetailPage />
               </ProtectedRoute>
             }
           />
