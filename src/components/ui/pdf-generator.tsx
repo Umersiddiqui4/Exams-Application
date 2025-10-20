@@ -11,7 +11,7 @@ import {
 
 export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
   console.log("Rendering PDF with data:", data, images);
-  
+
   return (
     <Document>
       {/* Main application form page */}
@@ -26,16 +26,16 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
         <View style={styles.header}>
           <View style={styles.headerContent1}>
             <Image src="/icon.png" style={styles.passportImage1} />
-            <div className="text-center">
+            <View style={styles.titleContainer}>
               <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
               <Text style={styles.subtitle}>
                 Part 2 (OSCE) Examination Application
               </Text>
-            </div>
+            </View>
           </View>
-          {images.passport && (
+          {images?.passport && typeof images.passport === 'string' && images.passport.length > 0 && (
             <Image
-              src={images.passport || "/placeholder.svg"}
+              src={images.passport}
               style={styles.passportImage}
             />
           )}
@@ -333,31 +333,40 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
                       ? "Signature"
                       : `Attachment ${index + 1}`
 
-         const image: string[] = Array.isArray(value)
-   ? value
-   : value
-     ? [value]
-     : [];
+          const image: string[] = Array.isArray(value)
+            ? value.filter((img: any) => img && typeof img === 'string' && img.length > 0)
+            : value && typeof value === 'string' && value.length > 0
+              ? [value]
+              : [];
 
- if (image.length === 0) return null;
+          console.log("image", image);
+          console.log("image.length", image.length);
+          if (image.length === 0) return null;
 
- return image.map((imgSrc: string, pageIndex: number) => (
-   <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
-       <View style={styles.watermarkContainer} fixed>
-          <Text style={styles.watermarkText}>Preview</Text>
-        </View>
-     <View style={styles.documentPage}>
-       <Text style={styles.documentPageTitle}>{label}</Text>
-       <Image src={imgSrc} style={styles.documentPageImagePrev} />
-       <View style={styles.documentPageFooter}>
-         <Text style={styles.documentPageFooterText}>
-           {data.fullName} - Candidate ID: {data.candidateId}
-         </Text>
-       </View>
-     </View>
-   </Page>
- ));
-       })}
+          return image.map((imgSrc: string, pageIndex: number) => {
+            // Double check the image source is valid before rendering
+            if (!imgSrc || typeof imgSrc !== 'string' || imgSrc.length === 0) {
+              return null;
+            }
+
+            return (
+              <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
+                <View style={styles.watermarkContainer} fixed>
+                  <Text style={styles.watermarkText}>Preview</Text>
+                </View>
+                <View style={styles.documentPage}>
+                  <Text style={styles.documentPageTitle}>{label}</Text>
+                  <Image src={imgSrc} style={styles.documentPageImagePrev} />
+                  <View style={styles.documentPageFooter}>
+                    <Text style={styles.documentPageFooterText}>
+                      {data.fullName || 'N/A'} - Candidate ID: {data.candidateId || 'N/A'}
+                    </Text>
+                  </View>
+                </View>
+              </Page>
+            );
+          }).filter(Boolean);
+        })}
 
 
 
@@ -373,16 +382,16 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
         <View style={styles.header}>
           <View style={styles.headerContent1}>
             <Image src="/icon.png" style={styles.passportImage1} />
-            <div className="text-center">
+            <View style={styles.titleContainer}>
               <Text style={styles.title}>MRCGP [INT.] South Asia</Text>
               <Text style={styles.subtitle}>
                 Part 2 (OSCE) Examination Application
               </Text>
-            </div>
+            </View>
           </View>
-          {images.passport && (
+          {images?.passport && typeof images.passport === 'string' && images.passport.length > 0 && (
             <Image
-              src={images.passport || "/placeholder.svg"}
+              src={images.passport}
               style={styles.passportImage}
             />
           )}
@@ -2006,30 +2015,37 @@ export const ApplicationPDFCompleteAktPreview = ({
       {/* Additional Attachments Pages */}
       {image &&
         image.length > 0 &&
-        image.map((attachment: any, index: number) => (
-          <Page key={attachment.id} size="A4" style={styles.page}>
-            <View style={styles.watermarkContainer} fixed>
-              <Text style={styles.watermarkText}>Preview</Text>
-            </View>
-            <View style={styles.documentPage}>
-              <Text style={styles.documentPageTitle}>
-                {attachment.title || `Attachment ${index + 1}`}
-              </Text>
-              <Image
-                src={attachment.file || "/placeholder.svg"}
-                style={styles.documentPageImagePrev}
-              />
-              <View style={styles.documentPageFooter}>
-                <Text style={styles.documentPageFooterText}>
-                  {data.fullName} - Candidate ID: {data.candidateId}
-                </Text>
-                <Text style={styles.documentPageFooterText}>
-                  Document: {attachment.title || `Attachment ${index + 1}`}
-                </Text>
+        image.map((attachment: any, index: number) => {
+          // Validate attachment has a valid file
+          if (!attachment || !attachment.file || typeof attachment.file !== 'string' || attachment.file.length === 0) {
+            return null;
+          }
+
+          return (
+            <Page key={attachment.id || `attachment-${index}`} size="A4" style={styles.page}>
+              <View style={styles.watermarkContainer} fixed>
+                <Text style={styles.watermarkText}>Preview</Text>
               </View>
-            </View>
-          </Page>
-        ))}
+              <View style={styles.documentPage}>
+                <Text style={styles.documentPageTitle}>
+                  {attachment.title || `Attachment ${index + 1}`}
+                </Text>
+                <Image
+                  src={attachment.file}
+                  style={styles.documentPageImagePrev}
+                />
+                <View style={styles.documentPageFooter}>
+                  <Text style={styles.documentPageFooterText}>
+                    {data.fullName || 'N/A'} - Candidate ID: {data.candidateId || 'N/A'}
+                  </Text>
+                  <Text style={styles.documentPageFooterText}>
+                    Document: {attachment.title || `Attachment ${index + 1}`}
+                  </Text>
+                </View>
+              </View>
+            </Page>
+          );
+        }).filter(Boolean)}
     </Document>
   );
 };
@@ -2205,7 +2221,7 @@ const styles = StyleSheet.create({
   },
   documentPageImage: {
     width: "90%",
-    height: "70%",
+    maxHeight: 500, // Fixed max height in points
     objectFit: "contain",
     marginBottom: 20,
     border: "1px solid #e5e7eb",
@@ -2213,7 +2229,7 @@ const styles = StyleSheet.create({
   },
   documentPageImagePrev: {
     width: "90%",
-    height: "70%",
+    maxHeight: 500, // Fixed max height in points
     objectFit: "contain",
     marginBottom: 20,
     border: "1px solid #e5e7eb",

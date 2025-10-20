@@ -33,6 +33,56 @@ import {
   ApplicationPDFCompleteAktPreview,
   ApplicationPDFCompletePreview,
 } from "./ui/pdf-generator";
+
+// Wrapper component to handle image resizing for PDF
+const ResizedPDFWrapper = ({ children, images }: { children: any, images: any }) => {
+  const [resizedImages, setResizedImages] = useState<any>(null);
+  const [isResizing, setIsResizing] = useState(true);
+
+  useEffect(() => {
+    const resizeImages = async () => {
+      if (!images) {
+        setResizedImages(images);
+        setIsResizing(false);
+        return;
+      }
+
+      try {
+        const processedImages: any = {};
+
+        // Process passport image
+        if (images.passport && typeof images.passport === 'string') {
+          processedImages.passport = await resizeImageForPdf(images.passport);
+        }
+
+        // Process array images
+        const arrayFields = ['medicalLicense', 'part1Email', 'passportBio', 'signature'];
+        for (const field of arrayFields) {
+          if (images[field] && Array.isArray(images[field])) {
+            processedImages[field] = await Promise.all(
+              images[field].map((img: string) => resizeImageForPdf(img))
+            );
+          }
+        }
+
+        setResizedImages(processedImages);
+      } catch (error) {
+        console.error('Error resizing images:', error);
+        setResizedImages(images); // Fallback to original
+      } finally {
+        setIsResizing(false);
+      }
+    };
+
+    resizeImages();
+  }, [images]);
+
+  if (isResizing) {
+    return null; // Don't render PDF while resizing
+  }
+
+  return children(resizedImages || images);
+};
 import {
   aktsFormDefaultValues,
   aktsFormSchema,
@@ -62,6 +112,37 @@ const fileToBase64 = (file: File): Promise<string> => {
     reader.readAsDataURL(file); // file -> base64 string
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
+  });
+};
+
+// Utility function to resize images for PDF generation
+const resizeImageForPdf = (base64: string, maxWidth: number = 800, maxHeight: number = 600): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let { width, height } = img;
+
+      // Calculate new dimensions while maintaining aspect ratio
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = width * ratio;
+        height = height * ratio;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8)); // Convert to JPEG with 80% quality
+      } else {
+        resolve(base64); // Fallback to original if canvas fails
+      }
+    };
+    img.onerror = () => resolve(base64); // Fallback to original on error
+    img.src = base64;
   });
 };
 
@@ -468,13 +549,13 @@ export function ApplicationForm() {
             const data = await response.json();
             const newFileId = data.id; // Capture the new file ID
             // const serverUrl = data.url; // Capture server URL from response
-      
+
             // Store the new file ID for future deletions
             setUploadedFileIds(prev => ({
               ...prev,
               [inputId]: newFileId
             }));
-      
+
             // Keep the local preview URL, don't replace with server URL
           } catch (error) {
             console.error(`Upload error for ${inputId}:`, error);
@@ -489,7 +570,7 @@ export function ApplicationForm() {
         // Clear pending uploads after processing
         setPendingUploads([]);
       };
-    
+
       processPendingUploads();
     }
   }, [applicationId, pendingUploads, params.examId]);
@@ -833,7 +914,7 @@ export function ApplicationForm() {
             .getElementById("pdf-preview-link")
             ?.addEventListener("click", (e) => {
               e.preventDefault();
-              
+
               // Function to check if PDF is ready and click
               const clickPdfLink = () => {
                 const pdfLink = document.getElementById("pdf-download-link") as HTMLAnchorElement;
@@ -849,7 +930,7 @@ export function ApplicationForm() {
                   });
                 }
               };
-              
+
               // Wait a bit for PDF to be ready, then click
               setTimeout(clickPdfLink, 1000);
             });
@@ -899,7 +980,7 @@ export function ApplicationForm() {
         // Define valid types based on input type
         let validTypes: string[];
         let errorMessage: string;
-        
+
         if (title === "passport-image" || inputId === "attachment") {
           // AKT passport images allow more formats
           validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
@@ -909,7 +990,7 @@ export function ApplicationForm() {
           validTypes = ["image/jpeg", "image/jpg", "image/png"];
           errorMessage = "Invalid file format. Only JPG, JPEG and PNG formats are supported.";
         }
-        
+
         const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
         if (!validTypes.includes(file.type)) {
           setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: ${errorMessage}` }));
@@ -952,13 +1033,13 @@ export function ApplicationForm() {
         // this changes is made for hide the pdf upload  functionality //
 
         // For PDFs, only reject for passport-image and medical-license
-        const pdfNotAllowed = ["passport-image", "medical-license","part1-email", "passport-bio", "signature"];
+        const pdfNotAllowed = ["passport-image", "medical-license", "part1-email", "passport-bio", "signature"];
         if (pdfNotAllowed.includes(inputId) || title === "passport-image") {
           const fieldName = title ? title.replace('-', ' ').toUpperCase() : inputId.replace('-', ' ').toUpperCase();
           setFileErrors(prev => ({ ...prev, [fieldName]: `${fieldName}: PDF files are not allowed for this field.` }));
           const fileInput = document.getElementById(inputId) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
-          
+
           // Clear the appropriate preview
           if (title === "passport-image" || inputId === "passport-image") {
             setPassportPreview(null);
@@ -966,10 +1047,10 @@ export function ApplicationForm() {
             setMedicalLicensePreview(null);
             setMedicalLicenseIsPdf(null);
           }
-         
+
           return false;
-          
-        // this changes is made for hide the pdf upload  functionality //
+
+          // this changes is made for hide the pdf upload  functionality //
 
         }
       }
@@ -1017,7 +1098,7 @@ export function ApplicationForm() {
     // Create local preview URL immediately
     const localPreviewUrl = await fileToBase64(file);
     console.log("localPreviewUrl", localPreviewUrl);
-    
+
     // Set immediate preview with local URL
     if (title === "passport-image") {
       // AKT passport image
@@ -1100,10 +1181,10 @@ export function ApplicationForm() {
     // Determine filename based on exam type and input
     let fileName = file.name;
 
-   if (inputId === "attachment") {
-    if (title) {
-      fileName = title; // ✅ direct use karo
-    }
+    if (inputId === "attachment") {
+      if (title) {
+        fileName = title; // ✅ direct use karo
+      }
     } else if (!selectedExamType) {
       // For OSCE applications, use standard titles for all file types
       switch (inputId) {
@@ -1351,14 +1432,60 @@ export function ApplicationForm() {
   }, [candidateId]);
 
   function test() {
-    setTimeout(() => {
+    const maxAttempts = 5;
+    let attempts = 0;
+
+    const checkPdfReady = () => {
+      attempts++;
       const pdfBlob = document.getElementById("pdf-download-preview-link");
+
       if (pdfBlob) {
         // @ts-ignore
         const pdfUrl = pdfBlob.href;
-        window.open(pdfUrl, "_blank");
+        if (pdfUrl && pdfUrl !== "about:blank" && pdfUrl.startsWith("blob:")) {
+          // PDF is ready, open it
+          try {
+            window.open(pdfUrl, "_blank");
+            setIsPreviewLoading(false);
+          } catch (error) {
+            console.error("Error opening PDF:", error);
+            setIsPreviewLoading(false);
+            toast({
+              title: "PDF Preview Error",
+              description: "Unable to open PDF preview. The image may be too large. Please try with smaller images.",
+              variant: "destructive",
+            });
+          }
+        } else if (attempts < maxAttempts) {
+          // Try again after a short delay
+          setTimeout(checkPdfReady, 500);
+        } else {
+          // Max attempts reached
+          console.error("PDF URL not ready after multiple attempts");
+          setIsPreviewLoading(false);
+          toast({
+            title: "PDF Generation Taking Longer Than Expected",
+            description: "Please try clicking the preview button again. If the issue persists, try with smaller images.",
+            variant: "default",
+          });
+        }
+      } else if (attempts < maxAttempts) {
+        // Try again after a short delay
+        setTimeout(checkPdfReady, 500);
+      } else {
+        // Max attempts reached
+        console.error("PDF download link not found after multiple attempts");
+        setIsPreviewLoading(false);
+        toast({
+          title: "Error",
+          description: "Preview not available. Please ensure all required files are uploaded and try again. If images are too large, please resize them.",
+          variant: "destructive",
+        });
       }
-    }, 1000); // Increased timeout to allow PDF generation to complete
+    };
+
+    // Start checking after initial delay
+    setTimeout(checkPdfReady, 1000);
   }
 
   if (occurrenceLoading) {
@@ -1392,10 +1519,10 @@ export function ApplicationForm() {
                   <img src="/icon.png" alt="404" />
                 </div>
                 <div className="">
-                <span>APPLICATION FORM</span>
-              <CardDescription className="text-slate-500 dark:text-slate-400">
-                For the South Asia MRCGP [INT.] Part 2 (OSCE) Examination
-              </CardDescription>
+                  <span>APPLICATION FORM</span>
+                  <CardDescription className="text-slate-500 dark:text-slate-400">
+                    For the South Asia MRCGP [INT.] Part 2 (OSCE) Examination
+                  </CardDescription>
 
                 </div>
               </div>
@@ -1477,18 +1604,22 @@ export function ApplicationForm() {
                   <PDFDownloadLink
                     id="pdf-download-link"
                     document={
-                      !selectedExamType ? (
-                        <ApplicationPDFComplete
-                          data={currentForm.getValues()}
-                          images={pdfImages}
-                        />
-                      ) : (
-                        <ApplicationPDFCompleteAkt
-                          data={currentForm.getValues()}
-                          image={attachments}
-                          images={pdfImages}
-                        />
-                      )
+                      <ResizedPDFWrapper images={pdfImages}>
+                        {(resizedImages: any) =>
+                          !selectedExamType ? (
+                            <ApplicationPDFComplete
+                              data={currentForm.getValues()}
+                              images={resizedImages}
+                            />
+                          ) : (
+                            <ApplicationPDFCompleteAkt
+                              data={currentForm.getValues()}
+                              image={attachments}
+                              images={resizedImages}
+                            />
+                          )
+                        }
+                      </ResizedPDFWrapper>
                     }
                     fileName="MRCGP_Application_Form.pdf"
                     className="hidden"
@@ -1516,18 +1647,22 @@ export function ApplicationForm() {
                   <PDFDownloadLink
                     id="pdf-download-preview-link"
                     document={
-                      !selectedExamType ? (
-                        <ApplicationPDFCompletePreview
-                          data={currentForm.getValues()}
-                          images={pdfImages}
-                        />
-                      ) : (
-                        <ApplicationPDFCompleteAktPreview
-                          data={aktsForm.getValues()}
-                          image={attachments}
-                          images={pdfImages}
-                        />
-                      )
+                      <ResizedPDFWrapper images={pdfImages}>
+                        {(resizedImages: any) =>
+                          !selectedExamType ? (
+                            <ApplicationPDFCompletePreview
+                              data={currentForm.getValues()}
+                              images={resizedImages}
+                            />
+                          ) : (
+                            <ApplicationPDFCompleteAktPreview
+                              data={aktsForm.getValues()}
+                              image={attachments}
+                              images={resizedImages}
+                            />
+                          )
+                        }
+                      </ResizedPDFWrapper>
                     }
                     fileName="MRCGP_Application_Form.pdf"
                     className="hidden"
@@ -1554,15 +1689,33 @@ export function ApplicationForm() {
                   variant="outline"
                   disabled={isPreviewLoading}
                   onClick={() => {
-                    setIsPreviewLoading(true);
-                    setPreviewMode(true);
-                    setTimeout(() => {
-                      currentForm.handleSubmit(test)();
-                      // Reset loading state after PDF opens
-                      setTimeout(() => {
+                    try {
+                      setIsPreviewLoading(true);
+                      setPreviewMode(true);
+
+                      // Safety timeout to prevent infinite loading state
+                      const safetyTimeout = setTimeout(() => {
                         setIsPreviewLoading(false);
-                      }, 2000); // Allow extra time for window to open
-                    }, 100);
+                        toast({
+                          title: "Preview Timeout",
+                          description: "PDF generation took too long. Please try again or check if all files are valid.",
+                          variant: "destructive",
+                        });
+                      }, 10000); // 10 seconds safety timeout
+
+                      setTimeout(() => {
+                        test();
+                        clearTimeout(safetyTimeout);
+                      }, 100);
+                    } catch (error) {
+                      console.error("Preview error:", error);
+                      setIsPreviewLoading(false);
+                      toast({
+                        title: "Preview Error",
+                        description: "An error occurred while generating the preview. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
                   }}
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
                 >
@@ -1616,7 +1769,7 @@ export function ApplicationForm() {
                     "Application Already Exists - Change Email"
                   ) : isEligible === false ? (
                     "Not Eligible to Submit"
-                          ) : (
+                  ) : (
                     "Submit"
                   )}
                 </Button>
