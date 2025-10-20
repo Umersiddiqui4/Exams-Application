@@ -157,7 +157,6 @@ export function SignupForm() {
       };
 
       const res: any = await signupWithEmail(signupData);
-      console.log("Signup response:", res);
       
       // Signup successful - redirect to login page
       dispatch(signupSuccess({ 
