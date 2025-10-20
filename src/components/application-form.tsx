@@ -115,35 +115,33 @@ export function ApplicationForm() {
   const { toast } = useToast();
   const prevValuesRef = useRef<any>(null);
 
-  if (!params.examId) return null;
-
   // Map examOccurrence to selectedExam structure for compatibility
   const selectedExam = examDto
     ? {
-        id: examDto.id,
-        name: examDto.title,
-        location: Array.isArray(examDto.location)
-          ? examDto.location.join(", ")
-          : examDto.location,
-        openingDate: examDto.registrationStartDate,
-        closingDate: examDto.registrationEndDate,
-        slot1: examDto.examSlots?.[0]
-          ? `${examDto.examSlots[0].startDate} | ${examDto.examSlots[0].endDate}`
-          : "",
-        slot2: examDto.examSlots?.[1]
-          ? `${examDto.examSlots[1].startDate} | ${examDto.examSlots[1].endDate}`
-          : "",
-        slot3: examDto.examSlots?.[2]
-          ? `${examDto.examSlots[2].startDate} | ${examDto.examSlots[2].endDate}`
-          : "",
-        applicationsLimit: examDto.applicationLimit,
-        waitingLimit: examDto.waitingListLimit,
-        formLink: "",
-        isBlocked: !examDto.isActive,
-        // receivingApplicationsCount: examDto.applicationsCount,
-        examType: examDto.type,
-        examSlots: examDto.examSlots, // Add full examSlots for AktFeilds
-      }
+      id: examDto.id,
+      name: examDto.title,
+      location: Array.isArray(examDto.location)
+        ? examDto.location.join(", ")
+        : examDto.location,
+      openingDate: examDto.registrationStartDate,
+      closingDate: examDto.registrationEndDate,
+      slot1: examDto.examSlots?.[0]
+        ? `${examDto.examSlots[0].startDate} | ${examDto.examSlots[0].endDate}`
+        : "",
+      slot2: examDto.examSlots?.[1]
+        ? `${examDto.examSlots[1].startDate} | ${examDto.examSlots[1].endDate}`
+        : "",
+      slot3: examDto.examSlots?.[2]
+        ? `${examDto.examSlots[2].startDate} | ${examDto.examSlots[2].endDate}`
+        : "",
+      applicationsLimit: examDto.applicationLimit,
+      waitingLimit: examDto.waitingListLimit,
+      formLink: "",
+      isBlocked: !examDto.isActive,
+      // receivingApplicationsCount: examDto.applicationsCount,
+      examType: examDto.type,
+      examSlots: examDto.examSlots, // Add full examSlots for AktFeilds
+    }
     : null;
 
   const osceForm = useForm<FormValues>({
@@ -245,7 +243,7 @@ export function ApplicationForm() {
             if (
               response.status === 409 &&
               errorData.message ===
-                "Application already exists for this exam occurrence"
+              "Application already exists for this exam occurrence"
             ) {
               setApplicationExists(true);
               toast({
@@ -844,7 +842,7 @@ export function ApplicationForm() {
           registrationDate: data.dateOfRegistration
             ? new Date(data.dateOfRegistration).toISOString().split("T")[0]
             : "",
-        
+
           usualForename: data.fullName.split(" ")[0] || "",
           aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
@@ -898,9 +896,8 @@ export function ApplicationForm() {
           logger.warn(`Confirmation attempt ${confirmationAttempts} failed`, error);
 
           if (confirmationAttempts >= maxConfirmationAttempts) {
-            const errorMessage = `${
-              error instanceof Error ? error.message : "Unknown error"
-            }`;
+            const errorMessage = `${error instanceof Error ? error.message : "Unknown error"
+              }`;
             throw new Error(errorMessage);
           }
 
@@ -928,45 +925,45 @@ export function ApplicationForm() {
           : new Date(),
         ...(selectedExamType
           ? {
-              // AKT specific fields
-              examDate: (data as AktsFormValues).examDate
-                ? new Date((data as AktsFormValues).examDate).toISOString()
-                : "",
-              eligibilityA: (data as AktsFormValues).eligibilityA || false,
-              eligibilityB: (data as AktsFormValues).eligibilityB || false,
-              eligibilityC: (data as AktsFormValues).eligibilityC || false,
-              schoolName: (data as AktsFormValues).schoolName || "",
-              schoolLocation: (data as AktsFormValues).schoolLocation || "",
-              QualificationDate: (data as AktsFormValues).QualificationDate
-                ? new Date(
-                    (data as AktsFormValues).QualificationDate
-                  ).toISOString()
-                : "",
-              candidateId: (data as AktsFormValues).candidateId || "",
-              candidateStatementA:
-                (data as AktsFormValues).candidateStatementA || false,
-              candidateStatementB:
-                (data as AktsFormValues).candidateStatementB || false,
-              candidateStatementC:
-                (data as AktsFormValues).candidateStatementC || false,
-              examinationCenter:
-                (data as AktsFormValues).examinationCenter || "",
-              attachments: attachments.map((att: any) => ({
-                id: att.id,
-                attachmentUrl: att.attachmentUrl || "",
-                title: att.title || "",
-              })),
-            }
+            // AKT specific fields
+            examDate: (data as AktsFormValues).examDate
+              ? new Date((data as AktsFormValues).examDate).toISOString()
+              : "",
+            eligibilityA: (data as AktsFormValues).eligibilityA || false,
+            eligibilityB: (data as AktsFormValues).eligibilityB || false,
+            eligibilityC: (data as AktsFormValues).eligibilityC || false,
+            schoolName: (data as AktsFormValues).schoolName || "",
+            schoolLocation: (data as AktsFormValues).schoolLocation || "",
+            QualificationDate: (data as AktsFormValues).QualificationDate
+              ? new Date(
+                (data as AktsFormValues).QualificationDate
+              ).toISOString()
+              : "",
+            candidateId: (data as AktsFormValues).candidateId || "",
+            candidateStatementA:
+              (data as AktsFormValues).candidateStatementA || false,
+            candidateStatementB:
+              (data as AktsFormValues).candidateStatementB || false,
+            candidateStatementC:
+              (data as AktsFormValues).candidateStatementC || false,
+            examinationCenter:
+              (data as AktsFormValues).examinationCenter || "",
+            attachments: attachments.map((att: any) => ({
+              id: att.id,
+              attachmentUrl: att.attachmentUrl || "",
+              title: att.title || "",
+            })),
+          }
           : {
-              // OSCE specific fields
-              preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
-              preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
-              preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
-              medicalLicenseUrl: medicalLicensePreview || "",
-              part1EmailUrl: part1EmailPreview || "",
-              passportBioUrl: passportBioPreview || "",
-              part1PassingEmailUrl: part1EmailPreview || "",
-            }),
+            // OSCE specific fields
+            preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
+            preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
+            preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
+            medicalLicenseUrl: medicalLicensePreview || "",
+            part1EmailUrl: part1EmailPreview || "",
+            passportBioUrl: passportBioPreview || "",
+            part1PassingEmailUrl: part1EmailPreview || "",
+          }),
       };
 
       dispatch(addApplication(application));
@@ -1007,7 +1004,7 @@ export function ApplicationForm() {
       logger.error("Submission error", err);
       const errorMessage = err instanceof Error ? err.message : "Something went wrong during submission.";
       const isLimitsReached = errorMessage.toLowerCase().includes("limits reached");
-      
+
       Swal.fire({
         title: "Notice",
         text: errorMessage,
@@ -1237,12 +1234,12 @@ export function ApplicationForm() {
           setPassportBioPreview([pdfPlaceholder]);
           setPassportBioIsPdf(isPdf);
           // Update attachment in array with placeholder
-          setAttachments(prev => prev.map(att => 
-            att.title === "passport_bio_page" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "passport_bio_page"
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
-          
+
           // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
@@ -1254,8 +1251,8 @@ export function ApplicationForm() {
               setPassportBioPreview(imagesArray);
               // Update attachment in array with actual preview
               setAttachments(prev => {
-                const updated = prev.map(att => 
-                  att.title === "passport_bio_page" 
+                const updated = prev.map(att =>
+                  att.title === "passport_bio_page"
                     ? { ...att, attachmentUrl: imagesArray[0] }
                     : att
                 );
@@ -1271,8 +1268,8 @@ export function ApplicationForm() {
         } else {
           setPassportBioPreview([localPreviewUrl]);
           // Update attachment in array
-          setAttachments(prev => prev.map(att => 
-            att.title === "passport_bio_page" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "passport_bio_page"
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1285,12 +1282,12 @@ export function ApplicationForm() {
           setMedicalLicensePreview([pdfPlaceholder]);
           setMedicalLicenseIsPdf(isPdf);
           // Update attachment in array with placeholder
-          setAttachments(prev => prev.map(att => 
-            att.title === "valid-license" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "valid-license"
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
-          
+
           // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
@@ -1299,8 +1296,8 @@ export function ApplicationForm() {
               const imagesArray = await pdfToImages(base64Pdf);
               setMedicalLicensePreview(imagesArray);
               // Update attachment in array with actual preview
-              setAttachments(prev => prev.map(att => 
-                att.title === "valid-license" 
+              setAttachments(prev => prev.map(att =>
+                att.title === "valid-license"
                   ? { ...att, attachmentUrl: imagesArray[0] }
                   : att
               ));
@@ -1313,8 +1310,8 @@ export function ApplicationForm() {
         } else {
           setMedicalLicensePreview([localPreviewUrl]);
           // Update attachment in array
-          setAttachments(prev => prev.map(att => 
-            att.title === "valid-license" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "valid-license"
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1327,12 +1324,12 @@ export function ApplicationForm() {
           setPart1EmailPreview([pdfPlaceholder]);
           setPart1EmailIsPdf(isPdf);
           // Update attachment in array with placeholder
-          setAttachments(prev => prev.map(att => 
-            att.title === "mbbs-degree" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "mbbs-degree"
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
-          
+
           // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
@@ -1341,8 +1338,8 @@ export function ApplicationForm() {
               const imagesArray = await pdfToImages(base64Pdf);
               setPart1EmailPreview(imagesArray);
               // Update attachment in array with actual preview
-              setAttachments(prev => prev.map(att => 
-                att.title === "mbbs-degree" 
+              setAttachments(prev => prev.map(att =>
+                att.title === "mbbs-degree"
                   ? { ...att, attachmentUrl: imagesArray[0] }
                   : att
               ));
@@ -1355,8 +1352,8 @@ export function ApplicationForm() {
         } else {
           setPart1EmailPreview([localPreviewUrl]);
           // Update attachment in array
-          setAttachments(prev => prev.map(att => 
-            att.title === "mbbs-degree" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "mbbs-degree"
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1368,12 +1365,12 @@ export function ApplicationForm() {
           // Set immediate placeholder for PDF
           setAttachmentUrl(pdfPlaceholder);
           // Update attachment in array with placeholder
-          setAttachments(prev => prev.map(att => 
-            att.title === "internship-certificate" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "internship-certificate"
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
-          
+
           // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
@@ -1382,8 +1379,8 @@ export function ApplicationForm() {
               const imagesArray = await pdfToImages(base64Pdf);
               setAttachmentUrl(imagesArray[0]); // Use first image as preview
               // Update attachment in array with actual preview
-              setAttachments(prev => prev.map(att => 
-                att.title === "internship-certificate" 
+              setAttachments(prev => prev.map(att =>
+                att.title === "internship-certificate"
                   ? { ...att, attachmentUrl: imagesArray[0] }
                   : att
               ));
@@ -1396,8 +1393,8 @@ export function ApplicationForm() {
         } else {
           setAttachmentUrl(localPreviewUrl);
           // Update attachment in array
-          setAttachments(prev => prev.map(att => 
-            att.title === "internship-certificate" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "internship-certificate"
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1408,12 +1405,12 @@ export function ApplicationForm() {
           // Set immediate placeholder for PDF
           setAttachmentUrl(pdfPlaceholder);
           // Update attachment in array with placeholder
-          setAttachments(prev => prev.map(att => 
-            att.title === "experience-certificate" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "experience-certificate"
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
-          
+
           // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
@@ -1422,8 +1419,8 @@ export function ApplicationForm() {
               const imagesArray = await pdfToImages(base64Pdf);
               setAttachmentUrl(imagesArray[0]); // Use first image as preview
               // Update attachment in array with actual preview
-              setAttachments(prev => prev.map(att => 
-                att.title === "experience-certificate" 
+              setAttachments(prev => prev.map(att =>
+                att.title === "experience-certificate"
                   ? { ...att, attachmentUrl: imagesArray[0] }
                   : att
               ));
@@ -1436,8 +1433,8 @@ export function ApplicationForm() {
         } else {
           setAttachmentUrl(localPreviewUrl);
           // Update attachment in array
-          setAttachments(prev => prev.map(att => 
-            att.title === "experience-certificate" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "experience-certificate"
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1449,12 +1446,12 @@ export function ApplicationForm() {
           setSignaturePreview([pdfPlaceholder]);
           setSignatureIsPdf(isPdf);
           // Update attachment in array with placeholder
-          setAttachments(prev => prev.map(att => 
-            att.title === "signature" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "signature"
               ? { ...att, attachmentUrl: pdfPlaceholder }
               : att
           ));
-          
+
           // Convert PDF in background
           const reader = new FileReader();
           reader.onload = async (e) => {
@@ -1463,8 +1460,8 @@ export function ApplicationForm() {
               const imagesArray = await pdfToImages(base64Pdf);
               setSignaturePreview(imagesArray);
               // Update attachment in array with actual preview
-              setAttachments(prev => prev.map(att => 
-                att.title === "signature" 
+              setAttachments(prev => prev.map(att =>
+                att.title === "signature"
                   ? { ...att, attachmentUrl: imagesArray[0] }
                   : att
               ));
@@ -1477,8 +1474,8 @@ export function ApplicationForm() {
         } else {
           setSignaturePreview([localPreviewUrl]);
           // Update attachment in array
-          setAttachments(prev => prev.map(att => 
-            att.title === "signature" 
+          setAttachments(prev => prev.map(att =>
+            att.title === "signature"
               ? { ...att, attachmentUrl: localPreviewUrl }
               : att
           ));
@@ -1784,7 +1781,7 @@ export function ApplicationForm() {
     setTimeout(() => {
       const pdfBlob = document.getElementById("pdf-download-preview-link");
       if (pdfBlob) {
-        // @ts-ignore
+        // @ts-ignore: react-pdf injects an anchor with href at runtime
         const pdfUrl = pdfBlob.href;
         window.open(pdfUrl, "_blank");
       }
@@ -1800,6 +1797,9 @@ export function ApplicationForm() {
         </p>
       </div>
     );
+  }
+  if (!params.examId) {
+    return <NotFound />;
   }
   if (examOccurrence && !examOccurrence.canApply) {
     return <ExamClosed reason={examOccurrence.reason} />;
@@ -1842,7 +1842,7 @@ export function ApplicationForm() {
           {examOccurrence &&
             selectedExam &&
             examOccurrence.applicationsCount ===
-              selectedExam.applicationsLimit && (
+            selectedExam.applicationsLimit && (
               <Alert className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
                 <AlertDescription className="text-amber-800 dark:text-amber-200 font-medium">
                   Please Note: All regular seats for this exam have been filled.
@@ -2018,7 +2018,7 @@ export function ApplicationForm() {
                       const pdfBlob =
                         document.getElementById("pdf-download-link");
                       if (pdfBlob) {
-                        // @ts-ignore
+                        // @ts-ignore: react-pdf injects an anchor with href at runtime
                         const pdfUrl = pdfBlob.href;
                         window.open(pdfUrl, "_blank");
                         currentForm.reset();

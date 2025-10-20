@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 
 export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
   logger.debug("Rendering PDF with data", { data, images });
-  
+
   return (
     <Document>
       {/* Main application form page */}
@@ -334,31 +334,31 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
                       ? "Signature"
                       : `Attachment ${index + 1}`
 
-         const image: string[] = Array.isArray(value)
-   ? value
-   : value
-     ? [value]
-     : [];
+          const image: string[] = Array.isArray(value)
+            ? value
+            : value
+              ? [value]
+              : [];
 
- if (image.length === 0) return null;
+          if (image.length === 0) return null;
 
- return image.map((imgSrc: string, pageIndex: number) => (
-   <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
-       <View style={styles.watermarkContainer} fixed>
-          <Text style={styles.watermarkText}>Preview</Text>
-        </View>
-     <View style={styles.documentPage}>
-       <Text style={styles.documentPageTitle}>{label}</Text>
-       <Image src={imgSrc} style={styles.documentPageImagePrev} />
-       <View style={styles.documentPageFooter}>
-         <Text style={styles.documentPageFooterText}>
-           {data.fullName} - Candidate ID: {data.candidateId}
-         </Text>
-       </View>
-     </View>
-   </Page>
- ));
-       })}
+          return image.map((imgSrc: string, pageIndex: number) => (
+            <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
+              <View style={styles.watermarkContainer} fixed>
+                <Text style={styles.watermarkText}>Preview</Text>
+              </View>
+              <View style={styles.documentPage}>
+                <Text style={styles.documentPageTitle}>{label}</Text>
+                <Image src={imgSrc} style={styles.documentPageImagePrev} />
+                <View style={styles.documentPageFooter}>
+                  <Text style={styles.documentPageFooterText}>
+                    {data.fullName} - Candidate ID: {data.candidateId}
+                  </Text>
+                </View>
+              </View>
+            </Page>
+          ));
+        })}
 
 
 
@@ -1129,24 +1129,24 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             <View style={styles.resumeBody}>
               <View style={styles.fieldRow}>
                 <Text style={styles.note}>
-                  I hereby apply to sit the South Asia MRCGP [INT.] AKT Examination, 
-                  success in which will allow me to apply for International Membership 
-                  of the UK's Royal College of General Practitioners. Detailed information 
-                  on the membership application process can be found on the RCGP website. 
-                  I have read and agree to abide by the conditions set out in the South 
-                  Asia MRCGP [INT.] Examination Rules and Regulations as published on the 
-                  MRCGP [INT.] South Asia website: www.mrcgpintsouthasia.org If accepted 
-                  for International Membership, I undertake to continue approved postgraduate 
-                  study while I remain in active general practice/family practice, and to 
-                  uphold and promote the aims of the RCGP to the best of my ability. I 
-                  understand that, on being accepted for International Membership, an annual 
-                  subscription fee is to be payable to the RCGP. I understand that only 
-                  registered International Members who maintain their RCGP subscription are 
-                  entitled to use the post-nominal designation "MRCGP [INT]". Success in the 
-                  exam does not give me the right to refer to myself as MRCGP [INT.]. I attach 
-                  a banker's draft made payable to "MRCGP [INT.] South Asia", I also understand 
-                  and agree that my personal data will be handled by the MRCGP [INT.] South Asia 
-                  Board and I also give permission for my personal data to be handled by the 
+                  I hereby apply to sit the South Asia MRCGP [INT.] AKT Examination,
+                  success in which will allow me to apply for International Membership
+                  of the UK's Royal College of General Practitioners. Detailed information
+                  on the membership application process can be found on the RCGP website.
+                  I have read and agree to abide by the conditions set out in the South
+                  Asia MRCGP [INT.] Examination Rules and Regulations as published on the
+                  MRCGP [INT.] South Asia website: www.mrcgpintsouthasia.org If accepted
+                  for International Membership, I undertake to continue approved postgraduate
+                  study while I remain in active general practice/family practice, and to
+                  uphold and promote the aims of the RCGP to the best of my ability. I
+                  understand that, on being accepted for International Membership, an annual
+                  subscription fee is to be payable to the RCGP. I understand that only
+                  registered International Members who maintain their RCGP subscription are
+                  entitled to use the post-nominal designation "MRCGP [INT]". Success in the
+                  exam does not give me the right to refer to myself as MRCGP [INT.]. I attach
+                  a banker's draft made payable to "MRCGP [INT.] South Asia", I also understand
+                  and agree that my personal data will be handled by the MRCGP [INT.] South Asia
+                  Board and I also give permission for my personal data to be handled by the
                   regional MRCGP [INT.] South Asia co-ordinators.
                 </Text>
               </View>
@@ -1164,7 +1164,7 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
 
           // Map attachment names based on fileName or category with flexible matching
           const lowerFileName = fileName.toLowerCase();
-          
+
           if (fileName === "passport-image" || (lowerFileName.includes("passport") && lowerFileName.includes("photo"))) {
             label = "Passport Photo";
           } else if (fileName === "signature" || lowerFileName.includes("signature")) {
@@ -1173,7 +1173,7 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             label = "Passport Bio Page";
           } else if (fileName === "valid-license" || lowerFileName.includes("valid-license") || (lowerFileName.includes("medical") && lowerFileName.includes("license"))) {
             label = "Valid Medical License";
-          } else if (fileName === "mbbs-degree" || lowerFileName.includes("mbbs") || lowerFileName.includes("degree")) {
+          } else if (fileName === "mbbs-degree" || lowerFileName.includes("mbbs") || lowerFileName.includes("mbbs degree")) {
             label = "MBBS Degree";
           } else if (fileName === "internship-certificate" || lowerFileName.includes("internship")) {
             label = "Internship Certificate";
@@ -1181,7 +1181,7 @@ export const ApplicationPDFCompleteAktApp = ({ data }: any) => {
             label = "Experience Certificate";
           } else if (lowerFileName.includes("license")) {
             label = "Medical License";
-          } else if (lowerFileName.includes("degree")) {
+          } else if (lowerFileName.includes("degree") && !lowerFileName.includes("mbbs")) {
             label = "Degree Certificate";
           } else if (lowerFileName.includes("passport")) {
             label = "Passport Document";
@@ -1636,7 +1636,7 @@ export const ApplicationPDFCompleteAktPreview = ({
   images,
 }: any) => {
   logger.debug("PDF generation data", { image, images, data });
-  
+
   return (
     <Document>
       {/* Main application form page */}
@@ -2007,7 +2007,7 @@ export const ApplicationPDFCompleteAktPreview = ({
           </Page>
         ))} */}
 
-{images &&
+      {images &&
         Object.entries(images).map(([key, value], index) => {
           const label =
             key === "passport"
@@ -2022,31 +2022,31 @@ export const ApplicationPDFCompleteAktPreview = ({
                       ? "Signature"
                       : `Attachment ${index + 1}`
 
-         const image: string[] = Array.isArray(value)
-   ? value
-   : value
-     ? [value]
-     : [];
+          const image: string[] = Array.isArray(value)
+            ? value
+            : value
+              ? [value]
+              : [];
 
- if (image.length === 0) return null;
+          if (image.length === 0) return null;
 
- return image.map((imgSrc: string, pageIndex: number) => (
-   <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
-       <View style={styles.watermarkContainer} fixed>
-          <Text style={styles.watermarkText}>Preview</Text>
-        </View>
-     <View style={styles.documentPage}>
-       <Text style={styles.documentPageTitle}>{label}</Text>
-       <Image src={imgSrc} style={styles.documentPageImagePrev} />
-       <View style={styles.documentPageFooter}>
-         <Text style={styles.documentPageFooterText}>
-           {data.fullName} - Candidate ID: {data.candidateId}
-         </Text>
-       </View>
-     </View>
-   </Page>
- ));
-       })}
+          return image.map((imgSrc: string, pageIndex: number) => (
+            <Page key={`${key}-${pageIndex}`} size="A4" style={styles.page}>
+              <View style={styles.watermarkContainer} fixed>
+                <Text style={styles.watermarkText}>Preview</Text>
+              </View>
+              <View style={styles.documentPage}>
+                <Text style={styles.documentPageTitle}>{label}</Text>
+                <Image src={imgSrc} style={styles.documentPageImagePrev} />
+                <View style={styles.documentPageFooter}>
+                  <Text style={styles.documentPageFooterText}>
+                    {data.fullName} - Candidate ID: {data.candidateId}
+                  </Text>
+                </View>
+              </View>
+            </Page>
+          ));
+        })}
     </Document>
   );
 };
