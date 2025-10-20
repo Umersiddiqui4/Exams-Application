@@ -122,7 +122,7 @@ export function AktFeilds(props: AktsFieldsProps) {
       // Delete from API using the title as inputId
       await deleteUploadedFile(attachment.title);
     }
-    
+
     // Remove from local state
     setAttachments(
       attachments.filter((attachment: any) => attachment.id !== id)
@@ -150,34 +150,34 @@ export function AktFeilds(props: AktsFieldsProps) {
           </AccordionTrigger>
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
-               <FormField
-                  control={currentForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
-                      <FormLabel>
-                        E-mail <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter Email"
-                          type="email"
-                          {...field}
-                          onBlur={() => {
-                            field.onBlur();
-                            onEmailBlur?.();
-                          }}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.email
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
+              <FormField
+                control={currentForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="col-span-1 md:col-span-2">
+                    <FormLabel>
+                      E-mail <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter Email"
+                        type="email"
+                        autoComplete="new-password"
+                        {...field}
+                        onBlur={() => {
+                          field.onBlur();
+                          onEmailBlur?.();
+                        }}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.email
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
                           }`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               {/* Candidate ID */}
               <FormField
                 control={currentForm.control}
@@ -198,6 +198,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                     <FormControl>
                       <Input
                         placeholder="e.g. 1234567"
+                        autoComplete="new-password"
                         {...field}
                         maxLength={7}
                         onChange={(e) => {
@@ -212,11 +213,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                             onCandidateIdBlur(value);
                           }
                         }}
-                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.candidateId
-                            ? "border-red-500 dark:border-red-700"
-                            : ""
-                        }`}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.candidateId
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
+                          }`}
                       />
                     </FormControl>
                     <FormMessage />
@@ -300,25 +300,25 @@ export function AktFeilds(props: AktsFieldsProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter Full Name"
+                        autoComplete="new-password"
                         {...field}
                         onBlur={() => {
                           field.onBlur();
                           onFullNameBlur?.();
                         }}
-                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.fullName
-                            ? "border-red-500 dark:border-red-700"
-                            : ""
-                        }`}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.fullName
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
+                          }`}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-             
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
+
 
                 <FormField
                   control={currentForm.control}
@@ -332,12 +332,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter name of medical school"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.schoolName
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.schoolName
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -357,12 +357,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter country of medical school"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.schoolLocation
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.schoolLocation
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -384,11 +384,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.QualificationDate
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.QualificationDate
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           >
                             <SelectValue placeholder="Select year of qualification" />
                           </SelectTrigger>
@@ -426,12 +425,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter P.O.Box"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.poBox
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.poBox
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -450,12 +449,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter District"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.district
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.district
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -475,12 +474,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter City / Town / Village"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.city
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.city
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -500,12 +499,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter Province / Region"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.province
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.province
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -524,12 +523,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <FormControl>
                           <Input
                             placeholder="Enter Country"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.country
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.country
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -552,15 +551,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                       </FormLabel>
                       <FormControl>
                         <div
-                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.whatsapp
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${currentForm.formState.errors.whatsapp
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         >
                           <PhoneInput
                             international
                             countryCallingCodeEditable={true}
+                            autoComplete="new-password"
                             value={field.value}
                             onBlur={handleEmergencyBlur}
                             onChange={(value) => {
@@ -592,15 +591,15 @@ export function AktFeilds(props: AktsFieldsProps) {
                       {/* <FormDescription>In full international format</FormDescription> */}
                       <FormControl>
                         <div
-                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.emergencyContact
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${currentForm.formState.errors.emergencyContact
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         >
                           <PhoneInput
                             international
                             countryCallingCodeEditable={true}
+                            autoComplete="new-password"
                             value={field.value}
                             onBlur={handleWhatsappBlur}
                             onChange={(value) => {
@@ -620,7 +619,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                   )}
                 />
 
-                
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -682,11 +681,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.previousAktsAttempts
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.previousAktsAttempts
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           >
                             <SelectValue placeholder="Select number" />
                           </SelectTrigger>
@@ -778,12 +776,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter country of postgraduate clinical experience"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.countryOfExperience
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfExperience
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -803,12 +801,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter Country of ethnic origin"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.countryOfOrigin
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfOrigin
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -828,12 +826,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter Registration authority"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.registrationAuthority
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationAuthority
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -853,12 +851,12 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <FormControl>
                         <Input
                           placeholder="Enter Registration number"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.registrationNumber
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationNumber
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -937,14 +935,14 @@ export function AktFeilds(props: AktsFieldsProps) {
               ELIGIBILITY<span className="text-red-500 ml-1">*</span>
             </div>
           </AccordionTrigger>
-          
+
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
               <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">
                 I am eligible to apply for the MRCGP[INT] South Asia Examination
                 under the following criterion – please choose at least ONE:
               </p>
-           
+
               <div className="space-y-4">
                 <FormField
                   control={currentForm.control}
@@ -1022,26 +1020,26 @@ export function AktFeilds(props: AktsFieldsProps) {
                 />
               </div>
               {!(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
-        <div className="w-full mb-4">
-          <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  Eligibility Required
-                </h3>
-                <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-                  <p>You must select at least one eligibility criterion to access the document upload section.</p>
+                <div className="w-full mb-4">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                          Eligibility Required
+                        </h3>
+                        <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                          <p>You must select at least one eligibility criterion to access the document upload section.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} 
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1087,26 +1085,26 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {selectedExam?.location
                           ? selectedExam.location.split(', ').map((location: string) => (
-                              <div
-                                key={location.trim()}
-                                className="flex items-center space-x-2"
+                            <div
+                              key={location.trim()}
+                              className="flex items-center space-x-2"
+                            >
+                              <input
+                                type="radio"
+                                id={location.trim()}
+                                value={location.trim()}
+                                checked={field.value === location.trim()}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                              />
+                              <label
+                                htmlFor={location.trim()}
+                                className="text-sm font-medium text-gray-900 dark:text-gray-300"
                               >
-                                <input
-                                  type="radio"
-                                  id={location.trim()}
-                                  value={location.trim()}
-                                  checked={field.value === location.trim()}
-                                  onChange={(e) => field.onChange(e.target.value)}
-                                  className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                />
-                                <label
-                                  htmlFor={location.trim()}
-                                  className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                                >
-                                  {location.trim()}
-                                </label>
-                              </div>
-                            ))
+                                {location.trim()}
+                              </label>
+                            </div>
+                          ))
                           : null}
                       </div>
                     </FormControl>
@@ -1170,7 +1168,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                     </div>
                   </div>
 
-                 
+
                 </div>
               ) : (
                 <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
@@ -1241,7 +1239,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                 </p>
               </div>
 
-                      </div>
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -1255,14 +1253,14 @@ export function AktFeilds(props: AktsFieldsProps) {
                 <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                      </div>
+              </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
                   Eligibility Required
                 </h3>
                 <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
                   <p>Please select at least one eligibility criterion above to proceed with document uploads.</p>
-                      </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1271,78 +1269,78 @@ export function AktFeilds(props: AktsFieldsProps) {
 
       {/* Required Documents Section - Only show if eligibility is selected */}
       {(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
-      <Accordion
-        type="single"
-        collapsible
+        <Accordion
+          type="single"
+          collapsible
           defaultValue="required-documents"
-        className="w-full mb-4"
-      >
-        <AccordionItem
-          value="required-documents"
-          className="border dark:border-slate-700 rounded-lg overflow-hidden shadow-sm"
+          className="w-full mb-4"
         >
-          <AccordionTrigger className="px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
-            <div className="flex items-center text-lg font-semibold text-slate-800 dark:text-slate-200">
-              <Upload className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
-              REQUIRED DOCUMENTS
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
-            <div className="space-y-6">
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  <strong>Note:</strong> Based on your selected eligibility criteria, please upload the required documents. 
-                  All documents should be in JPG, JPEG, PNG, or PDF format.
-                </p>
+          <AccordionItem
+            value="required-documents"
+            className="border dark:border-slate-700 rounded-lg overflow-hidden shadow-sm"
+          >
+            <AccordionTrigger className="px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+              <div className="flex items-center text-lg font-semibold text-slate-800 dark:text-slate-200">
+                <Upload className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
+                REQUIRED DOCUMENTS
               </div>
-
-              {/* Common Documents */}
-              <div className="space-y-4">
-                
-                {/* Signature */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Signature <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="flex items-center justify-center w-full">
-                    {attachments.find(att => att.title === "signature")?.attachmentUrl ? (
-                      <div className="relative w-full">
-                        <div className="flex flex-col items-center">
-                          <img
-                            src={attachments.find(att => att.title === "signature")?.attachmentUrl}
-                            alt="Signature preview"
-                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                          />
-                <Button
-                  type="button"
-                            variant="outline"
-                  size="sm"
-                            onClick={() => removeAttachment(attachments.find(att => att.title === "signature")?.id || "")}
-                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                >
-                            Change Document
-                </Button>
-              </div>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="signature"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                            <span className="font-semibold">Click to upload</span> signature
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            JPG, JPEG, PNG, PDF (MAX. 3MB)
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
+              <div className="space-y-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <strong>Note:</strong> Based on your selected eligibility criteria, please upload the required documents.
+                    All documents should be in JPG, JPEG, PNG, or PDF format.
                   </p>
                 </div>
-                        <input
-                          id="signature"
-                          type="file"
-                          className="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
+
+                {/* Common Documents */}
+                <div className="space-y-4">
+
+                  {/* Signature */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Signature <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex items-center justify-center w-full">
+                      {attachments.find(att => att.title === "signature")?.attachmentUrl ? (
+                        <div className="relative w-full">
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={attachments.find(att => att.title === "signature")?.attachmentUrl}
+                              alt="Signature preview"
+                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeAttachment(attachments.find(att => att.title === "signature")?.id || "")}
+                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                            >
+                              Change Document
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="signature"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                              <span className="font-semibold">Click to upload</span> signature
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              JPG, JPEG, PNG, PDF (MAX. 3MB)
+                            </p>
+                          </div>
+                          <input
+                            id="signature"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
@@ -1367,59 +1365,59 @@ export function AktFeilds(props: AktsFieldsProps) {
                                 }
                               }
                             }}
-                        />
-                      </label>
+                          />
+                        </label>
+                      )}
+                    </div>
+                    {fileErrors["SIGNATURE"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["SIGNATURE"]}</p>
                     )}
                   </div>
-                  {fileErrors["SIGNATURE"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["SIGNATURE"]}</p>
-                  )}
-                </div>
 
-                {/* Passport Bio Page */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Passport Bio Page (Valid) <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="flex items-center justify-center w-full">
-                    {attachments.find(att => att.title === "passport_bio_page")?.attachmentUrl ? (
-                      <div className="relative w-full">
-                        <div className="flex flex-col items-center">
-                          <img
-                            src={attachments.find(att => att.title === "passport_bio_page")?.attachmentUrl}
-                            alt="Passport bio page preview"
-                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeAttachment(attachments.find(att => att.title === "passport_bio_page")?.id || "")}
-                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                          >
-                            Change Document
-                          </Button>
+                  {/* Passport Bio Page */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Passport Bio Page (Valid) <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex items-center justify-center w-full">
+                      {attachments.find(att => att.title === "passport_bio_page")?.attachmentUrl ? (
+                        <div className="relative w-full">
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={attachments.find(att => att.title === "passport_bio_page")?.attachmentUrl}
+                              alt="Passport bio page preview"
+                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeAttachment(attachments.find(att => att.title === "passport_bio_page")?.id || "")}
+                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                            >
+                              Change Document
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="passport_bio_page"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                            <span className="font-semibold">Click to upload</span> passport bio page
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            JPG, JPEG, PNG, PDF (MAX. 3MB)
-                          </p>
-                        </div>
-                        <input
-                          id="passport_bio_page"
-                          type="file"
-                          className="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
+                      ) : (
+                        <label
+                          htmlFor="passport_bio_page"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                              <span className="font-semibold">Click to upload</span> passport bio page
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              JPG, JPEG, PNG, PDF (MAX. 3MB)
+                            </p>
+                          </div>
+                          <input
+                            id="passport_bio_page"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
@@ -1444,59 +1442,59 @@ export function AktFeilds(props: AktsFieldsProps) {
                                 }
                               }
                             }}
-                        />
-                      </label>
+                          />
+                        </label>
+                      )}
+                    </div>
+                    {fileErrors["PASSPORT BIO PAGE"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT BIO PAGE"]}</p>
                     )}
                   </div>
-                  {fileErrors["PASSPORT BIO PAGE"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT BIO PAGE"]}</p>
-                  )}
-                      </div>
 
-                {/* Valid License */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Valid License <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="flex items-center justify-center w-full">
-                    {attachments.find(att => att.title === "valid-license")?.attachmentUrl ? (
-                      <div className="relative w-full">
-                        <div className="flex flex-col items-center">
-                          <img
-                            src={attachments.find(att => att.title === "valid-license")?.attachmentUrl}
-                            alt="Valid license preview"
-                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeAttachment(attachments.find(att => att.title === "valid-license")?.id || "")}
-                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                          >
-                            Change Document
-                          </Button>
+                  {/* Valid License */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Valid License <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex items-center justify-center w-full">
+                      {attachments.find(att => att.title === "valid-license")?.attachmentUrl ? (
+                        <div className="relative w-full">
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={attachments.find(att => att.title === "valid-license")?.attachmentUrl}
+                              alt="Valid license preview"
+                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeAttachment(attachments.find(att => att.title === "valid-license")?.id || "")}
+                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                            >
+                              Change Document
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="valid-license"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                            <span className="font-semibold">Click to upload</span> valid license
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            JPG, JPEG, PNG, PDF (MAX. 3MB)
-                          </p>
-                        </div>
-                        <input
-                          id="valid-license"
-                          type="file"
-                          className="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
+                      ) : (
+                        <label
+                          htmlFor="valid-license"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                              <span className="font-semibold">Click to upload</span> valid license
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              JPG, JPEG, PNG, PDF (MAX. 3MB)
+                            </p>
+                          </div>
+                          <input
+                            id="valid-license"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
@@ -1521,59 +1519,59 @@ export function AktFeilds(props: AktsFieldsProps) {
                                 }
                               }
                             }}
-                        />
-                      </label>
+                          />
+                        </label>
+                      )}
+                    </div>
+                    {fileErrors["VALID LICENSE"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["VALID LICENSE"]}</p>
                     )}
                   </div>
-                  {fileErrors["VALID LICENSE"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["VALID LICENSE"]}</p>
-                  )}
-                </div>
 
-                {/* MBBS Degree */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    MBBS Degree <span className="text-red-500">*</span>
-                        </Label>
-                  <div className="flex items-center justify-center w-full">
-                    {attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl ? (
-                      <div className="relative w-full">
-                        <div className="flex flex-col items-center">
-                          <img
-                            src={attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl}
-                            alt="MBBS degree preview"
-                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeAttachment(attachments.find(att => att.title === "mbbs-degree")?.id || "")}
-                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                          >
-                            Change Document
-                          </Button>
+                  {/* MBBS Degree */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      MBBS Degree <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex items-center justify-center w-full">
+                      {attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl ? (
+                        <div className="relative w-full">
+                          <div className="flex flex-col items-center">
+                            <img
+                              src={attachments.find(att => att.title === "mbbs-degree")?.attachmentUrl}
+                              alt="MBBS degree preview"
+                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeAttachment(attachments.find(att => att.title === "mbbs-degree")?.id || "")}
+                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                            >
+                              Change Document
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="mbbs-degree"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                            <span className="font-semibold">Click to upload</span> MBBS degree
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            JPG, JPEG, PNG, PDF (MAX. 3MB)
-                          </p>
-                        </div>
-                        <input
-                          id="mbbs-degree"
+                      ) : (
+                        <label
+                          htmlFor="mbbs-degree"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                              <span className="font-semibold">Click to upload</span> MBBS degree
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              JPG, JPEG, PNG, PDF (MAX. 3MB)
+                            </p>
+                          </div>
+                          <input
+                            id="mbbs-degree"
                             type="file"
-                          className="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 const file = e.target.files[0];
@@ -1598,181 +1596,181 @@ export function AktFeilds(props: AktsFieldsProps) {
                                 }
                               }
                             }}
-                        />
-                      </label>
+                          />
+                        </label>
+                      )}
+                    </div>
+                    {fileErrors["MBBS DEGREE"] && (
+                      <p className="text-sm text-red-500 mt-1">{fileErrors["MBBS DEGREE"]}</p>
                     )}
                   </div>
-                  {fileErrors["MBBS DEGREE"] && (
-                    <p className="text-sm text-red-500 mt-1">{fileErrors["MBBS DEGREE"]}</p>
+                </div>
+
+                {/* Case-specific Documents */}
+                <div className="space-y-4">
+
+                  {/* Show Internship/House Job Certificate for Case A and B */}
+                  {(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB")) && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Internship/House Job Certificate <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="flex items-center justify-center w-full">
+                        {attachments.find(att => att.title === "internship-certificate")?.attachmentUrl ? (
+                          <div className="relative w-full">
+                            <div className="flex flex-col items-center">
+                              <img
+                                src={attachments.find(att => att.title === "internship-certificate")?.attachmentUrl}
+                                alt="Internship certificate preview"
+                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeAttachment(attachments.find(att => att.title === "internship-certificate")?.id || "")}
+                                className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                              >
+                                Change Document
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor="internship-certificate"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                              <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                                <span className="font-semibold">Click to upload</span> internship certificate
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                JPG, JPEG, PNG, PDF (MAX. 3MB)
+                              </p>
+                            </div>
+                            <input
+                              id="internship-certificate"
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  const file = e.target.files[0];
+                                  // Check if attachment already exists
+                                  const existingAttachment = attachments.find(att => att.title === "internship-certificate");
+                                  if (!existingAttachment) {
+                                    // Create new attachment
+                                    const newAttachment = {
+                                      id: crypto.randomUUID(),
+                                      title: "internship-certificate",
+                                      file: file,
+                                      attachmentUrl: ""
+                                    };
+                                    setAttachments(prev => {
+                                      const updated = [...prev, newAttachment];
+                                      // Call validateFile after state is updated
+                                      setTimeout(() => validateFile(file, "internship-certificate"), 0);
+                                      return updated;
+                                    });
+                                  } else {
+                                    validateFile(file, "internship-certificate");
+                                  }
+                                }
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
+                      {fileErrors["INTERNSHIP CERTIFICATE"] && (
+                        <p className="text-sm text-red-500 mt-1">{fileErrors["INTERNSHIP CERTIFICATE"]}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Show Experience Certificate for Case B and C */}
+                  {(currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Experience Certificate <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="flex items-center justify-center w-full">
+                        {attachments.find(att => att.title === "experience-certificate")?.attachmentUrl ? (
+                          <div className="relative w-full">
+                            <div className="flex flex-col items-center">
+                              <img
+                                src={attachments.find(att => att.title === "experience-certificate")?.attachmentUrl}
+                                alt="Experience certificate preview"
+                                className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeAttachment(attachments.find(att => att.title === "experience-certificate")?.id || "")}
+                                className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                              >
+                                Change Document
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor="experience-certificate"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                              <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                                <span className="font-semibold">Click to upload</span> experience certificate
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                JPG, JPEG, PNG, PDF (MAX. 3MB)
+                              </p>
+                            </div>
+                            <input
+                              id="experience-certificate"
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  const file = e.target.files[0];
+                                  // Check if attachment already exists
+                                  const existingAttachment = attachments.find(att => att.title === "experience-certificate");
+                                  if (!existingAttachment) {
+                                    // Create new attachment
+                                    const newAttachment = {
+                                      id: crypto.randomUUID(),
+                                      title: "experience-certificate",
+                                      file: file,
+                                      attachmentUrl: ""
+                                    };
+                                    setAttachments(prev => {
+                                      const updated = [...prev, newAttachment];
+                                      // Call validateFile after state is updated
+                                      setTimeout(() => validateFile(file, "experience-certificate"), 0);
+                                      return updated;
+                                    });
+                                  } else {
+                                    validateFile(file, "experience-certificate");
+                                  }
+                                }
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
+                      {fileErrors["EXPERIENCE CERTIFICATE"] && (
+                        <p className="text-sm text-red-500 mt-1">{fileErrors["EXPERIENCE CERTIFICATE"]}</p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
-
-              {/* Case-specific Documents */}
-              <div className="space-y-4">
-                
-                {/* Show Internship/House Job Certificate for Case A and B */}
-                {(currentForm.watch("eligibilityA") || currentForm.watch("eligibilityB")) && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      Internship/House Job Certificate <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="flex items-center justify-center w-full">
-                      {attachments.find(att => att.title === "internship-certificate")?.attachmentUrl ? (
-                        <div className="relative w-full">
-                          <div className="flex flex-col items-center">
-                            <img
-                              src={attachments.find(att => att.title === "internship-certificate")?.attachmentUrl}
-                              alt="Internship certificate preview"
-                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeAttachment(attachments.find(att => att.title === "internship-certificate")?.id || "")}
-                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                            >
-                              Change Document
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <label
-                          htmlFor="internship-certificate"
-                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                              <span className="font-semibold">Click to upload</span> internship certificate
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              JPG, JPEG, PNG, PDF (MAX. 3MB)
-                            </p>
-                        </div>
-                          <input
-                            id="internship-certificate"
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                const file = e.target.files[0];
-                                // Check if attachment already exists
-                                const existingAttachment = attachments.find(att => att.title === "internship-certificate");
-                                if (!existingAttachment) {
-                                  // Create new attachment
-                                  const newAttachment = {
-                                    id: crypto.randomUUID(),
-                                    title: "internship-certificate",
-                                    file: file,
-                                    attachmentUrl: ""
-                                  };
-                                  setAttachments(prev => {
-                                    const updated = [...prev, newAttachment];
-                                    // Call validateFile after state is updated
-                                    setTimeout(() => validateFile(file, "internship-certificate"), 0);
-                                    return updated;
-                                  });
-                                } else {
-                                  validateFile(file, "internship-certificate");
-                                }
-                              }
-                            }}
-                          />
-                        </label>
-                      )}
-                      </div>
-                    {fileErrors["INTERNSHIP CERTIFICATE"] && (
-                      <p className="text-sm text-red-500 mt-1">{fileErrors["INTERNSHIP CERTIFICATE"]}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Show Experience Certificate for Case B and C */}
-                {(currentForm.watch("eligibilityB") || currentForm.watch("eligibilityC")) && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      Experience Certificate <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="flex items-center justify-center w-full">
-                      {attachments.find(att => att.title === "experience-certificate")?.attachmentUrl ? (
-                        <div className="relative w-full">
-                          <div className="flex flex-col items-center">
-                            <img
-                              src={attachments.find(att => att.title === "experience-certificate")?.attachmentUrl}
-                              alt="Experience certificate preview"
-                              className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                            />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                              onClick={() => removeAttachment(attachments.find(att => att.title === "experience-certificate")?.id || "")}
-                              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                        >
-                              Change Document
-                        </Button>
-                      </div>
-                    </div>
-                      ) : (
-                        <label
-                          htmlFor="experience-certificate"
-                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                            <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                              <span className="font-semibold">Click to upload</span> experience certificate
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              JPG, JPEG, PNG, PDF (MAX. 3MB)
-                            </p>
-                          </div>
-                          <input
-                            id="experience-certificate"
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                const file = e.target.files[0];
-                                // Check if attachment already exists
-                                const existingAttachment = attachments.find(att => att.title === "experience-certificate");
-                                if (!existingAttachment) {
-                                  // Create new attachment
-                                  const newAttachment = {
-                                    id: crypto.randomUUID(),
-                                    title: "experience-certificate",
-                                    file: file,
-                                    attachmentUrl: ""
-                                  };
-                                  setAttachments(prev => {
-                                    const updated = [...prev, newAttachment];
-                                    // Call validateFile after state is updated
-                                    setTimeout(() => validateFile(file, "experience-certificate"), 0);
-                                    return updated;
-                                  });
-                                } else {
-                                  validateFile(file, "experience-certificate");
-                                }
-                              }
-                            }}
-                          />
-                        </label>
-                      )}
-                    </div>
-                    {fileErrors["EXPERIENCE CERTIFICATE"] && (
-                      <p className="text-sm text-red-500 mt-1">{fileErrors["EXPERIENCE CERTIFICATE"]}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       )}
     </div>
   );

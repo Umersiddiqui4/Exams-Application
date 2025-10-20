@@ -136,10 +136,10 @@ export function OsceFeilds(props: OsceFieldsProps) {
   };
 
   // Parse slot dates when selectedExam changes
-useEffect(() => {
+  useEffect(() => {
     if (selectedExam && selectedExam.examSlots) {
       const allDates: Date[] = [];
-      const ranges: {start: Date, end: Date, label: string}[] = [];
+      const ranges: { start: Date, end: Date, label: string }[] = [];
 
       selectedExam.examSlots.forEach((slot: any, index: number) => {
         if (slot.startDate && slot.endDate) {
@@ -174,7 +174,7 @@ useEffect(() => {
     }
   }, [selectedExam]);
 
-const getAvailableDatesForField = (
+  const getAvailableDatesForField = (
     fieldName: "preferenceDate1" | "preferenceDate2" | "preferenceDate3"
   ) => {
     return availableDates.filter((date) => {
@@ -215,152 +215,152 @@ const getAvailableDatesForField = (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex justify-center md:justify-start flex-col space-y-4">
                   {/* Candidate ID */}
-               <FormField
-                  control={currentForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-1">
-                      <FormLabel>
-                        E-mail {" "}<span className="text-red-500">*</span>
-                      </FormLabel>
-                      {/* <FormDescription>
+                  <FormField
+                    control={currentForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="col-span-1 md:col-span-1">
+                        <FormLabel>
+                          E-mail {" "}<span className="text-red-500">*</span>
+                        </FormLabel>
+                        {/* <FormDescription>
                                   Please provide valid personal email address that you regularly check, as most
                                   correspondence and important announcements are communicated to candidates by email.
                                 </FormDescription> */}
-                      <FormControl>
-                        <Input
-                          placeholder="Enter Email"
-                          type="email"
-                          {...field}
-                          onBlur={(e) => {
-                            // Trigger application creation check when email loses focus
-                            const emailValue = e.target.value.trim();
-                            if (emailValue && !currentForm.formState.errors.email) {
-                              onEmailBlur();
-                            }
-                          }}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.email
+                        <FormControl>
+                          <Input
+                            placeholder="Enter Email"
+                            type="email"
+                            autoComplete="new-password"
+                            {...field}
+                            onBlur={(e) => {
+                              // Trigger application creation check when email loses focus
+                              const emailValue = e.target.value.trim();
+                              if (emailValue && !currentForm.formState.errors.email) {
+                                onEmailBlur();
+                              }
+                            }}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.email
                               ? "border-red-500 dark:border-red-700"
                               : ""
-                          }`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                              }`}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-<FormField
-                control={currentForm.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      Full name as you would like it to appear on record{" "}
-                      <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter Full Name"
-                        {...field}
-                        onBlur={(e) => {
-                          // Trigger application creation check when full name loses focus
-                          const fullNameValue = e.target.value.trim();
-                          if (fullNameValue && !currentForm.formState.errors.fullName) {
-                            onFullNameBlur();
-                          }
-                        }}
-                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.fullName
-                            ? "border-red-500 dark:border-red-700"
-                            : ""
-                        }`}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={currentForm.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium">
+                          Full name as you would like it to appear on record{" "}
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter Full Name"
+                            autoComplete="new-password"
+                            {...field}
+                            onBlur={(e) => {
+                              // Trigger application creation check when full name loses focus
+                              const fullNameValue = e.target.value.trim();
+                              if (fullNameValue && !currentForm.formState.errors.fullName) {
+                                onFullNameBlur();
+                              }
+                            }}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.fullName
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              
+
                 {/* Passport Image */}
-              <div className="space-y-2">
-                <FormLabel >
-                  Passport size image:{" "}
-                  <span className="text-red-500">*</span>
-                </FormLabel>
-                <div className="flex items-center justify-center w-full">
-                  {passportPreview ? (
-                    <div className="relative w-full">
-                      <div className="flex flex-col items-center">
-                        <img
-                          src={passportPreview || "/placeholder.svg"}
-                          alt="Passport preview"
-                          className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            await deleteUploadedFile("passport-image");
-                            setPassportPreview(null);
-                            const fileInput = document.getElementById(
-                              "passport-image"
-                            ) as HTMLInputElement;
-                            if (fileInput) fileInput.value = "";
+                <div className="space-y-2">
+                  <FormLabel >
+                    Passport size image:{" "}
+                    <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <div className="flex items-center justify-center w-full">
+                    {passportPreview ? (
+                      <div className="relative w-full">
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={passportPreview || "/placeholder.svg"}
+                            alt="Passport preview"
+                            className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              await deleteUploadedFile("passport-image");
+                              setPassportPreview(null);
+                              const fileInput = document.getElementById(
+                                "passport-image"
+                              ) as HTMLInputElement;
+                              if (fileInput) fileInput.value = "";
+                            }}
+                            className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                          >
+                            Change Image
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="passport-image"
+                        className={
+                          warning ||
+                            currentForm.formState.errors.passportImage
+                            ? "border-red-500 flex flex-col items-center justify-center w-full h- border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
+                            : "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"}
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+
+                          <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
+                          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-semibold">Click to upload</span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            JPG, JPEG and png (MAX. 3MB)
+                          </p>
+                        </div>
+                        <input
+                          id="passport-image"
+                          type="file"
+                          className="hidden"
+                          accept="image/jpeg, image/jpg, image/png"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              validateFile(e.target.files[0], "passport-image");
+                            }
                           }}
-                          className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                        >
-                          Change Image
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <label
-                      htmlFor="passport-image"
-                      className={
-                              warning ||
-                              currentForm.formState.errors.passportImage
-                                ? "border-red-500 flex flex-col items-center justify-center w-full h- border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                : "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"}
-                    >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        
-                        <Upload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                        <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                          <span className="font-semibold">Click to upload</span>{" "}
-                          or drag and drop
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          JPG, JPEG and png (MAX. 3MB)
-                        </p>
-                      </div>
-                      <input
-                        id="passport-image"
-                        type="file"
-                        className="hidden"
-                        accept="image/jpeg, image/jpg, image/png"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            validateFile(e.target.files[0], "passport-image");
-                          }
-                        }}
-                      />
-                    </label>
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {fileErrors["PASSPORT IMAGE"] && (
+                    <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT IMAGE"]}</p>
                   )}
                 </div>
-                {fileErrors["PASSPORT IMAGE"] && (
-                  <p className="text-sm text-red-500 mt-1">{fileErrors["PASSPORT IMAGE"]}</p>
-                )}
-              </div>
 
-                 {/* Full Name */}
+                {/* Full Name */}
 
-              
 
-              
+
+
               </div>
               <FormField
                 control={currentForm.control}
@@ -384,6 +384,7 @@ const getAvailableDatesForField = (
                     <FormControl>
                       <Input
                         placeholder="e.g. 1234567"
+                        autoComplete="new-password"
                         {...field}
                         maxLength={7}
                         onChange={(e) => {
@@ -398,11 +399,10 @@ const getAvailableDatesForField = (
                             onCandidateIdBlur(value);
                           }
                         }}
-                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.candidateId
-                            ? "border-red-500 dark:border-red-700"
-                            : ""
-                        }`}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.candidateId
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
+                          }`}
                       />
                     </FormControl>
                     <FormMessage />
@@ -410,9 +410,9 @@ const getAvailableDatesForField = (
                 )}
               />
 
-              
 
-             
+
+
 
               {/* Residential Address */}
               <div className="space-y-4">
@@ -431,12 +431,12 @@ const getAvailableDatesForField = (
                         <FormControl>
                           <Input
                             placeholder="Enter P.O.Box"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.poBox
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.poBox
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -455,12 +455,12 @@ const getAvailableDatesForField = (
                         <FormControl>
                           <Input
                             placeholder="Enter District"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.district
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.district
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -480,12 +480,12 @@ const getAvailableDatesForField = (
                         <FormControl>
                           <Input
                             placeholder="Enter City / Town / Village"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.city
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.city
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -505,12 +505,12 @@ const getAvailableDatesForField = (
                         <FormControl>
                           <Input
                             placeholder="Enter Province / Region"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.province
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.province
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -529,12 +529,12 @@ const getAvailableDatesForField = (
                         <FormControl>
                           <Input
                             placeholder="Enter Country"
+                            autoComplete="new-password"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.country
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.country
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -558,15 +558,15 @@ const getAvailableDatesForField = (
                       {/* <FormDescription>In full international format</FormDescription> */}
                       <FormControl>
                         <div
-                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.whatsapp
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${currentForm.formState.errors.whatsapp
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         >
                           <PhoneInput
                             international
                             countryCallingCodeEditable={true}
+                            autoComplete="new-password"
                             value={field.value}
                             onBlur={handleEmergencyBlur}
                             onChange={(value) => {
@@ -598,15 +598,15 @@ const getAvailableDatesForField = (
                       {/* <FormDescription>In full international format</FormDescription> */}
                       <FormControl>
                         <div
-                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.emergencyContact
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${currentForm.formState.errors.emergencyContact
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         >
                           <PhoneInput
                             international
                             countryCallingCodeEditable={true}
+                            autoComplete="new-password"
                             value={field.value}
                             onBlur={handleWhatsappBlur}
                             onChange={(value) => {
@@ -626,7 +626,7 @@ const getAvailableDatesForField = (
                   )}
                 />
 
-               
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -646,11 +646,10 @@ const getAvailableDatesForField = (
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.dateOfPassingPart1
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.dateOfPassingPart1
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           >
                             <SelectValue placeholder="Select date" />
                           </SelectTrigger>
@@ -695,11 +694,10 @@ const getAvailableDatesForField = (
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.previousOsceAttempts
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.previousOsceAttempts
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           >
                             <SelectValue placeholder="Select number" />
                           </SelectTrigger>
@@ -767,12 +765,12 @@ const getAvailableDatesForField = (
                       <FormControl>
                         <Input
                           placeholder="Enter country of postgraduate clinical experience"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.countryOfExperience
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfExperience
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -792,12 +790,12 @@ const getAvailableDatesForField = (
                       <FormControl>
                         <Input
                           placeholder="Enter Country of ethnic origin"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.countryOfOrigin
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfOrigin
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -817,12 +815,12 @@ const getAvailableDatesForField = (
                       <FormControl>
                         <Input
                           placeholder="Enter Registration authority"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.registrationAuthority
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationAuthority
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -842,12 +840,12 @@ const getAvailableDatesForField = (
                       <FormControl>
                         <Input
                           placeholder="Enter Registration number"
+                          autoComplete="new-password"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.registrationNumber
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationNumber
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -929,7 +927,7 @@ const getAvailableDatesForField = (
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-md border border-indigo-100 dark:border-indigo-800">
-               <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">
                   The OSCE exam will take place over {availableDates.length} days (
                   {selectedExam ? selectedExam?.name : ""}{" "}
                   {Object.values(availableDates).map((dateStr: any) => {
@@ -960,7 +958,7 @@ const getAvailableDatesForField = (
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                        {getAvailableDatesForField("preferenceDate1").map(
+                          {getAvailableDatesForField("preferenceDate1").map(
                             (date) => (
                               <SelectItem
                                 key={date.toISOString()}
@@ -995,7 +993,7 @@ const getAvailableDatesForField = (
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                         {getAvailableDatesForField("preferenceDate2").map(
+                          {getAvailableDatesForField("preferenceDate2").map(
                             (date) => (
                               <SelectItem
                                 key={date.toISOString()}
@@ -1030,7 +1028,7 @@ const getAvailableDatesForField = (
                           <SelectItem key="" value={" "}>
                             None
                           </SelectItem>
-                      {getAvailableDatesForField("preferenceDate3").map(
+                          {getAvailableDatesForField("preferenceDate3").map(
                             (date) => (
                               <SelectItem
                                 key={date.toISOString()}
@@ -1207,7 +1205,7 @@ const getAvailableDatesForField = (
                                 <img
                                   src={
                                     Array.isArray(medicalLicensePreview) ? medicalLicensePreview[0] : medicalLicensePreview ||
-                                    "/placeholder.svg"
+                                      "/placeholder.svg"
                                   }
                                   alt="Medical license preview"
                                   className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
@@ -1237,7 +1235,7 @@ const getAvailableDatesForField = (
                             htmlFor="medical-license"
                             className={
                               warning ||
-                              currentForm.formState.errors.medicalLicense
+                                currentForm.formState.errors.medicalLicense
                                 ? "border-red-500 flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
@@ -1252,7 +1250,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG and png (MAX. 3MB)
+                                  JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1295,7 +1293,7 @@ const getAvailableDatesForField = (
                                 <img
                                   src={
                                     Array.isArray(part1EmailPreview) ? part1EmailPreview[0] : part1EmailPreview ||
-                                    "/placeholder.svg"
+                                      "/placeholder.svg"
                                   }
                                   alt="Part I passing email preview"
                                   className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
@@ -1337,7 +1335,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG and png (MAX. 3MB)
+                                  JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1385,7 +1383,7 @@ const getAvailableDatesForField = (
                                 <img
                                   src={
                                     Array.isArray(passportBioPreview) ? passportBioPreview[0] : passportBioPreview ||
-                                    "/placeholder.svg"
+                                      "/placeholder.svg"
                                   }
                                   alt="Passport bio page preview"
                                   className="h-40 object-contain rounded-md mb-2 border border-slate-200 dark:border-slate-700"
@@ -1415,7 +1413,7 @@ const getAvailableDatesForField = (
                             htmlFor="passport-bio"
                             className={
                               warning ||
-                              currentForm.formState.errors.medicalLicense
+                                currentForm.formState.errors.medicalLicense
                                 ? "border-red-500 flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
@@ -1430,7 +1428,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG and png (MAX. 3MB)
+                                  JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1494,12 +1492,12 @@ const getAvailableDatesForField = (
                             htmlFor="signature"
                             className={
                               warning ||
-                              currentForm.formState.errors.medicalLicense
+                                currentForm.formState.errors.medicalLicense
                                 ? "border-red-500 flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
                                 : "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }
                           >
-                             <div
+                            <div
                               className={`flex flex-col items-center text-center justify-center pt-5 pb-6 `}
                             >
                               <Upload className="w-6 h-6 mb-1 text-slate-500 dark:text-slate-400" />
@@ -1509,7 +1507,7 @@ const getAvailableDatesForField = (
                                 </span>{" "}
                                 <br></br>
                                 <p>
-                                JPG, JPEG and png (MAX. 3MB)
+                                  JPG, JPEG and png (MAX. 3MB)
                                 </p>
                               </p>
                             </div>
@@ -1530,7 +1528,7 @@ const getAvailableDatesForField = (
                     </div>
                   </div>
 
-                
+
                 </div>
               </div>
             </AccordionContent>
