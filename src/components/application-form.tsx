@@ -1547,6 +1547,7 @@ export function ApplicationForm() {
             <form
               onSubmit={currentForm.handleSubmit(onSubmit)}
               className="space-y-8"
+              autoComplete="off"
             >
               {/* Personal and Contact Information */}
 

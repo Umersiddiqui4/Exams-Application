@@ -110,7 +110,7 @@ export function AktFeilds(props: AktsFieldsProps) {
   useEffect(() => {
     if (selectedExam && selectedExam.examSlots) {
       const allDates: Date[] = [];
-      const ranges: {start: Date, end: Date, label: string}[] = [];
+      const ranges: { start: Date, end: Date, label: string }[] = [];
 
       selectedExam.examSlots.forEach((slot: any, index: number) => {
         if (slot.startDate && slot.endDate) {
@@ -167,39 +167,39 @@ export function AktFeilds(props: AktsFieldsProps) {
     );
   };
 
- const updateAttachmentFile = async (id: string, file: File | null) => {
-  if (!file) {
+  const updateAttachmentFile = async (id: string, file: File | null) => {
+    if (!file) {
+      setAttachments(prev =>
+        prev.map(att =>
+          att.id === id ? { ...att, file: null, attachmentUrl: "" } : att
+        )
+      );
+      return;
+    }
+
+    // pehle file set karo (for preview, etc.)
     setAttachments(prev =>
-      prev.map(att =>
-        att.id === id ? { ...att, file: null, attachmentUrl: "" } : att
-      )
+      prev.map(att => (att.id === id ? { ...att, file } : att))
     );
-    return;
-  }
 
-  // pehle file set karo (for preview, etc.)
-  setAttachments(prev =>
-    prev.map(att => (att.id === id ? { ...att, file } : att))
-  );
+    try {
+      // file ko validate karo
+      const attachment = attachments.find(att => att.id === id);
 
-  try {
-    // file ko validate karo
-    const attachment = attachments.find(att => att.id === id);
+      const url = await validateFile(file, "attachment", attachment?.title, attachment?.id);
 
-    const url = await validateFile(file, "attachment", attachment?.title, attachment?.id);
 
-   
       // ✅ URL mil gaya → direct state update
       setAttachments(prev =>
         prev.map(att =>
           att.id === id ? { ...att, attachmentUrl: url, file } : att
         )
       );
-  
-  } catch (err) {
-    console.error("Error validating file:", err);
-  }
-};
+
+    } catch (err) {
+      console.error("Error validating file:", err);
+    }
+  };
   return (
     <div>
       <Accordion
@@ -220,34 +220,34 @@ export function AktFeilds(props: AktsFieldsProps) {
           </AccordionTrigger>
           <AccordionContent className="px-4 pt-4 pb-6 bg-white dark:bg-slate-900">
             <div className="space-y-6">
-               <FormField
-                  control={currentForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
-                      <FormLabel>
-                        E-mail <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter Email"
-                          type="email"
-                          {...field}
-                          onBlur={() => {
-                            field.onBlur();
-                            onEmailBlur?.();
-                          }}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.email
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
+              <FormField
+                control={currentForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="col-span-1 md:col-span-2">
+                    <FormLabel>
+                      E-mail <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter Email"
+                        type="email"
+                        autoComplete="new-password"
+                        {...field}
+                        onBlur={() => {
+                          field.onBlur();
+                          onEmailBlur?.();
+                        }}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.email
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
                           }`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               {/* Candidate ID */}
               <FormField
                 control={currentForm.control}
@@ -282,11 +282,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                             onCandidateIdBlur(value);
                           }
                         }}
-                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.candidateId
-                            ? "border-red-500 dark:border-red-700"
-                            : ""
-                        }`}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.candidateId
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
+                          }`}
                       />
                     </FormControl>
                     <FormMessage />
@@ -370,23 +369,23 @@ export function AktFeilds(props: AktsFieldsProps) {
                     <FormControl>
                       <Input
                         placeholder="Enter Full Name"
+                        autoComplete="new-password"
                         {...field}
                         onBlur={() => {
                           field.onBlur();
                           onFullNameBlur?.();
                         }}
-                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                          currentForm.formState.errors.fullName
-                            ? "border-red-500 dark:border-red-700"
-                            : ""
-                        }`}
+                        className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.fullName
+                          ? "border-red-500 dark:border-red-700"
+                          : ""
+                          }`}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-             
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={currentForm.control}
@@ -402,11 +401,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.gender
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.gender
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           >
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
@@ -441,11 +439,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <Input
                           placeholder="Enter Graduating School Name"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.schoolName
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.schoolName
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -466,11 +463,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <Input
                           placeholder="Enter Graduating School Location"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.schoolLocation
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.schoolLocation
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -498,11 +494,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                             field.onChange(selectedDate);
                           }}
                           max={new Date().toISOString().split("T")[0]} // Prevent future dates
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.QualificationDate
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.QualificationDate
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -528,11 +523,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                           <Input
                             placeholder="Enter P.O.Box"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.poBox
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.poBox
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -552,11 +546,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                           <Input
                             placeholder="Enter District"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.district
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.district
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -577,11 +570,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                           <Input
                             placeholder="Enter City / Town / Village"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.city
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.city
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -602,11 +594,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                           <Input
                             placeholder="Enter Province / Region"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.province
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.province
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -626,11 +617,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                           <Input
                             placeholder="Enter Country"
                             {...field}
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.country
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.country
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           />
                         </FormControl>
                         <FormMessage />
@@ -653,11 +643,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       </FormLabel>
                       <FormControl>
                         <div
-                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.whatsapp
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${currentForm.formState.errors.whatsapp
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         >
                           <PhoneInput
                             international
@@ -693,11 +682,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       {/* <FormDescription>In full international format</FormDescription> */}
                       <FormControl>
                         <div
-                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                            currentForm.formState.errors.emergencyContact
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${currentForm.formState.errors.emergencyContact
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         >
                           <PhoneInput
                             international
@@ -721,7 +709,7 @@ export function AktFeilds(props: AktsFieldsProps) {
                   )}
                 />
 
-                
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -783,11 +771,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                              currentForm.formState.errors.previousAktsAttempts
-                                ? "border-red-500 dark:border-red-700"
-                                : ""
-                            }`}
+                            className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.previousAktsAttempts
+                              ? "border-red-500 dark:border-red-700"
+                              : ""
+                              }`}
                           >
                             <SelectValue placeholder="Select number" />
                           </SelectTrigger>
@@ -856,11 +843,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <Input
                           placeholder="Enter country of postgraduate clinical experience"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.countryOfExperience
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfExperience
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -881,11 +867,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <Input
                           placeholder="Enter Country of ethnic origin"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.countryOfOrigin
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.countryOfOrigin
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -906,11 +891,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <Input
                           placeholder="Enter Registration authority"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.registrationAuthority
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationAuthority
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -931,11 +915,10 @@ export function AktFeilds(props: AktsFieldsProps) {
                         <Input
                           placeholder="Enter Registration number"
                           {...field}
-                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${
-                            currentForm.formState.errors.registrationNumber
-                              ? "border-red-500 dark:border-red-700"
-                              : ""
-                          }`}
+                          className={`bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-indigo-500 ${currentForm.formState.errors.registrationNumber
+                            ? "border-red-500 dark:border-red-700"
+                            : ""
+                            }`}
                         />
                       </FormControl>
                       <FormMessage />
@@ -1143,26 +1126,26 @@ export function AktFeilds(props: AktsFieldsProps) {
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {selectedExam?.location
                           ? selectedExam.location.split(', ').map((location: string) => (
-                              <div
-                                key={location.trim()}
-                                className="flex items-center space-x-2"
+                            <div
+                              key={location.trim()}
+                              className="flex items-center space-x-2"
+                            >
+                              <input
+                                type="radio"
+                                id={location.trim()}
+                                value={location.trim()}
+                                checked={field.value === location.trim()}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                              />
+                              <label
+                                htmlFor={location.trim()}
+                                className="text-sm font-medium text-gray-900 dark:text-gray-300"
                               >
-                                <input
-                                  type="radio"
-                                  id={location.trim()}
-                                  value={location.trim()}
-                                  checked={field.value === location.trim()}
-                                  onChange={(e) => field.onChange(e.target.value)}
-                                  className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                />
-                                <label
-                                  htmlFor={location.trim()}
-                                  className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                                >
-                                  {location.trim()}
-                                </label>
-                              </div>
-                            ))
+                                {location.trim()}
+                              </label>
+                            </div>
+                          ))
                           : null}
                       </div>
                     </FormControl>
