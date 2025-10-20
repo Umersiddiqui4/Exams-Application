@@ -54,9 +54,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dis
 export default function DraftApplicationTable() {
   const { toast } = useToast()
 
-  const searchQuery = ""
   // Draft applications - filter by DRAFT status
   const activeFilter = "DRAFT"
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all")
   const [isExporting, setIsExporting] = useState(false)
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
@@ -925,6 +925,9 @@ export default function DraftApplicationTable() {
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
+                    value={searchQuery}
+
+                     onChange={(e) => setSearchQuery(e.target.value)} 
                   />
                 </div>
               </div>

@@ -58,12 +58,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dis
 export default function ApplicationTable() {
   const { toast } = useToast()
 
-  const searchQuery = ""
-  const activeFilter = "all"
-  // const [activeFilter, setActiveFilter] = useState<string>("all");
+
+  const [activeFilter, setActiveFilter] = useState<string>("all");
   const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all")
   const [isExporting, setIsExporting] = useState(false)
-  // const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
   const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false)
@@ -979,37 +978,37 @@ export default function ApplicationTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("all")} */
+                   onClick={() => setActiveFilter("all")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("SUBMITTED")} */
+                   onClick={() => setActiveFilter("SUBMITTED")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Submitted
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("UNDER_REVIEW")} */
+                   onClick={() => setActiveFilter("UNDER_REVIEW")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Under Review
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("APPROVED")} */
+                   onClick={() => setActiveFilter("APPROVED")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("REJECTED")} */
+                   onClick={() => setActiveFilter("REJECTED")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  /* onClick={() => setActiveFilter("waiting")} */
+                   onClick={() => setActiveFilter("waiting")} 
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Waiting
@@ -1094,9 +1093,9 @@ export default function ApplicationTable() {
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
-                    // value={searchQuery}
+                    value={searchQuery}
 
-                    /* onChange={(e) => setSearchQuery(e.target.value)} */
+                     onChange={(e) => setSearchQuery(e.target.value)} 
                   />
                 </div>
               </div>
