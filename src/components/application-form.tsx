@@ -1187,11 +1187,25 @@ export function ApplicationForm() {
         break;
       case "medical-license":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setMedicalLicensePreview([pdfPlaceholder]);
+          setMedicalLicenseIsPdf(isPdf);
+
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setMedicalLicensePreview(imagesArray); // array of images
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setMedicalLicensePreview(imagesArray); // array of images
+            } catch (error) {
+              logger.error("PDF conversion error for medical license", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Medical license PDF could not be fully processed. You can still submit, but preview may be limited.",
+                variant: "default",
+              });
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1201,11 +1215,25 @@ export function ApplicationForm() {
         break;
       case "part1-email":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setPart1EmailPreview([pdfPlaceholder]);
+          setPart1EmailIsPdf(isPdf);
+
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setPart1EmailPreview(imagesArray);
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPart1EmailPreview(imagesArray);
+            } catch (error) {
+              logger.error("PDF conversion error for part 1 email", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Part 1 email PDF could not be fully processed. You can still submit, but preview may be limited.",
+                variant: "default",
+              });
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1215,11 +1243,25 @@ export function ApplicationForm() {
         break;
       case "passport-bio":
         if (isPdf) {
+          // Set immediate placeholder for PDF
+          setPassportBioPreview([pdfPlaceholder]);
+          setPassportBioIsPdf(isPdf);
+
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const base64Pdf = e.target?.result as string;
-            const imagesArray = await pdfToImages(base64Pdf);
-            setPassportBioPreview(imagesArray);
+            try {
+              const base64Pdf = e.target?.result as string;
+              const imagesArray = await pdfToImages(base64Pdf);
+              setPassportBioPreview(imagesArray);
+            } catch (error) {
+              logger.error("PDF conversion error for passport bio", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Passport bio PDF could not be fully processed. You can still submit, but preview may be limited.",
+                variant: "default",
+              });
+              // Keep placeholder on error
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -1260,7 +1302,12 @@ export function ApplicationForm() {
                 return updated;
               });
             } catch (error) {
-              logger.error("PDF conversion error", error);
+              logger.error("PDF conversion error for passport bio page", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Passport bio page PDF is processing. You can continue filling the form.",
+                variant: "default",
+              });
               // Keep placeholder on error
             }
           };
@@ -1302,7 +1349,12 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              logger.error("PDF conversion error", error);
+              logger.error("PDF conversion error for valid license", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Valid license PDF is processing. You can continue filling the form.",
+                variant: "default",
+              });
               // Keep placeholder on error
             }
           };
@@ -1344,7 +1396,12 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              logger.error("PDF conversion error", error);
+              logger.error("PDF conversion error for MBBS degree", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "MBBS degree PDF is processing. You can continue filling the form.",
+                variant: "default",
+              });
               // Keep placeholder on error
             }
           };
@@ -1385,7 +1442,12 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              logger.error("PDF conversion error", error);
+              logger.error("PDF conversion error for internship certificate", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Internship certificate PDF is processing. You can continue filling the form.",
+                variant: "default",
+              });
               // Keep placeholder on error
             }
           };
@@ -1425,7 +1487,12 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              logger.error("PDF conversion error", error);
+              logger.error("PDF conversion error for experience certificate", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Experience certificate PDF is processing. You can continue filling the form.",
+                variant: "default",
+              });
               // Keep placeholder on error
             }
           };
@@ -1466,7 +1533,12 @@ export function ApplicationForm() {
                   : att
               ));
             } catch (error) {
-              logger.error("PDF conversion error", error);
+              logger.error("PDF conversion error for signature", error);
+              toast({
+                title: "PDF Conversion Warning",
+                description: "Signature PDF is processing. You can continue filling the form.",
+                variant: "default",
+              });
               // Keep placeholder on error
             }
           };
@@ -1777,15 +1849,56 @@ export function ApplicationForm() {
     }
   }, [candidateId]);
 
-  function test() {
-    setTimeout(() => {
-      const pdfBlob = document.getElementById("pdf-download-preview-link");
-      if (pdfBlob) {
-        // @ts-ignore: react-pdf injects an anchor with href at runtime
-        const pdfUrl = pdfBlob.href;
-        window.open(pdfUrl, "_blank");
-      }
-    }, 1000); // Increased timeout to allow PDF generation to complete
+  async function handlePreviewClick() {
+    try {
+      setIsPreviewLoading(true);
+      setPreviewMode(true);
+
+      // Wait for PDF component to mount and generate
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Try to open the PDF with retries
+      let retries = 0;
+      const maxRetries = 10;
+
+      const tryOpenPdf = () => {
+        const pdfBlob = document.getElementById("pdf-download-preview-link");
+        if (pdfBlob) {
+          // @ts-ignore: react-pdf injects an anchor with href at runtime
+          const pdfUrl = pdfBlob.href;
+          if (pdfUrl && pdfUrl !== window.location.href) {
+            window.open(pdfUrl, "_blank");
+            setIsPreviewLoading(false);
+            return true;
+          }
+        }
+        return false;
+      };
+
+      const intervalId = setInterval(() => {
+        retries++;
+        if (tryOpenPdf() || retries >= maxRetries) {
+          clearInterval(intervalId);
+          if (retries >= maxRetries) {
+            setIsPreviewLoading(false);
+            toast({
+              title: "Preview Generation Timeout",
+              description: "The PDF is taking longer than expected. Please try again or check your attachments.",
+              variant: "destructive",
+            });
+          }
+        }
+      }, 500);
+
+    } catch (error) {
+      logger.error("Preview error", error);
+      setIsPreviewLoading(false);
+      toast({
+        title: "Preview Failed",
+        description: "Unable to generate preview. Please try again.",
+        variant: "destructive",
+      });
+    }
   }
 
   if (occurrenceLoading) {
@@ -1988,25 +2101,20 @@ export function ApplicationForm() {
                   type="button"
                   variant="outline"
                   disabled={isPreviewLoading}
-                  onClick={() => {
-                    setIsPreviewLoading(true);
-                    setPreviewMode(true);
-                    setTimeout(() => {
-                      currentForm.handleSubmit(test)();
-                      // Reset loading state after PDF opens
-                      setTimeout(() => {
-                        setIsPreviewLoading(false);
-                      }, 2000); // Allow extra time for window to open
-                    }, 100);
-                  }}
+                  onClick={handlePreviewClick}
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
                 >
                   {isPreviewLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <span>Generating PDF...</span>
+                    </>
                   ) : (
-                    <Eye className="h-4 w-4 mr-2" />
+                    <>
+                      <Eye className="h-4 w-4 mr-2" />
+                      <span>Preview</span>
+                    </>
                   )}
-                  {isPreviewLoading ? "Generating PDF..." : "Preview"}
                 </Button>
                 <Button
                   type="button"
