@@ -873,6 +873,7 @@ export function ApplicationForm() {
           // notes: ""
         };
       } else {
+        console.log("OSCE full payload", data);
         // OSCE full payload
         apiPayload = {
           examOccurrenceId: params.examId,
@@ -895,9 +896,9 @@ export function ApplicationForm() {
           usualForename: data.fullName.split(" ")[0] || "",
           aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
-          preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
-          preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
-          preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
+          preferenceDate1: (data as FormValues).preferenceDate1 || "01/01/2000",
+          preferenceDate2: (data as FormValues).preferenceDate2 || "01/01/2000",
+          preferenceDate3: (data as FormValues).preferenceDate3 || "01/01/2000",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
           examType: examDto?.type || "OSCE",
           shouldSubmit: true,
@@ -1005,9 +1006,9 @@ export function ApplicationForm() {
           }
           : {
             // OSCE specific fields
-            preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
-            preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
-            preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
+            preferenceDate1: (data as FormValues).preferenceDate1 || "01/01/2000",
+            preferenceDate2: (data as FormValues).preferenceDate2 || "01/01/2000",
+            preferenceDate3: (data as FormValues).preferenceDate3 || "01/01/2000",
             medicalLicenseUrl: medicalLicensePreview || "",
             part1EmailUrl: part1EmailPreview || "",
             passportBioUrl: passportBioPreview || "",
@@ -1022,9 +1023,9 @@ export function ApplicationForm() {
         submittedDate: application.submittedDate ? new Date(application.submittedDate).toISOString() : application.submittedDate,
         dateOfPassingPart1: application.dateOfPassingPart1 ? new Date(application.dateOfPassingPart1).toString() : application.dateOfPassingPart1,
         dateOfRegistration: application.dateOfRegistration ? new Date(application.dateOfRegistration).toISOString() : application.dateOfRegistration,
-        preferenceDate1: application.preferenceDate1 || "",
-        preferenceDate2: application.preferenceDate2 || "",
-        preferenceDate3: application.preferenceDate3 || "",
+        preferenceDate1: application.preferenceDate1 || "01/01/2000",
+        preferenceDate2: application.preferenceDate2 || "01/01/2000",
+        preferenceDate3: application.preferenceDate3 || "01/01/2000",
       }));
       dispatch(incrementApplicationsCount(examOccurrence.examId));
 
