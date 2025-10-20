@@ -27,7 +27,6 @@ export function EmailVerificationTest() {
     setResult(null);
 
     try {
-      console.log('Testing verification with token:', token);
       const response = await verifyEmail(token.trim());
       setResult(response);
       
