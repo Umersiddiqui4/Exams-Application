@@ -32,56 +32,6 @@ import {
   ApplicationPDFCompleteAktPreview,
   ApplicationPDFCompletePreview,
 } from "./ui/pdf-generator";
-
-// Wrapper component to handle image resizing for PDF
-const ResizedPDFWrapper = ({ children, images }: { children: any, images: any }) => {
-  const [resizedImages, setResizedImages] = useState<any>(null);
-  const [isResizing, setIsResizing] = useState(true);
-
-  useEffect(() => {
-    const resizeImages = async () => {
-      if (!images) {
-        setResizedImages(images);
-        setIsResizing(false);
-        return;
-      }
-
-      try {
-        const processedImages: any = {};
-
-        // Process passport image
-        if (images.passport && typeof images.passport === 'string') {
-          processedImages.passport = await resizeImageForPdf(images.passport);
-        }
-
-        // Process array images
-        const arrayFields = ['medicalLicense', 'part1Email', 'passportBio', 'signature'];
-        for (const field of arrayFields) {
-          if (images[field] && Array.isArray(images[field])) {
-            processedImages[field] = await Promise.all(
-              images[field].map((img: string) => resizeImageForPdf(img))
-            );
-          }
-        }
-
-        setResizedImages(processedImages);
-      } catch (error) {
-        console.error('Error resizing images:', error);
-        setResizedImages(images); // Fallback to original
-      } finally {
-        setIsResizing(false);
-      }
-    };
-
-    resizeImages();
-  }, [images]);
-
-  if (isResizing) {
-    return null; // Don't render PDF while resizing
-  }
-
-  return children(resizedImages || images);
-};
 import {
   aktsFormDefaultValues,
   aktsFormSchema,
@@ -736,6 +686,7 @@ export function ApplicationForm() {
           confirmButtonColor: "#f59e0b",
           confirmButtonText: "OK",
         }).then(() => {
+          window.location.href = "https://mrcgpintsouthasia.org/";
         });
         setIsSubmitting(false);
         return;
@@ -873,7 +824,6 @@ export function ApplicationForm() {
           // notes: ""
         };
       } else {
-        console.log("OSCE full payload", data);
         // OSCE full payload
         apiPayload = {
           examOccurrenceId: params.examId,
@@ -896,9 +846,9 @@ export function ApplicationForm() {
           usualForename: data.fullName.split(" ")[0] || "",
           aktPassingDate: (data as FormValues).dateOfPassingPart1 || "",
           previousOSCEAttempts: (data as FormValues).previousOsceAttempts || 0,
-          preferenceDate1: (data as FormValues).preferenceDate1 || "01/01/2000",
-          preferenceDate2: (data as FormValues).preferenceDate2 || "01/01/2000",
-          preferenceDate3: (data as FormValues).preferenceDate3 || "01/01/2000",
+          preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
+          preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
+          preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
           osceCandidateStatement: (data as FormValues).termsAgreed || false,
           examType: examDto?.type || "OSCE",
           shouldSubmit: true,
@@ -1006,9 +956,9 @@ export function ApplicationForm() {
           }
           : {
             // OSCE specific fields
-            preferenceDate1: (data as FormValues).preferenceDate1 || "01/01/2000",
-            preferenceDate2: (data as FormValues).preferenceDate2 || "01/01/2000",
-            preferenceDate3: (data as FormValues).preferenceDate3 || "01/01/2000",
+            preferenceDate1: (data as FormValues).preferenceDate1 || "00/00/0000",
+            preferenceDate2: (data as FormValues).preferenceDate2 || "00/00/0000",
+            preferenceDate3: (data as FormValues).preferenceDate3 || "00/00/0000",
             medicalLicenseUrl: medicalLicensePreview || "",
             part1EmailUrl: part1EmailPreview || "",
             passportBioUrl: passportBioPreview || "",
@@ -1016,21 +966,8 @@ export function ApplicationForm() {
           }),
       };
 
-      // Ensure dates are serialized to strings for Redux state
-      dispatch(addApplication({
-        ...application,
-        date: application.date ? new Date(application.date).toISOString() : application.date,
-        submittedDate: application.submittedDate ? new Date(application.submittedDate).toISOString() : application.submittedDate,
-        dateOfPassingPart1: application.dateOfPassingPart1 ? new Date(application.dateOfPassingPart1).toString() : application.dateOfPassingPart1,
-        dateOfRegistration: application.dateOfRegistration ? new Date(application.dateOfRegistration).toISOString() : application.dateOfRegistration,
-        preferenceDate1: application.preferenceDate1 || "01/01/2000",
-        preferenceDate2: application.preferenceDate2 || "01/01/2000",
-        preferenceDate3: application.preferenceDate3 || "01/01/2000",
-      }));
+      dispatch(addApplication(application));
       dispatch(incrementApplicationsCount(examOccurrence.examId));
-
-      // Enable preview mode to render PDFDownloadLink
-      setPreviewMode(true);
 
       // Success Alert
       Swal.fire({
@@ -1054,25 +991,7 @@ export function ApplicationForm() {
             .getElementById("pdf-preview-link")
             ?.addEventListener("click", (e) => {
               e.preventDefault();
-
-              // Function to check if PDF is ready and click
-              const clickPdfLink = () => {
-                const pdfLink = document.getElementById("pdf-download-link") as HTMLAnchorElement;
-                if (pdfLink && pdfLink.href && pdfLink.href !== "about:blank") {
-                  // PDF is ready, click it
-                  pdfLink.click();
-                } else {
-                  console.error("PDF download link not ready yet");
-                  toast({
-                    title: "Please wait",
-                    description: "PDF is still being generated. Please try again in a moment.",
-                    variant: "default",
-                  });
-                }
-              };
-
-              // Wait a bit for PDF to be ready, then click
-              setTimeout(clickPdfLink, 1000);
+              document.getElementById("pdf-download-link")?.click();
             });
         },
       }).then(() => {
@@ -1113,7 +1032,7 @@ export function ApplicationForm() {
     attachmentId?: string
   ) => {
     // List of input IDs that require validation
-    const validateThese = ["passport-image", "medical-license", "part1-email", "passport-bio", "signature"];
+    const validateThese = ["passport-image"];
 
     let fieldName: string;
     if (attachmentId) {
@@ -1202,19 +1121,8 @@ export function ApplicationForm() {
             inputId
           ) as HTMLInputElement;
           if (fileInput) fileInput.value = "";
-
-          // Clear the appropriate preview
-          if (title === "passport-image" || inputId === "passport-image") {
-            setPassportPreview(null);
-          } else if (inputId === "medical-license") {
-            setMedicalLicensePreview(null);
-            setMedicalLicenseIsPdf(null);
-          }
-
+          setPassportPreview(null);
           return false;
-
-          // this changes is made for hide the pdf upload  functionality //
-
         }
       }
 
@@ -2059,7 +1967,6 @@ export function ApplicationForm() {
             <form
               onSubmit={currentForm.handleSubmit(onSubmit)}
               className="space-y-8"
-              autoComplete="off"
             >
               {/* Personal and Contact Information */}
 
@@ -2118,22 +2025,18 @@ export function ApplicationForm() {
                   <PDFDownloadLink
                     id="pdf-download-link"
                     document={
-                      <ResizedPDFWrapper images={pdfImages}>
-                        {(resizedImages: any) =>
-                          !selectedExamType ? (
-                            <ApplicationPDFComplete
-                              data={currentForm.getValues()}
-                              images={resizedImages}
-                            />
-                          ) : (
-                            <ApplicationPDFCompleteAkt
-                              data={currentForm.getValues()}
-                              image={attachments}
-                              images={resizedImages}
-                            />
-                          )
-                        }
-                      </ResizedPDFWrapper>
+                      !selectedExamType ? (
+                        <ApplicationPDFComplete
+                          data={currentForm.getValues()}
+                          images={pdfImages}
+                        />
+                      ) : (
+                        <ApplicationPDFCompleteAkt
+                          data={currentForm.getValues()}
+                          image={attachments}
+                          images={pdfImages}
+                        />
+                      )
                     }
                     fileName="MRCGP_Application_Form.pdf"
                     className="hidden"
@@ -2161,22 +2064,18 @@ export function ApplicationForm() {
                   <PDFDownloadLink
                     id="pdf-download-preview-link"
                     document={
-                      <ResizedPDFWrapper images={pdfImages}>
-                        {(resizedImages: any) =>
-                          !selectedExamType ? (
-                            <ApplicationPDFCompletePreview
-                              data={currentForm.getValues()}
-                              images={resizedImages}
-                            />
-                          ) : (
-                            <ApplicationPDFCompleteAktPreview
-                              data={aktsForm.getValues()}
-                              image={attachments}
-                              images={resizedImages}
-                            />
-                          )
-                        }
-                      </ResizedPDFWrapper>
+                      !selectedExamType ? (
+                        <ApplicationPDFCompletePreview
+                          data={currentForm.getValues()}
+                          images={pdfImages}
+                        />
+                      ) : (
+                        <ApplicationPDFCompleteAktPreview
+                          data={aktsForm.getValues()}
+                          image={attachments}
+                          images={pdfImages}
+                        />
+                      )
                     }
                     fileName="MRCGP_Application_Form.pdf"
                     className="hidden"
