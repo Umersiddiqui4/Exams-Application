@@ -10,7 +10,6 @@ import {
 
 
 export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
-  console.log("Rendering PDF with data:", data, images);
 
   return (
     <Document>
@@ -339,8 +338,6 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
               ? [value]
               : [];
 
-          console.log("image", image);
-          console.log("image.length", image.length);
           if (image.length === 0) return null;
 
           return image.map((imgSrc: string, pageIndex: number) => {

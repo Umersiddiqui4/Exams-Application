@@ -1113,7 +1113,6 @@ export function ApplicationForm() {
 
     // Create local preview URL immediately
     const localPreviewUrl = await fileToBase64(file);
-    console.log("localPreviewUrl", localPreviewUrl);
 
     // Set immediate preview with local URL
     if (title === "passport-image") {
