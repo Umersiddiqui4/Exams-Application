@@ -678,7 +678,6 @@ export function ApplicationForm() {
           confirmButtonColor: "#f59e0b",
           confirmButtonText: "OK"
         }).then(() => {
-          window.location.href = "https://mrcgpintsouthasia.org/";
         });
         setIsSubmitting(false);
         return;
@@ -948,7 +947,6 @@ export function ApplicationForm() {
         confirmButtonText: "OK"
       }).then(() => {
         // Redirect to main MRCGP website when user clicks OK
-        window.location.href = "https://mrcgpintsouthasia.org/";
       });
     } finally {
       setIsSubmitting(false);
