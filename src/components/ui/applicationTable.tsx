@@ -14,17 +14,17 @@ import {
   DropdownMenuTrigger,
 } from "./dropdown-menu";
 import {
-    Check,
-    XIcon
-  } from "lucide-react";
-  import {
-    Document,
-    Page,
-    Text,
-    View,
-    StyleSheet,
-    Image,
-  } from "@react-pdf/renderer";
+  Check,
+  XIcon
+} from "lucide-react";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 import {
   Select,
   SelectContent,
@@ -56,7 +56,7 @@ import * as pdfjsLib from "pdfjs-dist/";
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
   import.meta.url
-).toString();"use client"
+).toString(); "use client"
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.js", import.meta.url).toString()
 
@@ -376,7 +376,7 @@ export default function ApplicationTable() {
       const examName =
         selectedExamOccurrence !== "all"
           ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)?.title ||
-            "Selected-Exam-Occurrence"
+          "Selected-Exam-Occurrence"
           : "All-Exam-Occurrences"
 
       const link = document.createElement("a")
@@ -409,7 +409,7 @@ export default function ApplicationTable() {
 
   const ApplicationPDF = ({ data }: any) => {
     console.log("Generating PDF for data:", data);
-    
+
     return (
       <Document>
         {/* Main application form page */}
@@ -581,7 +581,7 @@ export default function ApplicationTable() {
                   <Text style={styles.fieldLabel}>Preference Date 1:</Text>
                   <Text style={styles.fieldValue}>
                     {data.osceDetails?.preferenceDate1 &&
-                    data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
+                      data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
                       ? format(new Date(data.osceDetails.preferenceDate1), "PPP")
                       : "Not provided"}
                   </Text>
@@ -590,7 +590,7 @@ export default function ApplicationTable() {
                   <Text style={styles.fieldLabel}>Preference Date 2:</Text>
                   <Text style={styles.fieldValue}>
                     {data.osceDetails?.preferenceDate2 &&
-                    data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
+                      data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
                       ? format(new Date(data.osceDetails.preferenceDate2), "PPP")
                       : "Not provided"}
                   </Text>
@@ -599,7 +599,7 @@ export default function ApplicationTable() {
                   <Text style={styles.fieldLabel}>Preference Date 3:</Text>
                   <Text style={styles.fieldValue}>
                     {data.osceDetails?.preferenceDate3 &&
-                    data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
+                      data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
                       ? format(new Date(data.osceDetails.preferenceDate3), "PPP")
                       : "Not provided"}
                   </Text>
@@ -613,7 +613,7 @@ export default function ApplicationTable() {
                 <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
               </View>
               <View style={styles.resumeBody}>
-            
+
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>OSCE Candidate Statement:</Text>
                   <Text style={styles.fieldValue}>
@@ -686,7 +686,7 @@ export default function ApplicationTable() {
                     ? "Part 1 Passing Email"
                     : attachment.fileName?.toLowerCase()?.includes("passport_bio_page")
                       ? "Passport Bio Page"
-                      : attachment.fileName?.toLowerCase()?.includes("signature") 
+                      : attachment.fileName?.toLowerCase()?.includes("signature")
                         ? "Signature"
                         : `Attachment ${index + 1}`
 
@@ -897,7 +897,7 @@ export default function ApplicationTable() {
   })
   const columnsWithActions = [...columns.filter((col: any) => col.id !== "actions"), actionColumn]
 
- return (
+  return (
     <div>
       <Card className="shadow-lg border-0 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
         <CardHeader className="bg-[#5c347d] dark:bg-[#3b1f52] flex flex-row items-center justify-between space-y-0 pb-2">
@@ -980,7 +980,7 @@ export default function ApplicationTable() {
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 {/* Exam Dropdown */}
-                <div className="w-full md:w-64">
+                <div className="w-full md:w-80">
                   <Select value={selectedExamOccurrence} onValueChange={handleExamChange}>
                     <SelectTrigger className="w-full dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20">
                       <div className="flex items-center">
@@ -1026,14 +1026,14 @@ export default function ApplicationTable() {
                 </div>
 
                 {/* Search */}
-                <div className="relative w-full md:w-64">
+                <div className="relative w-full md:w-80">
                   <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-slate-400" />
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
-                    // value={searchQuery}
+                  // value={searchQuery}
 
-                    /* onChange={(e) => setSearchQuery(e.target.value)} */
+                  /* onChange={(e) => setSearchQuery(e.target.value)} */
                   />
                 </div>
               </div>
@@ -1064,10 +1064,10 @@ export default function ApplicationTable() {
                       Filter applied:{" "}
                       <span className="text-blue-600 dark:text-blue-400 font-semibold">
                         {activeFilter === "SUBMITTED" ? "Submitted" :
-                         activeFilter === "UNDER_REVIEW" ? "Under Review" :
-                         activeFilter === "APPROVED" ? "Approved" :
-                         activeFilter === "REJECTED" ? "Rejected" :
-                         activeFilter === "waiting" ? "Waiting" : activeFilter}
+                          activeFilter === "UNDER_REVIEW" ? "Under Review" :
+                            activeFilter === "APPROVED" ? "Approved" :
+                              activeFilter === "REJECTED" ? "Rejected" :
+                                activeFilter === "waiting" ? "Waiting" : activeFilter}
                       </span>
                     </span>
                   </div>
