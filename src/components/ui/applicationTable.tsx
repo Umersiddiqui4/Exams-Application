@@ -1042,7 +1042,7 @@ export default function ApplicationTable() {
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 {/* Exam Dropdown */}
-                <div className="w-full md:w-64">
+                <div className="w-full md:w-80">
                   <Select value={selectedExamOccurrence} onValueChange={handleExamChange}>
                     <SelectTrigger className="w-full dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20">
                       <div className="flex items-center">
