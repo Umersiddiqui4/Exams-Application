@@ -8,6 +8,7 @@ import {
 } from "./card";
 import { Input } from "./input";
 import { logger } from '@/lib/logger';
+import { isNoPreferenceDate } from '@/lib/utils';
 // import {
 //   DropdownMenu,
 //   DropdownMenuContent,
@@ -15,13 +16,13 @@ import { logger } from '@/lib/logger';
 //   DropdownMenuTrigger,
 // } from "./dropdown-menu";
 import {
-    Document,
-    Page,
-    Text,
-    View,
-    StyleSheet,
-    Image,
-  } from "@react-pdf/renderer";
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 import {
   Select,
   SelectContent,
@@ -123,12 +124,12 @@ export default function DraftApplicationTable() {
 
   const handlePdfGenerate = async (row: any) => {
     setGeneratingIds((prev) => new Set(prev).add(row.original.id))
-    
+
     // Clear previous application data and close any open panels
     setSelectedApplicationData(null)
     setPdfPreviewOpen(false)
     setDetailViewOpen(false)
-    
+
     try {
       // Fetch detailed application data
       const detailedData: any = await getApplication(row.original.id)
@@ -243,7 +244,7 @@ export default function DraftApplicationTable() {
 
   const handleDownloadPDF = async () => {
     if (!selectedApplicationData) return;
-    
+
     try {
       const blob = await generatePdfBlob(selectedApplicationData)
       const url = URL.createObjectURL(blob)
@@ -290,7 +291,7 @@ export default function DraftApplicationTable() {
 
     try {
       const token = localStorage.getItem("auth_token")
-      
+
       // Build query parameters
       const params = new URLSearchParams({
         includeWaitingList: includeWaitingList.toString(),
@@ -316,7 +317,7 @@ export default function DraftApplicationTable() {
       const examName =
         selectedExamOccurrence !== "all"
           ? examOccurrences.find((examOccurrence) => examOccurrence.id.toString() === selectedExamOccurrence)?.title ||
-            "Selected-Exam-Occurrence"
+          "Selected-Exam-Occurrence"
           : "All-Exam-Occurrences"
 
       const link = document.createElement("a")
@@ -356,7 +357,7 @@ export default function DraftApplicationTable() {
 
   const ApplicationPDF = ({ data }: any) => {
     logger.debug("Generating PDF for data", data);
-    
+
     return (
       <Document>
         {/* Main application form page */}
@@ -525,28 +526,25 @@ export default function DraftApplicationTable() {
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Preference Date 1:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.preferenceDate1 &&
-                    data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
+                    {!isNoPreferenceDate(data.osceDetails?.preferenceDate1)
                       ? format(new Date(data.osceDetails.preferenceDate1), "PPP")
-                      : "Not provided"}
+                      : "Not Available"}
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Preference Date 2:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.preferenceDate2 &&
-                    data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
+                    {!isNoPreferenceDate(data.osceDetails?.preferenceDate2)
                       ? format(new Date(data.osceDetails.preferenceDate2), "PPP")
-                      : "Not provided"}
+                      : "Not Available"}
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Preference Date 3:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.preferenceDate3 &&
-                    data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
+                    {!isNoPreferenceDate(data.osceDetails?.preferenceDate3)
                       ? format(new Date(data.osceDetails.preferenceDate3), "PPP")
-                      : "Not provided"}
+                      : "Not Available"}
                   </Text>
                 </View>
               </View>
@@ -558,7 +556,7 @@ export default function DraftApplicationTable() {
                 <Text style={styles.resumeSectionTitle}>AGREEMENT</Text>
               </View>
               <View style={styles.resumeBody}>
-            
+
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>OSCE Candidate Statement:</Text>
                   <Text style={styles.fieldValue}>
@@ -631,7 +629,7 @@ export default function DraftApplicationTable() {
                     ? "Part 1 Passing Email"
                     : attachment.fileName?.toLowerCase()?.includes("passport_bio_page")
                       ? "Passport Bio Page"
-                      : attachment.fileName?.toLowerCase()?.includes("signature") 
+                      : attachment.fileName?.toLowerCase()?.includes("signature")
                         ? "Signature"
                         : `Attachment ${index + 1}`
 
@@ -842,7 +840,7 @@ export default function DraftApplicationTable() {
   })
   const columnsWithActions = [...columns.filter((col: any) => col.id !== "actions"), actionColumn]
 
- return (
+  return (
     <div>
       <Card className="shadow-lg border-0 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
         <CardHeader className="bg-[#5c347d] dark:bg-[#3b1f52] flex flex-row items-center justify-between space-y-0 pb-2">
@@ -927,7 +925,7 @@ export default function DraftApplicationTable() {
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
                     value={searchQuery}
 
-                     onChange={(e) => setSearchQuery(e.target.value)} 
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
               </div>

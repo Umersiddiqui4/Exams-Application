@@ -8,6 +8,7 @@ import {
 } from "./card";
 import { Input } from "./input";
 import { logger } from '@/lib/logger';
+import { isNoPreferenceDate } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,7 +92,7 @@ export default function ApplicationTable() {
     if (currentExamOccurrence && currentExamOccurrence.id) {
       setSelectedExamOccurrence(currentExamOccurrence.id.toString())
     }
-    
+
     // Removed message listener since we're using routes now
   }, [examOccurrences])
 
@@ -231,12 +232,12 @@ export default function ApplicationTable() {
 
   const handlePdfGenerate = async (row: any) => {
     setGeneratingIds((prev) => new Set(prev).add(row.original.id))
-    
+
     // Clear previous application data and close any open panels
     setSelectedApplicationData(null)
     setPdfPreviewOpen(false)
     setDetailViewOpen(false)
-    
+
     try {
       // Call start-review API if status is SUBMITTED
       if (row.original.status === "SUBMITTED") {
@@ -360,7 +361,7 @@ export default function ApplicationTable() {
 
   const handleDownloadPDF = async () => {
     if (!selectedApplicationData) return;
-    
+
     try {
       const blob = await generatePdfBlob(selectedApplicationData)
       const url = URL.createObjectURL(blob)
@@ -407,7 +408,7 @@ export default function ApplicationTable() {
 
     try {
       const token = localStorage.getItem("auth_token")
-      
+
       // Build query parameters
       const params = new URLSearchParams({
         includeWaitingList: includeWaitingList.toString(),
@@ -473,7 +474,7 @@ export default function ApplicationTable() {
 
   const ApplicationPDF = ({ data }: any) => {
     logger.debug("Generating PDF for data", data);
-    
+
     return (
       <Document>
         {/* Main application form page */}
@@ -642,28 +643,25 @@ export default function ApplicationTable() {
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Preference Date 1:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.preferenceDate1 &&
-                      data.osceDetails.preferenceDate1 !== "2000-01-01T00:00:00.000Z"
+                    {!isNoPreferenceDate(data.osceDetails?.preferenceDate1)
                       ? format(new Date(data.osceDetails.preferenceDate1), "PPP")
-                      : "Not provided"}
+                      : "Not Available"}
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Preference Date 2:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.preferenceDate2 &&
-                      data.osceDetails.preferenceDate2 !== "2000-01-01T00:00:00.000Z"
+                    {!isNoPreferenceDate(data.osceDetails?.preferenceDate2)
                       ? format(new Date(data.osceDetails.preferenceDate2), "PPP")
-                      : "Not provided"}
+                      : "Not Available"}
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Preference Date 3:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.preferenceDate3 &&
-                      data.osceDetails.preferenceDate3 !== "2000-01-01T00:00:00.000Z"
+                    {!isNoPreferenceDate(data.osceDetails?.preferenceDate3)
                       ? format(new Date(data.osceDetails.preferenceDate3), "PPP")
-                      : "Not provided"}
+                      : "Not Available"}
                   </Text>
                 </View>
               </View>
@@ -978,37 +976,37 @@ export default function ApplicationTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
                 <DropdownMenuItem
-                   onClick={() => setActiveFilter("all")} 
+                  onClick={() => setActiveFilter("all")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                   onClick={() => setActiveFilter("SUBMITTED")} 
+                  onClick={() => setActiveFilter("SUBMITTED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Submitted
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                   onClick={() => setActiveFilter("UNDER_REVIEW")} 
+                  onClick={() => setActiveFilter("UNDER_REVIEW")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Under Review
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                   onClick={() => setActiveFilter("APPROVED")} 
+                  onClick={() => setActiveFilter("APPROVED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                   onClick={() => setActiveFilter("REJECTED")} 
+                  onClick={() => setActiveFilter("REJECTED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                   onClick={() => setActiveFilter("waiting")} 
+                  onClick={() => setActiveFilter("waiting")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Waiting
@@ -1095,7 +1093,7 @@ export default function ApplicationTable() {
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
                     value={searchQuery}
 
-                     onChange={(e) => setSearchQuery(e.target.value)} 
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
               </div>

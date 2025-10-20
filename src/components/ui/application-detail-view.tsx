@@ -3,10 +3,11 @@ import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { logger } from '@/lib/logger';
-import { 
-  X, 
-  Download, 
-  ArrowLeft, 
+import { isNoPreferenceDate } from '@/lib/utils';
+import {
+  X,
+  Download,
+  ArrowLeft,
   User,
   Calendar,
   Phone,
@@ -21,7 +22,7 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle} from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
 import * as pdfjsLib from "pdfjs-dist";
 
 // PDF.js worker setup for v5.x
@@ -63,7 +64,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
         default: break;
       }
     }
-    
+
     // Then check filename
     switch (fileName) {
       case 'passport-image': return 'Passport Photo';
@@ -89,7 +90,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
     if (attachment.fileType === 'document' && attachment.base64Data) {
       setIsLoadingPdf(true);
       setIsPreviewOpen(true);
-      
+
       try {
         // If it's already an array of images (processed PDF), use it directly
         if (Array.isArray(attachment.base64Data)) {
@@ -101,7 +102,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
       } catch (error) {
         logger.error('Error loading PDF', error);
         setPdfPages([]);
-      } finally{
+      } finally {
         setIsLoadingPdf(false);
       }
     } else {
@@ -202,7 +203,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
           <DialogHeader>
             <DialogTitle>{getDocumentName(attachment.fileName, attachment.category)}</DialogTitle>
           </DialogHeader>
-          
+
           {isLoadingPdf ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
@@ -218,7 +219,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
               </div>
 
               {/* Image Display with Interactive Zoom */}
-              <div 
+              <div
                 className="flex justify-center overflow-hidden max-h-[70vh] relative"
                 style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
               >
@@ -226,7 +227,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
                   src={attachment.base64Data || attachment.url}
                   alt={getDocumentName(attachment.fileName, attachment.category)}
                   className="rounded border border-slate-200 dark:border-slate-700 select-none"
-                  style={{ 
+                  style={{
                     transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.3s ease',
                     maxWidth: '100%',
@@ -269,15 +270,15 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
                     </Button>
                   </div>
                 )}
-                
+
                 {/* Helper Text */}
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   Double-click to {isZoomed ? 'zoom out' : 'zoom in'}{isZoomed ? ' • Drag to pan' : ''}
                 </p>
               </div>
-              
+
               {/* PDF Page Display with Interactive Zoom */}
-              <div 
+              <div
                 className="flex justify-center overflow-hidden max-h-[70vh] relative"
                 style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
               >
@@ -285,7 +286,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
                   src={pdfPages[currentPage]}
                   alt={`Page ${currentPage + 1}`}
                   className="rounded border border-slate-200 dark:border-slate-700 shadow-lg select-none"
-                  style={{ 
+                  style={{
                     transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.3s ease',
                     maxWidth: '100%',
@@ -311,10 +312,10 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
   );
 }
 
-export function ApplicationDetailView({ 
-  isOpen, 
-  onClose, 
-  applicationData, 
+export function ApplicationDetailView({
+  isOpen,
+  onClose,
+  applicationData,
   onDownloadPDF,
   onBack
 }: ApplicationDetailViewProps) {
@@ -541,7 +542,7 @@ export function ApplicationDetailView({
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Date</label>
                     <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.registrationDate 
+                      {applicationData?.registrationDate
                         ? format(new Date(applicationData.registrationDate), 'PPP')
                         : 'N/A'}
                     </p>
@@ -549,7 +550,7 @@ export function ApplicationDetailView({
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Applied Date</label>
                     <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.createdAt 
+                      {applicationData?.createdAt
                         ? format(new Date(applicationData.createdAt), 'PPP')
                         : 'N/A'
                       }
@@ -558,7 +559,7 @@ export function ApplicationDetailView({
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Updated Date</label>
                     <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.updatedAt 
+                      {applicationData?.updatedAt
                         ? format(new Date(applicationData.updatedAt), 'PPP')
                         : 'N/A'
                       }
@@ -759,7 +760,7 @@ export function ApplicationDetailView({
                     <div>
                       <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Start</label>
                       <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.registrationStartDate 
+                        {applicationData.examOccurrence.registrationStartDate
                           ? format(new Date(applicationData.examOccurrence.registrationStartDate), 'PPP')
                           : 'N/A'}
                       </p>
@@ -767,7 +768,7 @@ export function ApplicationDetailView({
                     <div>
                       <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration End</label>
                       <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.registrationEndDate 
+                        {applicationData.examOccurrence.registrationEndDate
                           ? format(new Date(applicationData.examOccurrence.registrationEndDate), 'PPP')
                           : 'N/A'}
                       </p>
@@ -912,7 +913,7 @@ export function ApplicationDetailView({
                           </p>
                         </div>
                       )}
-                      {applicationData?.osceDetails?.preferenceDate1 && (
+                      {applicationData?.osceDetails?.preferenceDate1 && !isNoPreferenceDate(applicationData.osceDetails.preferenceDate1) && (
                         <div>
                           <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Preference Date 1</label>
                           <p className="text-slate-900 dark:text-slate-100">
@@ -920,7 +921,7 @@ export function ApplicationDetailView({
                           </p>
                         </div>
                       )}
-                      {applicationData?.osceDetails?.preferenceDate2 && (
+                      {applicationData?.osceDetails?.preferenceDate2 && !isNoPreferenceDate(applicationData.osceDetails.preferenceDate2) && (
                         <div>
                           <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Preference Date 2</label>
                           <p className="text-slate-900 dark:text-slate-100">
@@ -928,7 +929,7 @@ export function ApplicationDetailView({
                           </p>
                         </div>
                       )}
-                      {applicationData?.osceDetails?.preferenceDate3 && (
+                      {applicationData?.osceDetails?.preferenceDate3 && !isNoPreferenceDate(applicationData.osceDetails.preferenceDate3) && (
                         <div>
                           <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Preference Date 3</label>
                           <p className="text-slate-900 dark:text-slate-100">
@@ -944,161 +945,161 @@ export function ApplicationDetailView({
 
             {/* Eligibility & Candidate Statements for AKT */}
             {applicationData?.examOccurrence?.type === 'AKT' && (
-              applicationData?.aktDetails?.eligibilityA !== undefined || 
-              applicationData?.aktDetails?.eligibilityB !== undefined || 
+              applicationData?.aktDetails?.eligibilityA !== undefined ||
+              applicationData?.aktDetails?.eligibilityB !== undefined ||
               applicationData?.aktDetails?.eligibilityC !== undefined ||
               applicationData?.aktDetails?.candidateStatementA !== undefined ||
               applicationData?.aktDetails?.candidateStatementB !== undefined ||
               applicationData?.aktDetails?.candidateStatementC !== undefined
             ) && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Eligibility Section */}
-                {(applicationData?.aktDetails?.eligibilityA !== undefined || 
-                  applicationData?.aktDetails?.eligibilityB !== undefined || 
-                  applicationData?.aktDetails?.eligibilityC !== undefined) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Eligibility Criteria
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {applicationData?.aktDetails?.eligibilityA !== undefined && (
-                        <div className="flex items-start space-x-2">
-                          <div className="mt-1">
-                            {applicationData.aktDetails.eligibilityA ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Eligibility A
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {applicationData.aktDetails.eligibilityA ? 'Confirmed' : 'Not Confirmed'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {applicationData?.aktDetails?.eligibilityB !== undefined && (
-                        <div className="flex items-start space-x-2">
-                          <div className="mt-1">
-                            {applicationData.aktDetails.eligibilityB ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Eligibility B
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {applicationData.aktDetails.eligibilityB ? 'Confirmed' : 'Not Confirmed'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {applicationData?.aktDetails?.eligibilityC !== undefined && (
-                        <div className="flex items-start space-x-2">
-                          <div className="mt-1">
-                            {applicationData.aktDetails.eligibilityC ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Eligibility C
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {applicationData.aktDetails.eligibilityC ? 'Confirmed' : 'Not Confirmed'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Eligibility Section */}
+                  {(applicationData?.aktDetails?.eligibilityA !== undefined ||
+                    applicationData?.aktDetails?.eligibilityB !== undefined ||
+                    applicationData?.aktDetails?.eligibilityC !== undefined) && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center">
+                            <CheckCircle className="h-5 w-5 mr-2" />
+                            Eligibility Criteria
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {applicationData?.aktDetails?.eligibilityA !== undefined && (
+                            <div className="flex items-start space-x-2">
+                              <div className="mt-1">
+                                {applicationData.aktDetails.eligibilityA ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  Eligibility A
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {applicationData.aktDetails.eligibilityA ? 'Confirmed' : 'Not Confirmed'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {applicationData?.aktDetails?.eligibilityB !== undefined && (
+                            <div className="flex items-start space-x-2">
+                              <div className="mt-1">
+                                {applicationData.aktDetails.eligibilityB ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  Eligibility B
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {applicationData.aktDetails.eligibilityB ? 'Confirmed' : 'Not Confirmed'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {applicationData?.aktDetails?.eligibilityC !== undefined && (
+                            <div className="flex items-start space-x-2">
+                              <div className="mt-1">
+                                {applicationData.aktDetails.eligibilityC ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  Eligibility C
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {applicationData.aktDetails.eligibilityC ? 'Confirmed' : 'Not Confirmed'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
 
-                {/* Candidate Statements Section */}
-                {(applicationData?.aktDetails?.candidateStatementA !== undefined || 
-                  applicationData?.aktDetails?.candidateStatementB !== undefined || 
-                  applicationData?.aktDetails?.candidateStatementC !== undefined) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <FileText className="h-5 w-5 mr-2" />
-                        Candidate Statements
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {applicationData?.aktDetails?.candidateStatementA !== undefined && (
-                        <div className="flex items-start space-x-2">
-                          <div className="mt-1">
-                            {applicationData.aktDetails.candidateStatementA ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Statement A
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {applicationData.aktDetails.candidateStatementA ? 'Agreed' : 'Not Agreed'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {applicationData?.aktDetails?.candidateStatementB !== undefined && (
-                        <div className="flex items-start space-x-2">
-                          <div className="mt-1">
-                            {applicationData.aktDetails.candidateStatementB ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Statement B
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {applicationData.aktDetails.candidateStatementB ? 'Agreed' : 'Not Agreed'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {applicationData?.aktDetails?.candidateStatementC !== undefined && (
-                        <div className="flex items-start space-x-2">
-                          <div className="mt-1">
-                            {applicationData.aktDetails.candidateStatementC ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              Statement C
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {applicationData.aktDetails.candidateStatementC ? 'Agreed' : 'Not Agreed'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
+                  {/* Candidate Statements Section */}
+                  {(applicationData?.aktDetails?.candidateStatementA !== undefined ||
+                    applicationData?.aktDetails?.candidateStatementB !== undefined ||
+                    applicationData?.aktDetails?.candidateStatementC !== undefined) && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center">
+                            <FileText className="h-5 w-5 mr-2" />
+                            Candidate Statements
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {applicationData?.aktDetails?.candidateStatementA !== undefined && (
+                            <div className="flex items-start space-x-2">
+                              <div className="mt-1">
+                                {applicationData.aktDetails.candidateStatementA ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  Statement A
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {applicationData.aktDetails.candidateStatementA ? 'Agreed' : 'Not Agreed'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {applicationData?.aktDetails?.candidateStatementB !== undefined && (
+                            <div className="flex items-start space-x-2">
+                              <div className="mt-1">
+                                {applicationData.aktDetails.candidateStatementB ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  Statement B
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {applicationData.aktDetails.candidateStatementB ? 'Agreed' : 'Not Agreed'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {applicationData?.aktDetails?.candidateStatementC !== undefined && (
+                            <div className="flex items-start space-x-2">
+                              <div className="mt-1">
+                                {applicationData.aktDetails.candidateStatementC ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  Statement C
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {applicationData.aktDetails.candidateStatementC ? 'Agreed' : 'Not Agreed'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+                </div>
+              )}
 
             {/* Admin Notes and Notes */}
             {(applicationData?.adminNotes || applicationData?.notes) && (
@@ -1142,9 +1143,9 @@ export function ApplicationDetailView({
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {applicationData.attachments.map((attachment: any, index: number) => (
-                      <DocumentPreviewCard 
-                        key={attachment.id || index} 
-                        attachment={attachment} 
+                      <DocumentPreviewCard
+                        key={attachment.id || index}
+                        attachment={attachment}
                         index={index}
                       />
                     ))}
@@ -1153,7 +1154,7 @@ export function ApplicationDetailView({
               </Card>
             )}
 
-           
+
           </div>
 
           {/* Right Column - Timeline */}
@@ -1188,13 +1189,13 @@ export function ApplicationDetailView({
                                 </Badge>
                               </div>
                             </div>
-                            
+
                             <div className="space-y-1">
                               <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
                                 <Clock className="h-3 w-3 mr-1" />
                                 {format(new Date(event.timestamp), 'PPP - p')}
                               </div>
-                              
+
                               {event.performedBy && (
                                 <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
                                   <User className="h-3 w-3 mr-1" />

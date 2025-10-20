@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { cn } from "@/lib/utils";
+import { cn, isNoPreferenceDate } from "@/lib/utils";
 
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
@@ -184,9 +184,9 @@ export function OsceFeilds(props: OsceFieldsProps) {
       const pref2 = currentForm.watch("preferenceDate2");
       const pref3 = currentForm.watch("preferenceDate3");
 
-      if (fieldName !== "preferenceDate1" && pref1 && pref1 !== " " && pref1 === dateStr) return false;
-      if (fieldName !== "preferenceDate2" && pref2 && pref2 !== " " && pref2 === dateStr) return false;
-      if (fieldName !== "preferenceDate3" && pref3 && pref3 !== " " && pref3 === dateStr) return false;
+      if (fieldName !== "preferenceDate1" && !isNoPreferenceDate(pref1) && pref1 === dateStr) return false;
+      if (fieldName !== "preferenceDate2" && !isNoPreferenceDate(pref2) && pref2 === dateStr) return false;
+      if (fieldName !== "preferenceDate3" && !isNoPreferenceDate(pref3) && pref3 === dateStr) return false;
 
       return true;
     });

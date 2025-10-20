@@ -8,6 +8,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import { logger } from '@/lib/logger';
+import { isNoPreferenceDate } from '@/lib/utils';
 
 
 export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
@@ -210,25 +211,25 @@ export const ApplicationPDFCompletePreview = ({ data, images }: any) => {
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Preference Date 1:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate1 && data.preferenceDate1 !== " "
+                  {!isNoPreferenceDate(data.preferenceDate1)
                     ? format(new Date(data.preferenceDate1), "PPP")
-                    : "Not provided"}
+                    : "Not Available"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Preference Date 2:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate2 && data.preferenceDate2 !== " "
+                  {!isNoPreferenceDate(data.preferenceDate2)
                     ? format(new Date(data.preferenceDate2), "PPP")
-                    : "Not provided"}
+                    : "Not Available"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Preference Date 3:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate3 && data.preferenceDate3 !== " "
+                  {!isNoPreferenceDate(data.preferenceDate3)
                     ? format(new Date(data.preferenceDate3), "PPP")
-                    : "Not provided"}
+                    : "Not Available"}
                 </Text>
               </View>
             </View>
@@ -558,25 +559,25 @@ export const ApplicationPDFComplete = ({ data, images }: any) => {
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Preference Date 1:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate1 && data.preferenceDate1 !== " "
+                  {!isNoPreferenceDate(data.preferenceDate1)
                     ? format(new Date(data.preferenceDate1), "PPP")
-                    : "Not provided"}
+                    : "Not Available"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Preference Date 2:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate2 && data.preferenceDate2 !== " "
+                  {!isNoPreferenceDate(data.preferenceDate2)
                     ? format(new Date(data.preferenceDate2), "PPP")
-                    : "Not provided"}
+                    : "Not Available"}
                 </Text>
               </View>
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Preference Date 3:</Text>
                 <Text style={styles.fieldValue}>
-                  {data.preferenceDate3 && data.preferenceDate3 !== " "
+                  {!isNoPreferenceDate(data.preferenceDate3)
                     ? format(new Date(data.preferenceDate3), "PPP")
-                    : "Not provided"}
+                    : "Not Available"}
                 </Text>
               </View>
             </View>

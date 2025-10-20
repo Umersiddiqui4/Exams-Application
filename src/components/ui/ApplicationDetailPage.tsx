@@ -4,8 +4,9 @@ import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { logger } from '@/lib/logger';
-import { 
-  Download, 
+import { isNoPreferenceDate } from '@/lib/utils';
+import {
+  Download,
   ArrowLeft,
   User,
   Phone,
@@ -63,7 +64,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
     if (attachment.fileType === 'document' && attachment.base64Data) {
       setIsLoadingPdf(true);
       setIsPreviewOpen(true);
-      
+
       try {
         // If it's already an array of images (processed PDF), use it directly
         if (Array.isArray(attachment.base64Data)) {
@@ -170,7 +171,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
           <DialogHeader>
             <DialogTitle>{getDocumentName(attachment.fileName)}</DialogTitle>
           </DialogHeader>
-          
+
           {isLoadingPdf ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
@@ -186,7 +187,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
               </div>
 
               {/* Image Display with Interactive Zoom */}
-              <div 
+              <div
                 className="flex justify-center overflow-hidden max-h-[70vh] relative"
                 style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
               >
@@ -194,7 +195,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
                   src={attachment.base64Data}
                   alt={getDocumentName(attachment.fileName)}
                   className="rounded border border-slate-200 dark:border-slate-700 select-none"
-                  style={{ 
+                  style={{
                     transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.3s ease',
                     maxWidth: '100%',
@@ -237,15 +238,15 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
                     </Button>
                   </div>
                 )}
-                
+
                 {/* Helper Text */}
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   Double-click to {isZoomed ? 'zoom out' : 'zoom in'}{isZoomed ? ' • Drag to pan' : ''}
                 </p>
               </div>
-              
+
               {/* PDF Page Display with Interactive Zoom */}
-              <div 
+              <div
                 className="flex justify-center overflow-hidden max-h-[70vh] relative"
                 style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
               >
@@ -253,7 +254,7 @@ function DocumentPreviewCard({ attachment, index }: DocumentPreviewCardProps) {
                   src={pdfPages[currentPage]}
                   alt={`Page ${currentPage + 1}`}
                   className="rounded border border-slate-200 dark:border-slate-700 shadow-lg select-none"
-                  style={{ 
+                  style={{
                     transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.3s ease',
                     maxWidth: '100%',
@@ -302,7 +303,7 @@ export function ApplicationDetailPage() {
       try {
         setIsLoading(true);
         const response: any = await getApplication(id);
-        
+
         if (response?.data) {
           // Process attachments to convert to base64
           const imagePromises = response.data.attachments?.map(async (attachment: any) => {
@@ -326,7 +327,7 @@ export function ApplicationDetailPage() {
                 // Handle PDF conversion (similar to existing logic)
                 const arrayBuffer = await blob.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-                
+
                 const images: string[] = [];
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                   const page = await pdf.getPage(pageNum);
@@ -335,12 +336,12 @@ export function ApplicationDetailPage() {
                   const context = canvas.getContext("2d")!;
                   canvas.height = viewport.height;
                   canvas.width = viewport.width;
-                  
+
                   await page.render({ canvasContext: context, viewport, canvas }).promise;
                   const base64Data = canvas.toDataURL("image/png");
                   images.push(base64Data);
                 }
-                
+
                 return { ...attachment, base64Data: images };
               } else {
                 // Handle image conversion
@@ -350,7 +351,7 @@ export function ApplicationDetailPage() {
                   reader.onerror = reject;
                   reader.readAsDataURL(blob);
                 });
-                
+
                 return { ...attachment, base64Data };
               }
             } catch (error) {
@@ -411,10 +412,10 @@ export function ApplicationDetailPage() {
   const generatePdfBlob = async (data: any) => {
     // Check exam type and use appropriate PDF generator
     const isAKT = data.examOccurrence?.type === "AKT";
-    
+
     // Transform data to match PDF generator expectations
     const transformedData = transformDataForPDF(data);
-    
+
     logger.debug('PDF Data Transformation', {
       originalKeys: Object.keys(data),
       transformedKeys: Object.keys(transformedData),
@@ -425,21 +426,21 @@ export function ApplicationDetailPage() {
         previousOsceAttempts: transformedData.previousOsceAttempts
       }
     });
-    
+
     // For OSCE, we need to prepare the images object with all attachment data
     if (!isAKT) {
       logger.debug('All attachments', data.attachments?.map((att: any) => ({ fileName: att.fileName, hasBase64: !!att.base64Data })));
-      
+
       // Process all attachments and create images object
       const images: any = {};
-      
+
       if (data.attachments) {
         data.attachments.forEach((attachment: any) => {
           if (attachment.base64Data) {
             const fileName = attachment.fileName?.toLowerCase() || '';
-            
+
             logger.debug(`Processing attachment: ${attachment.fileName} (${fileName})`);
-            
+
             // Map attachment types to image keys with comprehensive pattern matching
             if (fileName === 'passport-image' || fileName.includes('passport') && fileName.includes('photo')) {
               images.passport = attachment.base64Data;
@@ -469,9 +470,9 @@ export function ApplicationDetailPage() {
           }
         });
       }
-      
+
       logger.debug('Images object for PDF', Object.keys(images));
-      
+
       const doc = <ApplicationPDFComplete data={transformedData} images={images} />;
       const asPdf = pdf();
       asPdf.updateContainer(doc);
@@ -479,12 +480,12 @@ export function ApplicationDetailPage() {
       return blob;
     } else {
       // For AKT, no images object needed but let's debug the attachments
-      logger.debug('AKT Application - All attachments', data.attachments?.map((att: any) => ({ 
-        fileName: att.fileName, 
+      logger.debug('AKT Application - All attachments', data.attachments?.map((att: any) => ({
+        fileName: att.fileName,
         hasBase64: !!att.base64Data,
-        category: att.category 
+        category: att.category
       })));
-      
+
       const doc = <ApplicationPDFCompleteAktApp data={transformedData} />;
       const asPdf = pdf();
       asPdf.updateContainer(doc);
@@ -511,13 +512,13 @@ export function ApplicationDetailPage() {
       });
 
       const blob = await generatePdfBlob(applicationData);
-      
+
       // Create download link
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `MRCGP_Application_${applicationData.candidateId || applicationData.id}.pdf`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
@@ -765,7 +766,7 @@ export function ApplicationDetailPage() {
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Date</label>
                     <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.registrationDate 
+                      {applicationData?.registrationDate
                         ? format(new Date(applicationData.registrationDate), 'PPP')
                         : 'N/A'}
                     </p>
@@ -773,7 +774,7 @@ export function ApplicationDetailPage() {
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Applied Date</label>
                     <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.createdAt 
+                      {applicationData?.createdAt
                         ? format(new Date(applicationData.createdAt), 'PPP')
                         : 'N/A'
                       }
@@ -782,7 +783,7 @@ export function ApplicationDetailPage() {
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Updated Date</label>
                     <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.updatedAt 
+                      {applicationData?.updatedAt
                         ? format(new Date(applicationData.updatedAt), 'PPP')
                         : 'N/A'
                       }
@@ -945,7 +946,7 @@ export function ApplicationDetailPage() {
                     <div>
                       <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Start</label>
                       <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.registrationStartDate 
+                        {applicationData.examOccurrence.registrationStartDate
                           ? format(new Date(applicationData.examOccurrence.registrationStartDate), 'PPP')
                           : 'N/A'}
                       </p>
@@ -953,7 +954,7 @@ export function ApplicationDetailPage() {
                     <div>
                       <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration End</label>
                       <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.registrationEndDate 
+                        {applicationData.examOccurrence.registrationEndDate
                           ? format(new Date(applicationData.examOccurrence.registrationEndDate), 'PPP')
                           : 'N/A'}
                       </p>
@@ -1074,7 +1075,7 @@ export function ApplicationDetailPage() {
                           </p>
                         </div>
                       )}
-                      {applicationData?.osceDetails?.preferenceDate1 && (
+                      {applicationData?.osceDetails?.preferenceDate1 && !isNoPreferenceDate(applicationData.osceDetails.preferenceDate1) && (
                         <div>
                           <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Preference Date 1</label>
                           <p className="text-slate-900 dark:text-slate-100">
@@ -1082,7 +1083,7 @@ export function ApplicationDetailPage() {
                           </p>
                         </div>
                       )}
-                      {applicationData?.osceDetails?.preferenceDate2 && (
+                      {applicationData?.osceDetails?.preferenceDate2 && !isNoPreferenceDate(applicationData.osceDetails.preferenceDate2) && (
                         <div>
                           <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Preference Date 2</label>
                           <p className="text-slate-900 dark:text-slate-100">
@@ -1090,7 +1091,7 @@ export function ApplicationDetailPage() {
                           </p>
                         </div>
                       )}
-                      {applicationData?.osceDetails?.preferenceDate3 && (
+                      {applicationData?.osceDetails?.preferenceDate3 && !isNoPreferenceDate(applicationData.osceDetails.preferenceDate3) && (
                         <div>
                           <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Preference Date 3</label>
                           <p className="text-slate-900 dark:text-slate-100">
@@ -1116,9 +1117,9 @@ export function ApplicationDetailPage() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {applicationData.attachments.map((attachment: any, index: number) => (
-                      <DocumentPreviewCard 
-                        key={attachment.id || index} 
-                        attachment={attachment} 
+                      <DocumentPreviewCard
+                        key={attachment.id || index}
+                        attachment={attachment}
                         index={index}
                       />
                     ))}
@@ -1127,7 +1128,7 @@ export function ApplicationDetailPage() {
               </Card>
             )}
 
-          
+
           </div>
 
           {/* Right Column - Timeline */}
@@ -1162,13 +1163,13 @@ export function ApplicationDetailPage() {
                                 </Badge>
                               </div>
                             </div>
-                            
+
                             <div className="space-y-1">
                               <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
                                 <Clock className="h-3 w-3 mr-1" />
                                 {format(new Date(event.timestamp), 'PPP - p')}
                               </div>
-                              
+
                               {event.performedBy && (
                                 <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
                                   <User className="h-3 w-3 mr-1" />
