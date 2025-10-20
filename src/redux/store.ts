@@ -7,7 +7,8 @@ import rootReducer from './rootReducer' // Import your root reducer
 const persistConfig = {
   key: 'root',  // Unique key for your persisted state
   storage, // Local storage for persistence
-  whitelist: ['auth', 'examData', "applicationData"], // Persist only the 'auth' slice, you can persist other slices as needed
+  // Persist only lightweight slices to avoid quota errors
+  whitelist: ['auth', 'examData'],
 }
 
 // Wrap the rootReducer with persistReducer

@@ -119,6 +119,8 @@ const fileToBase64 = (file: File): Promise<string> => {
 const resizeImageForPdf = (base64: string, maxWidth: number = 800, maxHeight: number = 600): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
+    // prevent canvas taint when possible
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let { width, height } = img;
@@ -135,13 +137,19 @@ const resizeImageForPdf = (base64: string, maxWidth: number = 800, maxHeight: nu
 
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8)); // Convert to JPEG with 80% quality
+        try {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(dataUrl);
+        } catch {
+          // Tainted canvas fallback: return original base64
+          resolve(base64);
+        }
       } else {
-        resolve(base64); // Fallback to original if canvas fails
+        resolve(base64);
       }
     };
-    img.onerror = () => resolve(base64); // Fallback to original on error
+    img.onerror = () => resolve(base64);
     img.src = base64;
   });
 };
@@ -885,7 +893,17 @@ export function ApplicationForm() {
           }),
       };
 
-      dispatch(addApplication(application));
+      // Ensure dates are serialized to strings for Redux state
+      dispatch(addApplication({
+        ...application,
+        date: application.date ? new Date(application.date).toISOString() : application.date,
+        submittedDate: application.submittedDate ? new Date(application.submittedDate).toISOString() : application.submittedDate,
+        dateOfPassingPart1: application.dateOfPassingPart1 ? new Date(application.dateOfPassingPart1).toString() : application.dateOfPassingPart1,
+        dateOfRegistration: application.dateOfRegistration ? new Date(application.dateOfRegistration).toISOString() : application.dateOfRegistration,
+        preferenceDate1: application.preferenceDate1 || "",
+        preferenceDate2: application.preferenceDate2 || "",
+        preferenceDate3: application.preferenceDate3 || "",
+      }));
       dispatch(incrementApplicationsCount(examOccurrence.examId));
 
       // Enable preview mode to render PDFDownloadLink
