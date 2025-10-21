@@ -66,8 +66,6 @@ A modern, secure, and feature-rich examination management system built with Reac
    # Edit .env and add your configuration
    # Required variables:
    # - VITE_API_BASE_URL (default: https://mrcgp-api.omnifics.io)
-   # - VITE_SUPABASE_URL (your Supabase project URL)
-   # - VITE_SUPABASE_ANON_KEY (your Supabase anonymous key)
    ```
    
    See the [Environment Setup](#-environment-setup) section for detailed configuration instructions.
@@ -205,8 +203,6 @@ This project uses environment variables to configure API endpoints, authenticati
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `VITE_API_BASE_URL` | Base URL for the MRCGP API | `https://mrcgp-api.omnifics.io` | Yes |
-| `VITE_SUPABASE_URL` | Your Supabase project URL | - | Yes |
-| `VITE_SUPABASE_ANON_KEY` | Your Supabase anonymous/public key | - | Yes |
 | `VITE_API_TOKEN` | Optional API authentication token | - | No |
 
 #### Setup Instructions
@@ -220,24 +216,12 @@ This project uses environment variables to configure API endpoints, authenticati
    ```env
    # API Configuration
    VITE_API_BASE_URL=https://mrcgp-api.omnifics.io
-   
-   # Supabase Configuration (Get these from your Supabase dashboard)
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
 
 3. **Restart the dev server** after changing environment variables:
    ```bash
    npm run dev
    ```
-
-#### Getting Supabase Credentials
-
-1. Go to your [Supabase Dashboard](https://app.supabase.com)
-2. Select your project
-3. Go to **Settings** → **API**
-4. Copy the **Project URL** for `VITE_SUPABASE_URL`
-5. Copy the **anon/public key** for `VITE_SUPABASE_ANON_KEY`
 
 #### Important Notes
 
@@ -280,8 +264,6 @@ The application is configured for Vercel deployment with:
 2. **Configure Environment Variables**
    In your Vercel dashboard, add the following environment variables:
    - `VITE_API_BASE_URL` - Production API URL
-   - `VITE_SUPABASE_URL` - Your Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
    - `VITE_API_TOKEN` (optional) - API authentication token
 
 3. **Deploy**

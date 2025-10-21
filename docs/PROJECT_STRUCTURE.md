@@ -125,7 +125,6 @@ src/
 │   ├── chromeVersionUpdater.ts
 │   ├── errorHandler.ts          # ✅ NEW: Error handling utilities
 │   ├── logger.ts                # ✅ NEW: Logging utility
-│   ├── supabaseClient.ts
 │   ├── utils.ts
 │   └── html2pdf.ts
 │
