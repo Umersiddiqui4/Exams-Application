@@ -658,31 +658,32 @@ export function Settings() {
                                     </Button>
                                   </>
                                 ) : (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      className="mb-2"
-                                      onClick={() => {
-                                        setEditingId(exam.id);
-                                        setEditName(exam.name);
-                                        setEditDescription(exam.description || "");
-                                      }}
-                                    >
-                                      Edit
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      onClick={() => {
-                                        setPendingExamDeleteId(exam.id);
-                                        setPendingExamDeleteName(exam.name || "");
-                                        setExamConfirmOpen(true);
-                                      }}
-                                    >
-                                      Delete
-                                    </Button>
-                                  </>
+                                  <></>
+                                  // <>
+                                  //   <Button
+                                  //     size="sm"
+                                  //     variant="secondary"
+                                  //     className="mb-2"
+                                  //     onClick={() => {
+                                  //       setEditingId(exam.id);
+                                  //       setEditName(exam.name);
+                                  //       setEditDescription(exam.description || "");
+                                  //     }}
+                                  //   >
+                                  //     Edit
+                                  //   </Button>
+                                  //   <Button
+                                  //     variant="destructive"
+                                  //     size="sm"
+                                  //     onClick={() => {
+                                  //       setPendingExamDeleteId(exam.id);
+                                  //       setPendingExamDeleteName(exam.name || "");
+                                  //       setExamConfirmOpen(true);
+                                  //     }}
+                                  //   >
+                                  //     Delete
+                                  //   </Button>
+                                  // </>
                                 )}
                               </TableCell>
                             </TableRow>
