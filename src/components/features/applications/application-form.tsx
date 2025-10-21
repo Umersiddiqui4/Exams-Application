@@ -23,7 +23,6 @@ import { addApplication } from "@/redux/applicationsSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMemo } from "react";
 import NotFound from "@/components/common/notFound";
-import "@/App.css";
 import { logger } from "@/lib/logger";
 
 import {

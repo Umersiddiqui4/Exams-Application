@@ -11,13 +11,10 @@ import ExamComponent from './components/features/exams/examComponent';
 import { LoginForm } from './components/features/auth/LoginForm';
 import { SignupForm } from './components/features/auth/SignupForm';
 import { EmailVerification } from './components/features/auth/EmailVerification';
-import { EmailVerificationTest } from './components/features/auth/EmailVerificationTest';
-import { PhoneInputTest } from './components/common/PhoneInputTest';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import Applications from './components/features/applications/Applications';
 import DraftApplications from './components/features/applications/DraftApplications';
 import { ApplicationDetailPage } from './components/features/applications/ApplicationDetailPage';
-import { ThemeToggleDemo } from './components/theme/ThemeToggleDemo';
 import Settings from './components/features/settings/settings';
 import ResetPassword from './components/features/auth/ResetPassword';
 
@@ -35,8 +32,6 @@ function App() {
             <Route path="/signup" element={<SignupForm />} />
             <Route path="/auth/password-reset" element={<ResetPassword />} />
             <Route path="/auth/confirm-email" element={<EmailVerification />} />
-            <Route path="/test-email-verification" element={<EmailVerificationTest />} />
-            <Route path="/test-phone-input" element={<PhoneInputTest />} />
             <Route
               path="/"
               element={
@@ -91,7 +86,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/theme-demo" element={<ThemeToggleDemo />} />
           </Routes>
           <Toaster />
         </ThemeProvider>
