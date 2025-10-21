@@ -22,8 +22,8 @@ import { incrementApplicationsCount } from "@/redux/examDataSlice";
 import { addApplication } from "@/redux/applicationsSlice";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMemo } from "react";
-import NotFound from "./ui/notFound";
-import "../App.css";
+import NotFound from "@/components/common/notFound";
+import "@/App.css";
 import { logger } from "@/lib/logger";
 
 import {
@@ -31,7 +31,7 @@ import {
   ApplicationPDFCompleteAkt,
   ApplicationPDFCompleteAktPreview,
   ApplicationPDFCompletePreview,
-} from "./ui/pdf-generator";
+} from "@/components/pdf/pdf-generator";
 import {
   aktsFormDefaultValues,
   aktsFormSchema,
@@ -39,7 +39,7 @@ import {
   formDefaultValues,
   formSchema,
   FormValues,
-} from "./schema/applicationSchema";
+} from "@/schemas/applicationSchema";
 import { OsceFeilds } from "@/hooks/osceFeilds";
 import { AktFeilds } from "@/hooks/aktFeilds";
 import {
@@ -48,8 +48,8 @@ import {
   getExamOccurrence,
   ExamOccurrence,
 } from "@/api/examOccurrencesApi";
-import ExamClosed from "./ui/examClosed";
-import { pdfToImages } from "./ui/pdfToImage";
+import ExamClosed from "@/components/features/exams/examClosed";
+import { pdfToImages } from "@/components/pdf/pdfToImage";
 
 export type Attachment = {
   id: string;

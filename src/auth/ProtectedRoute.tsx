@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { detectBrowser } from '../lib/browserDetection';
 import { redirectToLoginIfUnauthenticated } from "@/api/clients/apiClient";
 import { logout } from "../redux/Slice";
-import { BrowserRestriction } from '../components/BrowserRestriction';
+import { BrowserRestriction } from '../components/layout/BrowserRestriction';
 import { RootState } from '../redux/rootReducer';
 import { logger } from '../lib/logger';
 

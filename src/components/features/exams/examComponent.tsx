@@ -1,24 +1,22 @@
 import { Menu } from "lucide-react";
-import { Button } from "./ui/button";
-import {  } from "react-router-dom";
-import { useMobile } from "../hooks/use-mobile";
+import { Exam } from "./exam";
+import { Button } from "@/components/ui/button";
+import { } from "react-router-dom";
+import { useMobile } from "@/hooks/use-mobile";
+import { SimpleAnimatedThemeToggle } from "@/components/theme/SimpleAnimatedThemeToggle";
+import { GooeyMenu } from "@/components/layout/GooeyMenu";
 import { useState } from "react";
-import ApplicationTable from "./ui/applicationTable";
-import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
-import { GooeyMenu } from "./GooeyMenu";
-import { SidebarNav } from "./SidebarNav";
+import { SidebarNav } from "@/components/layout/SidebarNav";
 
-export default function Applications() {
+export default function ExamComponent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Theme is now handled by SimpleAnimatedThemeToggle component
   useMobile();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-
-  // Removed handleDetailViewOpen since detail view now opens in new tab
-
-  
+  // Theme toggle is now handled by SimpleAnimatedThemeToggle component
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
@@ -41,11 +39,12 @@ export default function Applications() {
           )}
 
           <div className="flex-1 flex items-center justify-between">
-            <h1 className="text-xl font-bold">Applications</h1>
+            <h1 className="text-xl font-bold">Exams</h1>
 
             <div className="flex items-center space-x-4 " >
-            <GooeyMenu />
-              <SimpleAnimatedThemeToggle 
+              <GooeyMenu />
+
+              <SimpleAnimatedThemeToggle
                 variant="circle"
                 start="top-right"
                 className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
@@ -54,9 +53,9 @@ export default function Applications() {
             </div>
           </div>
         </header>
-                <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
-                  <ApplicationTable />
-                </main>
+        <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
+          <Exam />
+        </main>
       </div>
     </div>
   );

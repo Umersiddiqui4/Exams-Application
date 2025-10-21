@@ -5,8 +5,8 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { logUnhandledError } from '@/lib/errorHandler';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {

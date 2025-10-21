@@ -1,7 +1,7 @@
 import { LayoutDashboard, FileText, Settings, UserSquare, X, ChevronDown, FilePlus } from "lucide-react"
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useMobile } from "../hooks/use-mobile"
+import { useMobile } from "@/hooks/use-mobile"
 import { useState } from "react"
 
 type SidebarNavProps = {

@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { User, Lock, Mail, Phone, UserPlus, RefreshCw, Eye, EyeOff } from 'lucide-react';
-import { signupRequest, signupSuccess, signupFailure, clearError } from '../redux/Slice';
+import { signupRequest, signupSuccess, signupFailure, clearError } from '@/redux/Slice';
 import { signupWithEmail, SignupRequest, resendConfirmationEmail } from "@/api/authApi";
 import { useNavigate, Link } from 'react-router-dom';
-import { useToast } from './ui/use-toast';
-import { RootState } from '../redux/rootReducer';
+import { useToast } from '@/components/ui/use-toast';
+import { RootState } from '@/redux/rootReducer';
 
 export function SignupForm() {
   const [formData, setFormData] = useState({
@@ -138,7 +138,7 @@ export function SignupForm() {
 
     // Clear any previous errors
     dispatch(clearError());
-    
+
     // Validate form
     if (!validateForm()) {
       return;
@@ -146,7 +146,7 @@ export function SignupForm() {
 
     // Start loading
     dispatch(signupRequest());
-    
+
     try {
       const signupData: SignupRequest = {
         firstName: formData.firstName.trim(),
@@ -157,26 +157,26 @@ export function SignupForm() {
       };
 
       const res: any = await signupWithEmail(signupData);
-      
+
       // Signup successful - redirect to login page
-      dispatch(signupSuccess({ 
-        name: `${res.data.firstName} ${res.data.lastName}`, 
-        email: res.data.email 
+      dispatch(signupSuccess({
+        name: `${res.data.firstName} ${res.data.lastName}`,
+        email: res.data.email
       }));
-      
-      toast({ 
-        title: 'Signup Successful!', 
+
+      toast({
+        title: 'Signup Successful!',
         description: `Welcome, ${res.data.firstName}! Please check your email to verify your account before logging in.`,
         duration: 8000 // Longer duration for important message
       });
-      
+
       // Navigate to login page
       navigate("/login");
     } catch (err: any) {
       console.error('Signup error:', err);
       let errorMessage = 'Failed to create account. Please try again.';
       let errorType = 'general';
-      
+
       if (err.message.includes('409') || err.message.includes('email')) {
         errorMessage = 'An account with this email already exists.';
         errorType = 'email_exists';
@@ -184,7 +184,7 @@ export function SignupForm() {
         errorMessage = 'Please check your input and try again.';
         errorType = 'validation_error';
       }
-      
+
       dispatch(signupFailure({ message: errorMessage, type: errorType }));
     }
   };
@@ -202,7 +202,7 @@ export function SignupForm() {
     setIsResending(true);
     try {
       const response = await resendConfirmationEmail(formData.email.trim());
-      
+
       if (response.success) {
         toast({
           title: 'Verification Email Sent',
@@ -235,7 +235,7 @@ export function SignupForm() {
           <div className='w-full flex justify-center items-center mb-4'>
             <img src="/logo.png" className='items-center' alt="Logo" />
           </div>
-        
+
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -273,7 +273,7 @@ export function SignupForm() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
@@ -290,7 +290,7 @@ export function SignupForm() {
                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="phone" className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
@@ -309,7 +309,7 @@ export function SignupForm() {
                 Select your country and enter your phone number
               </p>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">
                 <Lock className="w-4 h-4" />
@@ -339,7 +339,7 @@ export function SignupForm() {
                 </button>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="flex items-center gap-2">
                 <Lock className="w-4 h-4" />
@@ -371,9 +371,9 @@ export function SignupForm() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button 
-              className="w-full transition-all duration-200 hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
-              type="submit" 
+            <Button
+              className="w-full transition-all duration-200 hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              type="submit"
               disabled={loading}
             >
               {loading ? (
@@ -391,8 +391,8 @@ export function SignupForm() {
             <div className="text-center text-sm text-gray-600 space-y-2">
               <div>
                 Already have an account?{' '}
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
                 >
                   Sign in here

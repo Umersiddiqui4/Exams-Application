@@ -3,25 +3,25 @@
 import { useState, useEffect } from "react"
 import { Menu, ClipboardList, CheckCircle, XCircle, FileText, Eye, Clock } from "lucide-react"
 
-import { Button } from "../components/ui/button"
-import { useMobile } from "../hooks/use-mobile"
-import { Tabs, TabsContent } from "../components/ui/tabs"
-import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle"
+import { Button } from "@/components/ui/button"
+import { useMobile } from "@/hooks/use-mobile"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { SimpleAnimatedThemeToggle } from "@/components/theme/SimpleAnimatedThemeToggle"
 
-import {  } from "react-router-dom"
-import { StatusCard } from "./ui/status-card"
-import { GooeyMenu } from "./GooeyMenu"
-import { SidebarNav } from "./SidebarNav"
+import { } from "react-router-dom"
+import { StatusCard } from "@/components/common/status-card"
+import { GooeyMenu } from "@/components/layout/GooeyMenu"
+import { SidebarNav } from "@/components/layout/SidebarNav"
 import { useDashboardData } from "@/hooks/useDashboardData"
 
 export function Dashboard() {
-   const [sidebarOpen, setSidebarOpen] = useState(true)
-   const [activeFilter, setActiveFilter] = useState<string>("all")
-   // Theme is now handled by SimpleAnimatedThemeToggle component
-   const isMobile = useMobile()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeFilter, setActiveFilter] = useState<string>("all")
+  // Theme is now handled by SimpleAnimatedThemeToggle component
+  const isMobile = useMobile()
 
-   // Fetch dashboard data
-   const { allApplications: stats, currentExam } = useDashboardData()
+  // Fetch dashboard data
+  const { allApplications: stats, currentExam } = useDashboardData()
 
   useEffect(() => {
     if (isMobile) {
@@ -37,7 +37,7 @@ export function Dashboard() {
 
   // Theme toggle is now handled by SimpleAnimatedThemeToggle component
 
-  
+
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
@@ -63,9 +63,9 @@ export function Dashboard() {
             <h1 className="text-xl font-bold">Dashboard</h1>
 
             <div className="flex items-center space-x-4">
-            <GooeyMenu />
+              <GooeyMenu />
 
-              <SimpleAnimatedThemeToggle 
+              <SimpleAnimatedThemeToggle
                 variant="circle"
                 start="top-right"
                 className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Button } from './button';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
 import { isNoPreferenceDate } from '@/lib/utils';
 import {
@@ -22,7 +22,7 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import * as pdfjsLib from "pdfjs-dist";
 
 // PDF.js worker setup for v5.x

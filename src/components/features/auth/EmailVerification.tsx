@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2, ArrowLeft, RefreshCw } from 'lucide-react';
 import { verifyEmail } from "@/api/authApi";
-import { useToast } from './ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 type VerificationState = 'loading' | 'success' | 'error' | 'invalid-token';
 
@@ -22,7 +22,7 @@ export function EmailVerification() {
       try {
         // Extract token from URL hash parameter
         const token = searchParams.get('hash');
-        
+
         if (!token) {
           setVerificationState('invalid-token');
           setVerificationMessage('No verification token found in the URL. Please check your email and click the verification link again.');
@@ -31,18 +31,18 @@ export function EmailVerification() {
 
         // Call the verification API
         const response = await verifyEmail(token);
-        
+
         if (response.success) {
           setVerificationState('success');
           setVerificationMessage(response.message || 'Your email has been successfully verified!');
-          
+
           // Check if password reset is required
           if (response.data?.requiresPasswordReset) {
             setVerificationMessage(
               response.message + ' You may need to set up a new password when you log in.'
             );
           }
-          
+
           // Show success toast
           toast({
             title: 'Email Verified!',
@@ -55,9 +55,9 @@ export function EmailVerification() {
         }
       } catch (error: any) {
         console.error('Email verification error:', error);
-        
+
         setVerificationState('error');
-        
+
         // Handle specific error cases
         if (error.message.includes('401') || error.message.includes('Unauthorized')) {
           setVerificationMessage('This verification link has expired or is invalid. Please request a new verification email.');
@@ -96,7 +96,7 @@ export function EmailVerification() {
             <img src="/logo.png" className='items-center' alt="Logo" />
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {verificationState === 'loading' && (
             <div className="text-center space-y-4">
@@ -128,13 +128,13 @@ export function EmailVerification() {
                 </p>
               </div>
               <div className="space-y-3">
-                <Button 
+                <Button
                   onClick={handleGoToLogin}
                   className="w-full"
                 >
                   Continue to Login
                 </Button>
-                <Link 
+                <Link
                   to="/"
                   className="block w-full"
                 >
@@ -160,7 +160,7 @@ export function EmailVerification() {
                 </p>
               </div>
               <div className="space-y-3">
-                <Button 
+                <Button
                   onClick={handleResendVerification}
                   className="w-full"
                   disabled={isResending}
@@ -177,7 +177,7 @@ export function EmailVerification() {
                     </>
                   )}
                 </Button>
-                <Link 
+                <Link
                   to="/login"
                   className="block w-full"
                 >
@@ -204,7 +204,7 @@ export function EmailVerification() {
                 </p>
               </div>
               <div className="space-y-3">
-                <Link 
+                <Link
                   to="/signup"
                   className="block w-full"
                 >
@@ -212,7 +212,7 @@ export function EmailVerification() {
                     Sign Up Again
                   </Button>
                 </Link>
-                <Link 
+                <Link
                   to="/login"
                   className="block w-full"
                 >

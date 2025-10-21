@@ -14,11 +14,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { loginRequest, loginSuccess, loginFailure, clearError } from '../redux/Slice';
+import { loginRequest, loginSuccess, loginFailure, clearError } from '@/redux/Slice';
 import { loginWithEmailPassword, forgotPassword } from "@/api/authApi";
 import { useNavigate, Link } from 'react-router-dom';
-import { useToast } from './ui/use-toast';
-import { RootState } from '../redux/rootReducer';
+import { useToast } from '@/components/ui/use-toast';
+import { RootState } from '@/redux/rootReducer';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -84,7 +84,7 @@ export function LoginForm() {
 
     // Clear any previous errors
     dispatch(clearError());
-    
+
     // Start loading
     dispatch(loginRequest());
     try {
@@ -97,7 +97,7 @@ export function LoginForm() {
       toast({ title: 'Login Successful', description: `Welcome back, ${res.data.user.firstName}!` });
       navigate("/");
     } catch (err: any) {
-      dispatch(loginFailure({ message:'Invalid email or password', type: 'general' }));
+      dispatch(loginFailure({ message: 'Invalid email or password', type: 'general' }));
     }
   };
 
@@ -206,9 +206,9 @@ export function LoginForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button 
-              className="w-full transition-all duration-200 hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
-              type="submit" 
+            <Button
+              className="w-full transition-all duration-200 hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              type="submit"
               disabled={loading}
             >
               {loading ? (
@@ -224,8 +224,8 @@ export function LoginForm() {
         </form>
         <div className="text-center text-sm text-gray-600 mb-6">
           Don't have an account?{' '}
-          <Link 
-            to="/signup" 
+          <Link
+            to="/signup"
             className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
           >
             Sign up here

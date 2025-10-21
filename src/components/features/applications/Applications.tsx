@@ -1,22 +1,24 @@
 import { Menu } from "lucide-react";
-import { Exam } from "./exam";
-import { Button } from "../components/ui/button";
-import {  } from "react-router-dom";
-import { useMobile } from "../hooks/use-mobile";
-import { SimpleAnimatedThemeToggle } from "./SimpleAnimatedThemeToggle";
-import { GooeyMenu } from "./GooeyMenu";
+import { Button } from "@/components/ui/button";
+import { } from "react-router-dom";
+import { useMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
-import { SidebarNav } from "./SidebarNav";
+import ApplicationTable from "./applicationTable";
+import { SimpleAnimatedThemeToggle } from "@/components/theme/SimpleAnimatedThemeToggle";
+import { GooeyMenu } from "@/components/layout/GooeyMenu";
+import { SidebarNav } from "@/components/layout/SidebarNav";
 
-export default function ExamComponent() {
+export default function Applications() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  // Theme is now handled by SimpleAnimatedThemeToggle component
   useMobile();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-  // Theme toggle is now handled by SimpleAnimatedThemeToggle component
+
+  // Removed handleDetailViewOpen since detail view now opens in new tab
+
+
 
   return (
     <div className="flex h-screen bg-background transition-all duration-300 ease-in-out">
@@ -39,12 +41,11 @@ export default function ExamComponent() {
           )}
 
           <div className="flex-1 flex items-center justify-between">
-            <h1 className="text-xl font-bold">Exams</h1>
+            <h1 className="text-xl font-bold">Applications</h1>
 
             <div className="flex items-center space-x-4 " >
-            <GooeyMenu />
-
-              <SimpleAnimatedThemeToggle 
+              <GooeyMenu />
+              <SimpleAnimatedThemeToggle
                 variant="circle"
                 start="top-right"
                 className="bg-transparent border border-slate-600 hover:bg-slate-700/50 dark:hover:bg-slate-800/50"
@@ -54,7 +55,7 @@ export default function ExamComponent() {
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
-          <Exam />
+          <ApplicationTable />
         </main>
       </div>
     </div>

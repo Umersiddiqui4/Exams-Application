@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserInfo, detectBrowser } from '../lib/browserDetection';
+import { BrowserInfo, detectBrowser } from '@/lib/browserDetection';
 import { BrowserRestriction } from './BrowserRestriction';
 
 interface BrowserCompatibilityWrapperProps {

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Alert, AlertDescription } from './ui/alert';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, RefreshCw, Chrome } from 'lucide-react';
-import { BrowserInfo, getLatestChromeVersions } from '../lib/browserDetection';
+import { BrowserInfo, getLatestChromeVersions } from '@/lib/browserDetection';
 
 interface BrowserRestrictionProps {
   browserInfo: BrowserInfo;
@@ -34,7 +34,7 @@ export const BrowserRestriction: React.FC<BrowserRestrictionProps> = ({ browserI
             This exam application requires specific browser requirements for optimal performance and security.
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <Alert className="border-red-200 bg-red-50">
             <AlertDescription className="text-red-800">
@@ -55,13 +55,13 @@ export const BrowserRestriction: React.FC<BrowserRestrictionProps> = ({ browserI
 
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-900">What you can do:</h3>
-            
+
             {!browserInfo.isChrome ? (
               <div className="space-y-2">
                 <p className="text-gray-700">
                   You're currently using {browserInfo.name}. Please download and install Google Chrome.
                 </p>
-                <Button 
+                <Button
                   onClick={handleDownloadChrome}
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
@@ -75,7 +75,7 @@ export const BrowserRestriction: React.FC<BrowserRestrictionProps> = ({ browserI
                   Your Chrome version ({browserInfo.version}) is outdated. Please update to the latest version.
                 </p>
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     onClick={handleDownloadChrome}
                     variant="outline"
                     className="flex-1"
@@ -83,7 +83,7 @@ export const BrowserRestriction: React.FC<BrowserRestrictionProps> = ({ browserI
                     <Download className="w-4 h-4 mr-2" />
                     Update Chrome
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleRefresh}
                     variant="outline"
                     className="flex-1"
@@ -99,7 +99,7 @@ export const BrowserRestriction: React.FC<BrowserRestrictionProps> = ({ browserI
           <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
             <h4 className="font-semibold text-yellow-800 mb-1">Why these restrictions?</h4>
             <p className="text-yellow-700 text-sm">
-              These browser requirements ensure the exam runs smoothly with proper security features, 
+              These browser requirements ensure the exam runs smoothly with proper security features,
               preventing cheating attempts and providing a consistent experience for all candidates.
             </p>
           </div>

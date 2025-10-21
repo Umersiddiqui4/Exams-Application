@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Button } from './button';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
-import { 
-  X, 
-  Download, 
-  Eye, 
-  ChevronLeft, 
-  ChevronRight, 
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  X,
+  Download,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   User,
   Mail,
@@ -18,7 +18,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface PDFPreviewPanelProps {
   isOpen: boolean;
@@ -46,9 +46,9 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
   const getDocumentName = (fileName: string) => {
     switch (fileName) {
       case 'passport-image': return 'Passport Photo';
-        case 'signature': return 'Signature';
-        case 'passport_bio_page': return 'Passport Bio Page';
-        case 'medical_license': return 'Medical License';
+      case 'signature': return 'Signature';
+      case 'passport_bio_page': return 'Passport Bio Page';
+      case 'medical_license': return 'Medical License';
       case 'part_1_passing_email': return 'Part 1 Passing Email';
       default: return `Document ${index + 1}`;
     }
@@ -160,7 +160,7 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
               {getDocumentName(attachment.fileName)}
             </DialogTitle>
           </DialogHeader>
-          
+
           {isImage ? (
             <div className="space-y-4">
               {/* Helper Text */}
@@ -171,7 +171,7 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
               </div>
 
               {/* Image Display with Interactive Zoom */}
-              <div 
+              <div
                 className="flex justify-center overflow-hidden max-h-[70vh] relative"
                 style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
               >
@@ -179,7 +179,7 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
                   src={attachment.base64Data}
                   alt={getDocumentName(attachment.fileName)}
                   className="rounded border border-slate-200 dark:border-slate-700 select-none"
-                  style={{ 
+                  style={{
                     transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.3s ease',
                     maxWidth: '100%',
@@ -222,15 +222,15 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
                     </Button>
                   </div>
                 )}
-                
+
                 {/* Helper Text */}
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   Double-click to {isZoomed ? 'zoom out' : 'zoom in'}{isZoomed ? ' • Drag to pan' : ''}
                 </p>
               </div>
-              
+
               {/* PDF Page Display with Interactive Zoom */}
-              <div 
+              <div
                 className="flex justify-center overflow-hidden max-h-[70vh] relative"
                 style={{ cursor: isZoomed ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
               >
@@ -238,7 +238,7 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
                   src={pdfPages[currentPage]}
                   alt={`Page ${currentPage + 1}`}
                   className="rounded border border-slate-200 dark:border-slate-700 shadow-lg select-none"
-                  style={{ 
+                  style={{
                     transform: `scale(${isZoomed ? 2 : 1}) translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.3s ease',
                     maxWidth: '100%',
@@ -264,11 +264,11 @@ function AttachmentPreviewItem({ attachment, index }: AttachmentPreviewItemProps
   );
 }
 
-export function PDFPreviewPanel({ 
-  isOpen, 
-  onClose, 
-  applicationData, 
-  onDownloadPDF, 
+export function PDFPreviewPanel({
+  isOpen,
+  onClose,
+  applicationData,
+  onDownloadPDF,
   onDetailView,
   isLoading = false
 }: PDFPreviewPanelProps) {
@@ -404,193 +404,193 @@ export function PDFPreviewPanel({
           <>
             {/* Passport Photo */}
             {passportImage && (
-          <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-300 flex items-center">
-                <FileImage className="h-4 w-4 mr-2" />
-                Passport Photo
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-center">
-                <img
-                  src={passportImage}
-                  alt="Passport"
-                  className="w-24 h-24 object-cover rounded border border-slate-600"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-slate-300 flex items-center">
+                    <FileImage className="h-4 w-4 mr-2" />
+                    Passport Photo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-center">
+                    <img
+                      src={passportImage}
+                      alt="Passport"
+                      className="w-24 h-24 object-cover rounded border border-slate-600"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Application Info */}
-        <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-300 flex items-center">
-              <User className="h-4 w-4 mr-2" />
-              Application Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">Candidate ID:</span>
-              <span className="text-sm text-slate-200 font-mono">
-                {applicationData?.candidateId || 'N/A'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">Name:</span>
-              <span className="text-sm text-slate-200 font-medium">
-                {applicationData?.fullName || 'N/A'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">Status:</span>
-              <Badge className={`text-xs ${getStatusColor(applicationData?.status)}`}>
-                {formatStatus(applicationData?.status)}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">Applied:</span>
-              <span className="text-sm text-slate-200">
-                {applicationData?.createdAt 
-                  ? format(new Date(applicationData.createdAt), 'MMM dd, yyyy')
-                  : 'N/A'
-                }
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Information */}
-        <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-300 flex items-center">
-              <Mail className="h-4 w-4 mr-2" />
-              Contact Info
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start space-x-2">
-              <Mail className="h-3 w-3 text-slate-400 mt-1" />
-              <div className="flex-1">
-                <p className="text-xs text-slate-400">Email</p>
-                <p className="text-sm text-slate-200">{applicationData?.email || 'N/A'}</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-2">
-              <Phone className="h-3 w-3 text-slate-400 mt-1" />
-              <div className="flex-1">
-                <p className="text-xs text-slate-400">WhatsApp</p>
-                <p className="text-sm text-slate-200">{applicationData?.personalContact || 'N/A'}</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-2">
-              <Phone className="h-3 w-3 text-slate-400 mt-1" />
-              <div className="flex-1">
-                <p className="text-xs text-slate-400">Emergency</p>
-                <p className="text-sm text-slate-200">{applicationData?.emergencyContact || 'N/A'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Address Information */}
-        <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-300 flex items-center">
-              <MapPin className="h-4 w-4 mr-2" />
-              Address
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-slate-200">
-              {applicationData?.streetAddress && (
-                <p>{applicationData.streetAddress}</p>
-              )}
-              <p>
-                {[applicationData?.city, applicationData?.district, applicationData?.province, applicationData?.country]
-                  .filter(Boolean)
-                  .join(', ') || 'No address provided'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Education/Experience */}
-        <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-300 flex items-center">
-              <GraduationCap className="h-4 w-4 mr-2" />
-              {applicationData?.examOccurrence?.type === 'AKT' ? 'Education' : 'Experience'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {applicationData?.examOccurrence?.type === 'AKT' ? (
-              <>
-                <div className="flex justify-between">
-                  <span className="text-xs text-slate-400">School:</span>
-                  <span className="text-sm text-slate-200">
-                    {applicationData?.aktDetails?.graduatingSchoolName || 'N/A'}
+            {/* Application Info */}
+            <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-slate-300 flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  Application Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Candidate ID:</span>
+                  <span className="text-sm text-slate-200 font-mono">
+                    {applicationData?.candidateId || 'N/A'}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-slate-400">Location:</span>
-                  <span className="text-sm text-slate-200">
-                    {applicationData?.aktDetails?.graduatingSchoolLocation || 'N/A'}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Name:</span>
+                  <span className="text-sm text-slate-200 font-medium">
+                    {applicationData?.fullName || 'N/A'}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-slate-400">Qualified:</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Status:</span>
+                  <Badge className={`text-xs ${getStatusColor(applicationData?.status)}`}>
+                    {formatStatus(applicationData?.status)}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Applied:</span>
                   <span className="text-sm text-slate-200">
-                    {applicationData?.aktDetails?.dateOfQualification
-                      ? format(new Date(applicationData.aktDetails.dateOfQualification), 'MMM yyyy')
+                    {applicationData?.createdAt
+                      ? format(new Date(applicationData.createdAt), 'MMM dd, yyyy')
                       : 'N/A'
                     }
                   </span>
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="flex justify-between">
-                  <span className="text-xs text-slate-400">Country:</span>
-                  <span className="text-sm text-slate-200">
-                    {applicationData?.clinicalExperienceCountry || 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-slate-400">Origin:</span>
-                  <span className="text-sm text-slate-200">
-                    {applicationData?.originCountry || 'N/A'}
-                  </span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Attachments Summary */}
-        {applicationData?.attachments && applicationData.attachments.length > 0 && (
-          <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-300 flex items-center">
-                <FileText className="h-4 w-4 mr-2" />
-                Documents ({applicationData.attachments.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {applicationData.attachments.map((attachment: any, index: number) => (
-                  <AttachmentPreviewItem 
-                    key={attachment.id || index} 
-                    attachment={attachment} 
-                    index={index}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            {/* Contact Information */}
+            <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-slate-300 flex items-center">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contact Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <Mail className="h-3 w-3 text-slate-400 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-400">Email</p>
+                    <p className="text-sm text-slate-200">{applicationData?.email || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Phone className="h-3 w-3 text-slate-400 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-400">WhatsApp</p>
+                    <p className="text-sm text-slate-200">{applicationData?.personalContact || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Phone className="h-3 w-3 text-slate-400 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-400">Emergency</p>
+                    <p className="text-sm text-slate-200">{applicationData?.emergencyContact || 'N/A'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Address Information */}
+            <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-slate-300 flex items-center">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-slate-200">
+                  {applicationData?.streetAddress && (
+                    <p>{applicationData.streetAddress}</p>
+                  )}
+                  <p>
+                    {[applicationData?.city, applicationData?.district, applicationData?.province, applicationData?.country]
+                      .filter(Boolean)
+                      .join(', ') || 'No address provided'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Education/Experience */}
+            <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-slate-300 flex items-center">
+                  <GraduationCap className="h-4 w-4 mr-2" />
+                  {applicationData?.examOccurrence?.type === 'AKT' ? 'Education' : 'Experience'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {applicationData?.examOccurrence?.type === 'AKT' ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-400">School:</span>
+                      <span className="text-sm text-slate-200">
+                        {applicationData?.aktDetails?.graduatingSchoolName || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-400">Location:</span>
+                      <span className="text-sm text-slate-200">
+                        {applicationData?.aktDetails?.graduatingSchoolLocation || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-400">Qualified:</span>
+                      <span className="text-sm text-slate-200">
+                        {applicationData?.aktDetails?.dateOfQualification
+                          ? format(new Date(applicationData.aktDetails.dateOfQualification), 'MMM yyyy')
+                          : 'N/A'
+                        }
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-400">Country:</span>
+                      <span className="text-sm text-slate-200">
+                        {applicationData?.clinicalExperienceCountry || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-400">Origin:</span>
+                      <span className="text-sm text-slate-200">
+                        {applicationData?.originCountry || 'N/A'}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Attachments Summary */}
+            {applicationData?.attachments && applicationData.attachments.length > 0 && (
+              <Card className="bg-slate-800 dark:bg-slate-900 border-slate-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-slate-300 flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Documents ({applicationData.attachments.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {applicationData.attachments.map((attachment: any, index: number) => (
+                      <AttachmentPreviewItem
+                        key={attachment.id || index}
+                        attachment={attachment}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>

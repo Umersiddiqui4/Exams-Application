@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { verifyEmail } from "@/api/authApi";
-import { useToast } from './ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export function EmailVerificationTest() {
   const [token, setToken] = useState('');
@@ -29,14 +29,14 @@ export function EmailVerificationTest() {
     try {
       const response = await verifyEmail(token.trim());
       setResult(response);
-      
+
       if (response.success) {
         toast({
           title: 'Email Verification Successful!',
           description: response.message,
           duration: 5000,
         });
-        
+
         // Check if password reset is required
         if (response.data?.requiresPasswordReset) {
           toast({
@@ -55,7 +55,7 @@ export function EmailVerificationTest() {
     } catch (error: any) {
       console.error('Test verification error:', error);
       setResult({ error: error.message, stack: error.stack });
-      
+
       toast({
         title: 'API Call Failed',
         description: error.message,
@@ -83,8 +83,8 @@ export function EmailVerificationTest() {
               className="font-mono text-sm"
             />
           </div>
-          
-          <Button 
+
+          <Button
             onClick={testVerification}
             disabled={loading}
             className="w-full"
@@ -114,7 +114,7 @@ export function EmailVerificationTest() {
                       {result.success ? 'Verification Successful' : 'Verification Failed'}
                     </span>
                   </div>
-                  
+
                   <div className="space-y-2 text-sm">
                     <div>
                       <strong>Message:</strong> <span className={result.success ? 'text-green-700' : 'text-red-700'}>{result.message}</span>
@@ -122,7 +122,7 @@ export function EmailVerificationTest() {
                     <div>
                       <strong>Status Code:</strong> <span className="font-mono">{result.statusCode}</span>
                     </div>
-                    
+
                     {result.data && (
                       <div>
                         <strong>Data:</strong>
@@ -135,7 +135,7 @@ export function EmailVerificationTest() {
                       </div>
                     )}
                   </div>
-                  
+
                   <details className="mt-3">
                     <summary className="text-xs text-gray-600 cursor-pointer">Full Response JSON</summary>
                     <pre className="text-xs text-gray-600 mt-2 overflow-auto max-h-48 bg-white p-2 rounded border">

@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "./button"
+import { Button } from "@/components/ui/button"
 import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog"
-import { useToast } from "./use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { logger } from '@/lib/logger'
 
 export function FieldSelectionDemo() {
@@ -12,12 +12,12 @@ export function FieldSelectionDemo() {
 
   const handleExport = (config: ExportFieldConfig, includeWaitingList: boolean, includeRejected: boolean) => {
     logger.debug("Export configuration", { config, includeWaitingList, includeRejected })
-    
+
     toast({
       title: "Export Configuration",
       description: `Selected ${config.fields.length} fields for export. Sheet name: ${config.sheetName}`,
     })
-    
+
     setIsDialogOpen(false)
   }
 

@@ -1,20 +1,24 @@
 
-import { Button } from "./button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "./card";
-import { Input } from "./input";
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { logger } from '@/lib/logger';
 import { isNoPreferenceDate } from '@/lib/utils';
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuTrigger,
-// } from "./dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Check,
+  XIcon
+} from "lucide-react";
 import {
   Document,
   Page,
@@ -29,37 +33,37 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./select";
+} from "@/components/ui/select";
 
-import { Calendar, Download, Loader2, Search, Settings } from "lucide-react";
-import { DataTable } from "../data-table";
+import { Calendar, Download, Filter, Loader2, Search, Settings } from "lucide-react";
+import { DataTable } from "@/components/common/data-table";
 import { useEffect, useState } from "react";
 import { useApplications } from "@/hooks/useApplications";
 import { useExamOccurrences } from "@/hooks/useExamOccurrences";
-import { getApplication } from "@/api/applicationsApi";
-import { columns } from "../columns";
+import { getApplication, startReview } from "@/api/applicationsApi";
+import { columns } from "@/components/common/columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
-import { FieldSelectionDialog, ExportFieldConfig } from "./field-selection-dialog";
-import { ApplicationPDFCompleteAktApp } from "./pdf-generator";
-import { PDFPreviewPanel } from "./pdf-preview-panel";
+import { FieldSelectionDialog, ExportFieldConfig } from "@/components/common/field-selection-dialog";
+import { ApplicationPDFCompleteAktApp } from "@/components/pdf/pdf-generator";
+import { PDFPreviewPanel } from "@/components/pdf/pdf-preview-panel";
 import { ApplicationDetailView } from "./application-detail-view";
 
 // PDF.js worker setup for v5.x
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 // No props needed - component is self-contained
-export default function DraftApplicationTable() {
+export default function ApplicationTable() {
   const { toast } = useToast()
 
-  // Draft applications - filter by DRAFT status
-  const activeFilter = "DRAFT"
-  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const [activeFilter, setActiveFilter] = useState<string>("all");
   const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all")
   const [isExporting, setIsExporting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
   const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false)
@@ -69,6 +73,7 @@ export default function DraftApplicationTable() {
   const [pageSize, setPageSize] = useState(10)
   const {
     applications,
+    review,
     loadState,
     error,
     pagination,
@@ -77,7 +82,7 @@ export default function DraftApplicationTable() {
     reload,
   } = useApplications(
     selectedExamOccurrence === "all" ? undefined : selectedExamOccurrence,
-    activeFilter, // Always filter by DRAFT
+    activeFilter === "all" ? undefined : activeFilter,
     pageSize,
     searchQuery,
   )
@@ -87,14 +92,16 @@ export default function DraftApplicationTable() {
     if (currentExamOccurrence && currentExamOccurrence.id) {
       setSelectedExamOccurrence(currentExamOccurrence.id.toString())
     }
+
+    // Removed message listener since we're using routes now
   }, [examOccurrences])
 
-  // Action column - only "Get PDF" button, no approve/reject
   const actionColumn = {
     id: "actions",
     header: "Action",
     cell: ({ row }: { row: any }) => {
       const id = row.original.id
+      const status = row.original.status
 
       return (
         <div className="flex space-x-2">
@@ -109,13 +116,114 @@ export default function DraftApplicationTable() {
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 Generating...
               </>
+            ) : status === "SUBMITTED" ? (
+              "Review"
             ) : (
               "Get PDF"
             )}
           </Button>
+          {(status === "SUBMITTED" || status === "UNDER_REVIEW") && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 border-green-200 dark:border-green-800"
+                onClick={() => handleStatusChange(id, "approved")}
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Approve
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 border-red-200 dark:border-red-800"
+                onClick={() => handleStatusChange(id, "rejected")}
+              >
+                <XIcon className="h-4 w-4 mr-1" />
+                Reject
+              </Button>
+            </>
+          )}
         </div>
       )
     },
+  }
+
+  const handleStatusChange = async (id: string, status: "approved" | "rejected") => {
+    if (status === "approved") {
+      // Show approval confirmation dialog with optional notes
+      const result = await Swal.fire({
+        title: "Are you sure you want to approve?",
+        imageUrl: "/icon.png", // Replace with your actual icon path
+        imageWidth: 150,
+        imageHeight: 150,
+        input: "textarea",
+        inputPlaceholder: "Optional admin notes...",
+        inputAttributes: {
+          "aria-label": "Admin notes",
+        },
+        showCancelButton: true,
+        confirmButtonText: "Yes, approve",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#4ade80",
+        cancelButtonColor: "#ef4444",
+        customClass: {
+          popup: "rounded-lg",
+          confirmButton: "rounded-lg px-4 py-2",
+          cancelButton: "rounded-lg px-4 py-2",
+        },
+      })
+
+      if (result.isConfirmed) {
+        // Call the review API with APPROVED status
+        await review(id, "APPROVED", result.value || undefined)
+
+        // Show success message
+        await Swal.fire({
+          title: "Application Approved Successfully!",
+          imageUrl: "/icon.png", // Replace with your actual icon path
+          imageWidth: 150,
+          imageHeight: 150,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3b82f6",
+          customClass: {
+            popup: "rounded-lg",
+            confirmButton: "rounded-lg px-4 py-2",
+          },
+        })
+      }
+    } else if (status === "rejected") {
+      // Show rejection confirmation dialog with mandatory reason
+      const result = await Swal.fire({
+        title: "Are you sure you want to reject?",
+        imageUrl: "/icon.png", // Replace with your actual logo path
+        imageWidth: 150,
+        imageHeight: 150,
+        input: "textarea",
+        inputPlaceholder: "Enter reason for rejection (required)...",
+        inputValidator: (value) => {
+          if (!value) {
+            return "You need to provide a reason for rejection!"
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: "Yes, reject",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        customClass: {
+          popup: "rounded-lg",
+          input: "border rounded-lg p-2 w-auto",
+          confirmButton: "rounded-lg px-4 py-2",
+          cancelButton: "rounded-lg px-4 py-2",
+        },
+      })
+
+      if (result.isConfirmed && result.value) {
+        // Call the review API with REJECTED status and reason as adminNotes
+        await review(id, "REJECTED", result.value)
+      }
+    }
   }
 
   const handleExamChange = (value: string) => {
@@ -131,6 +239,15 @@ export default function DraftApplicationTable() {
     setDetailViewOpen(false)
 
     try {
+      // Call start-review API if status is SUBMITTED
+      if (row.original.status === "SUBMITTED") {
+        try {
+          await startReview(row.original.id)
+        } catch {
+          // Ignore start-review API errors for now
+        }
+      }
+
       // Fetch detailed application data
       const detailedData: any = await getApplication(row.original.id)
 
@@ -322,7 +439,7 @@ export default function DraftApplicationTable() {
 
       const link = document.createElement("a")
       link.href = URL.createObjectURL(blob)
-      link.setAttribute("download", `Draft_Applications_${examName}.xlsx`)
+      link.setAttribute("download", `Applications_${examName}.xlsx`)
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -330,7 +447,7 @@ export default function DraftApplicationTable() {
 
       toast({
         title: "Export Successful",
-        description: `Draft applications exported successfully with ${fieldConfig?.fields.length || 'default'} fields.`,
+        description: `Applications exported successfully with ${fieldConfig?.fields.length || 'default'} fields.`,
       })
     } catch (error) {
       logger.error("Export error", error)
@@ -572,7 +689,7 @@ export default function DraftApplicationTable() {
               <View style={styles.resumeBody}>
                 <View style={styles.fieldRow}>
                   <Text style={styles.note}>
-                    THE NUMBER OF PLACES IS LIMITED, AND SLOTS WILL BE ALLOCATED ON THE "FIRST COME FIRST SERVED" BASIS.
+                    THE NUMBER OF PLACES IS LIMITED, AND SLOTS WILL BE ALLOCATED ON THE "FIRST COME FIRST SERVED” BASIS.
                     Your application may be rejected because of a large number of applicants and you may be invited to
                     apply again or offered a slot at a subsequent examination. Priority will be given to applicants from
                     South Asia and those applications that reach us first, so we encourage you to apply as soon as
@@ -605,7 +722,7 @@ export default function DraftApplicationTable() {
                     International Membership, an annual subscription fee is to be payable to the RCGP. I understand that
                     only registered International Members who maintain their RCGP subscription are entitled to use the
                     post-nominal designation "MRCGP [INT]". Success in the exam does not give me the right to refer to
-                    myself as MRCGP [INT.]. I attach a banker's draft made payable to "MRCGP [INT.] South Asia", I also
+                    myself as MRCGP [INT.]. I attach a banker's draft made payable to “MRCGP [INT.] South Asia”, I also
                     understand and agree that my personal data will be handled by the MRCGP [INT.] South Asia Board and
                     I also give permission for my personal data to be handled by the regional MRCGP [INT.] South Asia
                     co-ordinators..
@@ -844,8 +961,59 @@ export default function DraftApplicationTable() {
     <div>
       <Card className="shadow-lg border-0 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
         <CardHeader className="bg-[#5c347d] dark:bg-[#3b1f52] flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xl font-bold text-white">Draft Applications</CardTitle>
+          <CardTitle className="text-xl font-bold text-white">Applications</CardTitle>
           <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("all")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  All
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("SUBMITTED")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Submitted
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("UNDER_REVIEW")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Under Review
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("APPROVED")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Approved
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("REJECTED")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Rejected
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter("waiting")}
+                  className="dark:text-slate-200 dark:focus:bg-slate-800"
+                >
+                  Waiting
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button
               variant="outline"
               size="sm"
@@ -918,7 +1086,7 @@ export default function DraftApplicationTable() {
                 </div>
 
                 {/* Search */}
-                <div className="relative w-full md:w-64">
+                <div className="relative w-full md:w-80">
                   <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-slate-400" />
                   <Input
                     placeholder="Search by SNO, name, email, candidate ID..."
@@ -937,11 +1105,40 @@ export default function DraftApplicationTable() {
                 <div className="flex items-center">
                   <Calendar className="h-5 w-5 mr-2 text-[#5c347d] dark:text-[#8b5fbf]" />
                   <span className="font-medium dark:text-slate-200 text-slate-700">
-                    Showing draft applications for:{" "}
+                    Showing applications for:{" "}
                     <span className="text-[#5c347d] dark:text-[#8b5fbf] font-semibold">
                       {examOccurrences.find((examOccurrence: any) => examOccurrence.id.toString() === selectedExamOccurrence)?.title || "N/A"}
                     </span>
                   </span>
+                </div>
+              </div>
+            )}
+
+            {/* Active Filter Info */}
+            {activeFilter !== "all" && (
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Filter className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    <span className="font-medium dark:text-slate-200 text-slate-700">
+                      Filter applied:{" "}
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                        {activeFilter === "SUBMITTED" ? "Submitted" :
+                          activeFilter === "UNDER_REVIEW" ? "Under Review" :
+                            activeFilter === "APPROVED" ? "Approved" :
+                              activeFilter === "REJECTED" ? "Rejected" :
+                                activeFilter === "waiting" ? "Waiting" : activeFilter}
+                      </span>
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    /* onClick={() => setActiveFilter("all")} */
+                    className="ml-4 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                  >
+                    Clear Filter
+                  </Button>
                 </div>
               </div>
             )}
@@ -951,14 +1148,14 @@ export default function DraftApplicationTable() {
             <div className="flex justify-center items-center py-8">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5c347d] mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading draft applications...</p>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading applications...</p>
               </div>
             </div>
           )}
 
           {loadState === "error" && (
             <div className="text-center py-8">
-              <p className="text-red-600 dark:text-red-400">Error loading draft applications: {error}</p>
+              <p className="text-red-600 dark:text-red-400">Error loading applications: {error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="mt-2 px-4 py-2 bg-[#5c347d] text-white rounded hover:bg-[#4a2a68]"
@@ -1012,4 +1209,3 @@ export default function DraftApplicationTable() {
     </div>
   )
 }
-

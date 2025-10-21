@@ -1,17 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "./button"
-import { Checkbox } from "./checkbox"
-import { Input } from "./input"
-import { Label } from "./label"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "./dialog"
+} from "@/components/ui/dialog"
 import {
   DndContext,
   closestCenter,
@@ -60,7 +60,7 @@ const AVAILABLE_FIELDS: FieldConfig[] = [
   { key: "email", displayName: "Email Address", type: "application" },
   { key: "personalContact", displayName: "WhatsApp Number", type: "application" },
   { key: "emergencyContact", displayName: "Emergency Contact", type: "application" },
-  
+
   // Address Information
   { key: "streetAddress", displayName: "Street Address", type: "application" },
   { key: "poBox", displayName: "P.O. Box", type: "application" },
@@ -70,19 +70,19 @@ const AVAILABLE_FIELDS: FieldConfig[] = [
   { key: "country", displayName: "Country", type: "application" },
   { key: "originCountry", displayName: "Country of Origin", type: "application" },
   { key: "clinicalExperienceCountry", displayName: "Country of Experience", type: "application" },
-  
+
   // Registration Information
   { key: "registrationAuthority", displayName: "Registration Authority", type: "application" },
   { key: "registrationNumber", displayName: "Registration Number", type: "application" },
   { key: "registrationDate", displayName: "Registration Date", type: "application" },
-  
+
   // Exam Information
   { key: "dateOfPassingPart1", displayName: "Part 1 Passing Date", type: "application" },
   { key: "previousOsceAttempts", displayName: "Previous OSCE Attempts", type: "application" },
   { key: "preferenceDate1", displayName: "Preference Date 1", type: "application" },
   { key: "preferenceDate2", displayName: "Preference Date 2", type: "application" },
   { key: "preferenceDate3", displayName: "Preference Date 3", type: "application" },
-  
+
   // Status and System
   { key: "status", displayName: "Application Status", type: "system" },
   { key: "createdAt", displayName: "Application Date", type: "system" },
@@ -121,9 +121,8 @@ function SortableItem({ field, index, totalItems, onMoveUp, onMoveDown, onRemove
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center space-x-2 p-2 bg-background border rounded-md ${
-        isDragging ? "shadow-lg opacity-90" : ""
-      }`}
+      className={`flex items-center space-x-2 p-2 bg-background border rounded-md ${isDragging ? "shadow-lg opacity-90" : ""
+        }`}
     >
       <div
         {...attributes}
@@ -132,12 +131,12 @@ function SortableItem({ field, index, totalItems, onMoveUp, onMoveDown, onRemove
       >
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
-      
+
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium">{field.displayName}</div>
         <div className="text-xs text-muted-foreground">{field.key}</div>
       </div>
-      
+
       <div className="flex items-center space-x-1">
         <Button
           variant="ghost"
@@ -193,7 +192,7 @@ export function FieldSelectionDialog({
   // Initialize with default fields if none selected
   useEffect(() => {
     if (isOpen && selectedFields.length === 0) {
-      const defaultFields = AVAILABLE_FIELDS.filter(field => 
+      const defaultFields = AVAILABLE_FIELDS.filter(field =>
         ["candidateId", "fullName", "email", "personalContact", "status", "createdAt"].includes(field.key)
       )
       setSelectedFields(defaultFields)
@@ -232,14 +231,14 @@ export function FieldSelectionDialog({
   const handleMoveUp = (index: number) => {
     if (index === 0) return
     const newFields = [...selectedFields]
-    ;[newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]]
+      ;[newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]]
     setSelectedFields(newFields)
   }
 
   const handleMoveDown = (index: number) => {
     if (index === selectedFields.length - 1) return
     const newFields = [...selectedFields]
-    ;[newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]]
+      ;[newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]]
     setSelectedFields(newFields)
   }
 
@@ -290,7 +289,7 @@ export function FieldSelectionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Configure Excel Export Fields
@@ -334,7 +333,7 @@ export function FieldSelectionDialog({
                   </Button>
                 </div>
               </div>
-              
+
               <div className="border rounded-md max-h-96 overflow-y-auto">
                 <div className="p-2 space-y-1">
                   {filteredFields.map((field) => {
@@ -404,7 +403,7 @@ export function FieldSelectionDialog({
 
             <div className="space-y-2">
               <Label>Selected Fields ({selectedFields.length})</Label>
-              
+
               {selectedFields.length === 0 ? (
                 <div className="border rounded-md p-8 text-center text-muted-foreground">
                   No fields selected. Choose fields from the left panel.

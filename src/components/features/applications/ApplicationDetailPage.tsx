@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from './button';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
 import { isNoPreferenceDate } from '@/lib/utils';
 import {
@@ -21,12 +21,12 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { getApplication } from '@/api/applicationsApi';
-import { useToast } from './use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import * as pdfjsLib from "pdfjs-dist";
 import { pdf } from '@react-pdf/renderer';
-import { ApplicationPDFCompleteAktApp, ApplicationPDFComplete } from './pdf-generator';
+import { ApplicationPDFCompleteAktApp, ApplicationPDFComplete } from '@/components/pdf/pdf-generator';
 
 // PDF.js worker setup for v5.x
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
