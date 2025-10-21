@@ -58,12 +58,26 @@ A modern, secure, and feature-rich examination management system built with Reac
    npm install
    ```
 
-3. **Start development server**
+3. **Configure environment variables**
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+   
+   # Edit .env and add your configuration
+   # Required variables:
+   # - VITE_API_BASE_URL (default: https://mrcgp-api.omnifics.io)
+   # - VITE_SUPABASE_URL (your Supabase project URL)
+   # - VITE_SUPABASE_ANON_KEY (your Supabase anonymous key)
+   ```
+   
+   See the [Environment Setup](#-environment-setup) section for detailed configuration instructions.
+
+4. **Start development server**
    ```bash
    npm run dev
    ```
 
-4. **Open in Chrome**
+5. **Open in Chrome**
    - Navigate to `http://localhost:5173`
    - **Important**: Use only Google Chrome browser
 
@@ -179,6 +193,61 @@ npm run test:browser # Test browser detection
 
 ### Environment Setup
 
+This project uses environment variables to configure API endpoints, authentication, and other settings. 
+
+#### Environment Files
+
+- **`.env`** - Your local environment configuration (not committed to git)
+- **`.env.example`** - Template file with all available environment variables
+
+#### Required Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `VITE_API_BASE_URL` | Base URL for the MRCGP API | `https://mrcgp-api.omnifics.io` | Yes |
+| `VITE_SUPABASE_URL` | Your Supabase project URL | - | Yes |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anonymous/public key | - | Yes |
+| `VITE_API_TOKEN` | Optional API authentication token | - | No |
+
+#### Setup Instructions
+
+1. **Copy the example file**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Update the values** in `.env`:
+   ```env
+   # API Configuration
+   VITE_API_BASE_URL=https://mrcgp-api.omnifics.io
+   
+   # Supabase Configuration (Get these from your Supabase dashboard)
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+3. **Restart the dev server** after changing environment variables:
+   ```bash
+   npm run dev
+   ```
+
+#### Getting Supabase Credentials
+
+1. Go to your [Supabase Dashboard](https://app.supabase.com)
+2. Select your project
+3. Go to **Settings** → **API**
+4. Copy the **Project URL** for `VITE_SUPABASE_URL`
+5. Copy the **anon/public key** for `VITE_SUPABASE_ANON_KEY`
+
+#### Important Notes
+
+- **Never commit** your `.env` file to version control
+- The `.env` file is already included in `.gitignore`
+- Environment variables must be prefixed with `VITE_` to be accessible in the client
+- Changes to environment variables require a dev server restart
+
+#### Build Commands
+
 1. **Development Environment**
    ```bash
    npm run dev
@@ -209,8 +278,11 @@ The application is configured for Vercel deployment with:
    ```
 
 2. **Configure Environment Variables**
-   - Set production API endpoints
-   - Configure authentication settings
+   In your Vercel dashboard, add the following environment variables:
+   - `VITE_API_BASE_URL` - Production API URL
+   - `VITE_SUPABASE_URL` - Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+   - `VITE_API_TOKEN` (optional) - API authentication token
 
 3. **Deploy**
    ```bash
