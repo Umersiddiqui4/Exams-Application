@@ -77,6 +77,8 @@ export function Settings() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingDeleteLabel, setPendingDeleteLabel] = useState<string>("");
+  const [examDatesPage, setExamDatesPage] = useState(1);
+  const [examDatesPageSize, setExamDatesPageSize] = useState(10);
 
   // Exams state
   const { items: exams, loadState: examsLoad, error: examsError, create: createExam, update: updateExam, remove: removeExam } = useExams();
@@ -88,6 +90,8 @@ export function Settings() {
   const [examConfirmOpen, setExamConfirmOpen] = useState(false);
   const [pendingExamDeleteId, setPendingExamDeleteId] = useState<string | null>(null);
   const [pendingExamDeleteName, setPendingExamDeleteName] = useState<string>("");
+  const [examsPage, setExamsPage] = useState(1);
+  const [examsPageSize, setExamsPageSize] = useState(10);
 
   // User creation state
   const [newUser, setNewUser] = useState({
@@ -131,6 +135,7 @@ export function Settings() {
     remove: removeUser,
     reload: reloadUsers,
     goToPage,
+    setPageSize,
     setSearch,
     setRoleFilter: setUsersRoleFilter,
     setSorting,
@@ -373,13 +378,13 @@ export function Settings() {
                               onChange={(e) => setCandidateTemplate({ ...candidateTemplate, description: e.target.value })}
                             />
                           </div>
-                          <div className="flex items-center gap-3">
+                          {/* <div className="flex items-center gap-3">
                             <Switch
                               checked={candidateTemplate.isActive}
                               onCheckedChange={(v) => setCandidateTemplate({ ...candidateTemplate, isActive: Boolean(v) })}
                             />
                             <span className="text-sm">Active</span>
-                          </div>
+                          </div> */}
                           <div className="flex justify-end">
                             <Button onClick={() => saveTemplates("candidates")}>Save</Button>
                           </div>
@@ -420,13 +425,13 @@ export function Settings() {
                               onChange={(e) => setWaitingTemplate({ ...waitingTemplate, description: e.target.value })}
                             />
                           </div>
-                          <div className="flex items-center gap-3">
+                          {/* <div className="flex items-center gap-3">
                             <Switch
                               checked={waitingTemplate.isActive}
                               onCheckedChange={(v) => setWaitingTemplate({ ...waitingTemplate, isActive: Boolean(v) })}
                             />
                             <span className="text-sm">Active</span>
-                          </div>
+                          </div> */}
                           <div className="flex justify-end">
                             <Button onClick={() => saveTemplates("waiting")}>Save</Button>
                           </div>
@@ -475,24 +480,26 @@ export function Settings() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {examDates.map((opt) => (
-                            <TableRow key={opt.id}>
-                              <TableCell>{opt.name}</TableCell>
-                              <TableCell className="text-right">
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => {
-                                    setPendingDeleteId(opt.id);
-                                    setPendingDeleteLabel(opt.name);
-                                    setConfirmOpen(true);
-                                  }}
-                                >
-                                  Delete
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          {examDates
+                            .slice((examDatesPage - 1) * examDatesPageSize, examDatesPage * examDatesPageSize)
+                            .map((opt) => (
+                              <TableRow key={opt.id}>
+                                <TableCell>{opt.name}</TableCell>
+                                <TableCell className="text-right">
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      setPendingDeleteId(opt.id);
+                                      setPendingDeleteLabel(opt.name);
+                                      setConfirmOpen(true);
+                                    }}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                           {examDates.length === 0 && loadState === "success" && (
                             <TableRow>
                               <TableCell colSpan={2} className="text-center text-sm text-muted-foreground">
@@ -503,6 +510,49 @@ export function Settings() {
                         </TableBody>
                       </Table>
                     </div>
+                    {examDates.length > 0 && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t">
+                        <div className="text-sm text-muted-foreground">
+                          Showing {((examDatesPage - 1) * examDatesPageSize) + 1} to {Math.min(examDatesPage * examDatesPageSize, examDates.length)} of {examDates.length} results
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Rows per page</span>
+                            <select
+                              className="h-8 rounded-md border px-2 bg-background"
+                              value={examDatesPageSize}
+                              onChange={(e) => { setExamDatesPageSize(parseInt(e.target.value, 10)); setExamDatesPage(1); }}
+                            >
+                              <option value={5}>5</option>
+                              <option value={10}>10</option>
+                              <option value={20}>20</option>
+                              <option value={50}>50</option>
+                            </select>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setExamDatesPage((p) => Math.max(1, p - 1))}
+                            disabled={examDatesPage <= 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                          </Button>
+                          <span className="text-sm">
+                            Page {examDatesPage} of {Math.max(1, Math.ceil(examDates.length / examDatesPageSize))}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setExamDatesPage((p) => Math.min(Math.ceil(examDates.length / examDatesPageSize), p + 1))}
+                            disabled={examDatesPage >= Math.ceil(examDates.length / examDatesPageSize)}
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -610,85 +660,87 @@ export function Settings() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {exams.map((exam) => (
-                            <TableRow key={exam.id}>
-                              <TableCell className="align-top">
-                                {editingId === exam.id ? (
-                                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
-                                ) : (
-                                  exam.name
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {editingId === exam.id ? (
-                                  <Textarea className="max-h-[100px]" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-                                ) : (
-                                  <div className="whitespace-pre-wrap">{exam.description}</div>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-right space-x-2">
-                                {editingId === exam.id ? (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      className="mb-2"
-                                      onClick={async () => {
-                                        try {
-                                          const updated = await updateExam(exam.id, { name: editName, description: editDescription });
-                                          toast({ title: "Exam updated", description: updated.name });
+                          {exams
+                            .slice((examsPage - 1) * examsPageSize, examsPage * examsPageSize)
+                            .map((exam) => (
+                              <TableRow key={exam.id}>
+                                <TableCell className="align-top">
+                                  {editingId === exam.id ? (
+                                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                                  ) : (
+                                    exam.name
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingId === exam.id ? (
+                                    <Textarea className="max-h-[100px]" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                                  ) : (
+                                    <div className="whitespace-pre-wrap">{exam.description}</div>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right space-x-2">
+                                  {editingId === exam.id ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        className="mb-2"
+                                        onClick={async () => {
+                                          try {
+                                            const updated = await updateExam(exam.id, { name: editName, description: editDescription });
+                                            toast({ title: "Exam updated", description: updated.name });
+                                            setEditingId(null);
+                                          } catch (err: unknown) {
+                                            toast({
+                                              title: "Unable to update",
+                                              description: err instanceof Error ? err.message : "Unknown error",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        Save
+                                      </Button>
+                                      <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => {
                                           setEditingId(null);
-                                        } catch (err: unknown) {
-                                          toast({
-                                            title: "Unable to update",
-                                            description: err instanceof Error ? err.message : "Unknown error",
-                                            variant: "destructive",
-                                          });
-                                        }
-                                      }}
-                                    >
-                                      Save
-                                    </Button>
-                                    <Button
-                                      variant="secondary"
-                                      size="sm"
-                                      onClick={() => {
-                                        setEditingId(null);
-                                      }}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <></>
-                                  // <>
-                                  //   <Button
-                                  //     size="sm"
-                                  //     variant="secondary"
-                                  //     className="mb-2"
-                                  //     onClick={() => {
-                                  //       setEditingId(exam.id);
-                                  //       setEditName(exam.name);
-                                  //       setEditDescription(exam.description || "");
-                                  //     }}
-                                  //   >
-                                  //     Edit
-                                  //   </Button>
-                                  //   <Button
-                                  //     variant="destructive"
-                                  //     size="sm"
-                                  //     onClick={() => {
-                                  //       setPendingExamDeleteId(exam.id);
-                                  //       setPendingExamDeleteName(exam.name || "");
-                                  //       setExamConfirmOpen(true);
-                                  //     }}
-                                  //   >
-                                  //     Delete
-                                  //   </Button>
-                                  // </>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                        }}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                    // <>
+                                    //   <Button
+                                    //     size="sm"
+                                    //     variant="secondary"
+                                    //     className="mb-2"
+                                    //     onClick={() => {
+                                    //       setEditingId(exam.id);
+                                    //       setEditName(exam.name);
+                                    //       setEditDescription(exam.description || "");
+                                    //     }}
+                                    //   >
+                                    //     Edit
+                                    //   </Button>
+                                    //   <Button
+                                    //     variant="destructive"
+                                    //     size="sm"
+                                    //     onClick={() => {
+                                    //       setPendingExamDeleteId(exam.id);
+                                    //       setPendingExamDeleteName(exam.name || "");
+                                    //       setExamConfirmOpen(true);
+                                    //     }}
+                                    //   >
+                                    //     Delete
+                                    //   </Button>
+                                    // </>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
                           {exams.length === 0 && examsLoad === "success" && (
                             <TableRow>
                               <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
@@ -699,6 +751,49 @@ export function Settings() {
                         </TableBody>
                       </Table>
                     </div>
+                    {exams.length > 0 && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t">
+                        <div className="text-sm text-muted-foreground">
+                          Showing {((examsPage - 1) * examsPageSize) + 1} to {Math.min(examsPage * examsPageSize, exams.length)} of {exams.length} results
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Rows per page</span>
+                            <select
+                              className="h-8 rounded-md border px-2 bg-background"
+                              value={examsPageSize}
+                              onChange={(e) => { setExamsPageSize(parseInt(e.target.value, 10)); setExamsPage(1); }}
+                            >
+                              <option value={5}>5</option>
+                              <option value={10}>10</option>
+                              <option value={20}>20</option>
+                              <option value={50}>50</option>
+                            </select>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setExamsPage((p) => Math.max(1, p - 1))}
+                            disabled={examsPage <= 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                          </Button>
+                          <span className="text-sm">
+                            Page {examsPage} of {Math.max(1, Math.ceil(exams.length / examsPageSize))}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setExamsPage((p) => Math.min(Math.ceil(exams.length / examsPageSize), p + 1))}
+                            disabled={examsPage >= Math.ceil(exams.length / examsPageSize)}
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1134,7 +1229,7 @@ export function Settings() {
                         </div>
 
                         {/* Pagination */}
-                        {usersMeta && usersMeta.pageCount > 1 && (
+                        {usersMeta && (
                           <div className="flex items-center justify-between px-4 py-3 border-t">
                             <div className="text-sm text-muted-foreground">
                               Showing {((usersParams.page || 1) - 1) * (usersParams.take || 10) + 1} to{" "}
@@ -1142,6 +1237,25 @@ export function Settings() {
                               {usersMeta.itemCount} results
                             </div>
                             <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Rows per page</span>
+                                <select
+                                  className="h-8 rounded-md border px-2 bg-background"
+                                  value={usersParams.take || 10}
+                                  onChange={(e) => {
+                                    const next = parseInt(e.target.value, 10);
+                                    // use provided setter from hook
+                                    if (typeof setPageSize === 'function') {
+                                      setPageSize(next);
+                                    }
+                                  }}
+                                >
+                                  <option value={5}>5</option>
+                                  <option value={10}>10</option>
+                                  <option value={20}>20</option>
+                                  <option value={50}>50</option>
+                                </select>
+                              </div>
                               <Button
                                 variant="outline"
                                 size="sm"
