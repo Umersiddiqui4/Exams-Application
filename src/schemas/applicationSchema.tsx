@@ -170,7 +170,7 @@ export const formDefaultValues: FormValues = {
   passportBioPage: undefined,
   signature: undefined,
   // agreementDate: new Date(),
-  termsAgreed: true,
+  termsAgreed: false,
 };
 export const aktsFormDefaultValues: AktsFormValues = {
   candidateId: formDefaultValues.candidateId,
