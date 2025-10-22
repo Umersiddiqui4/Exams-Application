@@ -45,25 +45,33 @@ import { columns } from "@/components/common/columns";
 import { format } from "date-fns";
 import { pdf } from "@react-pdf/renderer";
 import Swal from "sweetalert2";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from 'react-toastify';
 import * as pdfjsLib from "pdfjs-dist";
 import { FieldSelectionDialog, ExportFieldConfig } from "@/components/common/field-selection-dialog";
 import { ApplicationPDFCompleteAktApp } from "@/components/pdf/pdf-generator";
 import { PDFPreviewPanel } from "@/components/pdf/pdf-preview-panel";
 import { ApplicationDetailView } from "./application-detail-view";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 // PDF.js worker setup for v5.x
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-// No props needed - component is self-contained
-export default function ApplicationTable() {
-  const { toast } = useToast()
+// Component props interface
+interface ApplicationTableProps {
+  initialExamId?: string;
+}
+
+// Component is now self-contained with optional initial exam ID
+export default function ApplicationTable({ initialExamId }: ApplicationTableProps) {
+  const navigate = useNavigate();
+  const { examId: urlExamId } = useParams<{ examId?: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
 
-  const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>("all")
+  const [activeFilter, setActiveFilter] = useState<string>(searchParams.get('filter') || "all");
+  const [selectedExamOccurrence, setSelectedExamOccurrence] = useState<string>(searchParams.get('exam') || "all")
   const [isExporting, setIsExporting] = useState(false)
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('search') || "");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
   const [reviewingIds, setReviewingIds] = useState<Set<string>>(new Set())
   const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
@@ -71,7 +79,8 @@ export default function ApplicationTable() {
   const [selectedApplicationData, setSelectedApplicationData] = useState<any>(null)
   const [detailViewOpen, setDetailViewOpen] = useState<boolean>(false)
   const { items: examOccurrences } = useExamOccurrences()
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(parseInt(searchParams.get('pageSize') || '10'))
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '0'))
   const {
     applications,
     review,
@@ -88,14 +97,58 @@ export default function ApplicationTable() {
     searchQuery,
   )
 
+  // Function to update URL parameters
+  const updateURLParams = (updates: Record<string, string | number | null>) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '' || value === 'all') {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, value.toString());
+      }
+    });
+
+    setSearchParams(newSearchParams);
+  };
+
   useEffect(() => {
-    const currentExamOccurrence: any = examOccurrences[0]
-    if (currentExamOccurrence && currentExamOccurrence.id) {
-      setSelectedExamOccurrence(currentExamOccurrence.id.toString())
+    // Priority: URL examId > initialExamId prop > first exam occurrence
+    const examIdToUse = urlExamId || initialExamId;
+
+    if (examIdToUse && examOccurrences.length > 0) {
+      // Check if the exam ID exists in the occurrences
+      const examExists = examOccurrences.some((exam: any) => exam.id.toString() === examIdToUse);
+      if (examExists) {
+        setSelectedExamOccurrence(examIdToUse);
+        // Update URL to include exam parameter
+        updateURLParams({ exam: examIdToUse });
+      } else {
+        // If exam ID doesn't exist, fall back to first exam
+        const currentExamOccurrence: any = examOccurrences[0];
+        if (currentExamOccurrence && currentExamOccurrence.id) {
+          setSelectedExamOccurrence(currentExamOccurrence.id.toString());
+          // Update URL to reflect the actual selected exam
+          navigate(`/applications/${currentExamOccurrence.id}`, { replace: true });
+        }
+      }
+    } else if (examOccurrences.length > 0) {
+      // No exam ID provided, use first exam occurrence
+      const currentExamOccurrence: any = examOccurrences[0];
+      if (currentExamOccurrence && currentExamOccurrence.id) {
+        setSelectedExamOccurrence(currentExamOccurrence.id.toString());
+        // Update URL to reflect the selected exam
+        navigate(`/applications/${currentExamOccurrence.id}`, { replace: true });
+      }
+    }
+
+    // Set initial page from URL
+    if (currentPage !== pagination.pageIndex) {
+      setPageIndex(currentPage);
     }
 
     // Removed message listener since we're using routes now
-  }, [examOccurrences])
+  }, [examOccurrences, urlExamId, initialExamId, navigate, currentPage, pagination.pageIndex, setPageIndex])
 
   const actionColumn = {
     id: "actions",
@@ -257,7 +310,50 @@ export default function ApplicationTable() {
   }
 
   const handleExamChange = (value: string) => {
-    setSelectedExamOccurrence(value)
+    setSelectedExamOccurrence(value);
+    // Update URL to reflect the selected exam
+    if (value === "all") {
+      navigate("/applications");
+    } else {
+      navigate(`/applications/${value}`);
+    }
+    // Update URL parameters
+    updateURLParams({ exam: value });
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    updateURLParams({ search: value });
+    // Reset to first page when searching
+    setCurrentPage(0);
+    setPageIndex(0);
+    updateURLParams({ page: 0 });
+  }
+
+  const handleFilterChange = (value: string) => {
+    setActiveFilter(value);
+    updateURLParams({ filter: value });
+    // Reset to first page when filtering
+    setCurrentPage(0);
+    setPageIndex(0);
+    updateURLParams({ page: 0 });
+  }
+
+  const handlePageSizeChange = (value: string) => {
+    const newSize = parseInt(value);
+    setPageSize(newSize);
+    updatePageSize(newSize);
+    updateURLParams({ pageSize: newSize });
+    // Reset to first page when page size changes
+    setCurrentPage(0);
+    setPageIndex(0);
+    updateURLParams({ page: 0 });
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setPageIndex(page);
+    updateURLParams({ page: page });
   }
 
   const handlePdfGenerate = async (row: any) => {
@@ -312,9 +408,13 @@ export default function ApplicationTable() {
 
               // Check if PDF has many pages (heavy file)
               if (pdf.numPages > 5) {
-                toast({
-                  title: "Processing Heavy Files",
-                  description: "Data contains heavy files, it takes some time to generate.",
+                toast.info("Processing Heavy Files: Data contains heavy files, it takes some time to generate.", {
+                  position: "top-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
                 });
               }
 
@@ -475,10 +575,14 @@ export default function ApplicationTable() {
       document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
 
-      toast({
-        title: "Export Successful",
-        description: `Applications exported successfully with ${fieldConfig?.fields.length || 'default'} fields.`,
-      })
+      toast.success("Export Successful: Applications exported successfully.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       logger.error("Export error", error)
       Swal.fire({
@@ -1006,37 +1110,37 @@ export default function ApplicationTable() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="dark:bg-slate-900 dark:border-slate-700">
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("all")}
+                  onClick={() => handleFilterChange("all")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   All
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("SUBMITTED")}
+                  onClick={() => handleFilterChange("SUBMITTED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Submitted
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("UNDER_REVIEW")}
+                  onClick={() => handleFilterChange("UNDER_REVIEW")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Under Review
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("APPROVED")}
+                  onClick={() => handleFilterChange("APPROVED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Approved
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("REJECTED")}
+                  onClick={() => handleFilterChange("REJECTED")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Rejected
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setActiveFilter("waiting")}
+                  onClick={() => handleFilterChange("waiting")}
                   className="dark:text-slate-200 dark:focus:bg-slate-800"
                 >
                   Waiting
@@ -1095,13 +1199,7 @@ export default function ApplicationTable() {
                 {/* Page Size Selector */}
                 <div className="flex items-center space-x-2">
                   <Settings className="h-4 w-4 text-[#5c347d] dark:text-[#8b5fbf]" />
-                  <Select value={pageSize.toString()} onValueChange={(value) => {
-                    const newSize = parseInt(value);
-                    setPageSize(newSize);
-                    updatePageSize(newSize);
-                    // Reset to first page when page size changes
-                    setPageIndex(0);
-                  }}>
+                  <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                     <SelectTrigger className="w-20 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20">
                       <SelectValue />
                     </SelectTrigger>
@@ -1122,8 +1220,7 @@ export default function ApplicationTable() {
                     placeholder="Search by SNO, name, email, candidate ID..."
                     className="pl-8 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 border-[#5c347d]/20 focus:border-[#5c347d] focus:ring-[#5c347d]/20"
                     value={searchQuery}
-
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                   />
                 </div>
               </div>
@@ -1164,7 +1261,7 @@ export default function ApplicationTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    /* onClick={() => setActiveFilter("all")} */
+                    onClick={() => handleFilterChange("all")}
                     className="ml-4 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
                   >
                     Clear Filter
@@ -1203,7 +1300,7 @@ export default function ApplicationTable() {
                 pageIndex: pagination.pageIndex,
                 pageSize: pagination.pageSize,
                 total: pagination.total,
-                onPageChange: setPageIndex,
+                onPageChange: handlePageChange,
               }}
             />
           )}

@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format, addDays, parseISO } from "date-fns"
+import { useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -169,6 +170,7 @@ const defaultAktFormState = {
 const defaultFormState = defaultOsceFormState
 
 export function Exam() {
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -1093,14 +1095,12 @@ export function Exam() {
                   </div>
 
                   <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
-                    <a
-                      href={`/application/${exam.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm underline text-indigo-700 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    <button
+                      onClick={() => navigate(`/applications/${exam.id}`)}
+                      className="text-sm underline text-indigo-700 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 cursor-pointer"
                     >
-                      Form Link
-                    </a>
+                      View Applications
+                    </button>
 
                     <Button
                       variant="outline"

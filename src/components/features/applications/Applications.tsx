@@ -1,6 +1,6 @@
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import ApplicationTable from "./applicationTable";
@@ -10,6 +10,7 @@ import { SidebarNav } from "@/components/layout/SidebarNav";
 
 export default function Applications() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { examId } = useParams<{ examId?: string }>();
   useMobile();
 
   const toggleSidebar = () => {
@@ -55,7 +56,7 @@ export default function Applications() {
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950">
-          <ApplicationTable />
+          <ApplicationTable initialExamId={examId} />
         </main>
       </div>
     </div>
