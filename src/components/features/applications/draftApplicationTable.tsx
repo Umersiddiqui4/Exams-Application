@@ -655,7 +655,7 @@ export default function DraftApplicationTable({ initialExamId }: DraftApplicatio
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>OSCE Candidate Statement:</Text>
                   <Text style={styles.fieldValue}>
-                    {data.osceDetails?.osceCandidateStatement ? "Agreed" : "Not agreed"}
+                    {data.osceDetails?.candidateStatement ? "Agreed" : "Not agreed"}
                   </Text>
                 </View>
               </View>

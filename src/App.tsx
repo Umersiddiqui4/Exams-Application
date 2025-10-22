@@ -42,7 +42,7 @@ function App() {
               }
             />
             <Route
-              path="/application/:examId"
+              path="/application-form/:examId"
               element={
                 <ApplicationForm />
               }

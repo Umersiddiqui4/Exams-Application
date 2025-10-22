@@ -41,7 +41,7 @@ export type OsceDetails = {
   preferenceDate1: string;
   preferenceDate2: string;
   preferenceDate3: string;
-  osceCandidateStatement: boolean;
+  candidateStatement: boolean;
 };
 
 export type Attachment = {

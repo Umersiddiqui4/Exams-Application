@@ -287,6 +287,7 @@ export function ApplicationDetailPage() {
   const [applicationData, setApplicationData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+console.log("applicationData", applicationData);
 
   useEffect(() => {
     const fetchApplicationData = async () => {

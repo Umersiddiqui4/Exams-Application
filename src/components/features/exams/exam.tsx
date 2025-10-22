@@ -1096,10 +1096,10 @@ export function Exam() {
 
                   <div className="mt-4 pt-3 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
                     <button
-                      onClick={() => navigate(`/applications/${exam.id}`)}
+                      onClick={() => navigate(`/application-form/${exam.id}`)}
                       className="text-sm underline text-indigo-700 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 cursor-pointer"
                     >
-                      View Applications
+                      Form Link
                     </button>
 
                     <Button
