@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { FileText, Edit, Calendar, MapPin, Users, Clock, BookOpen } from "lucide-react"
+import { FileText, Edit, Calendar, MapPin, Users, Clock, BookOpen, Loader2 } from "lucide-react"
 import { DatePickerWithRange } from "@/components/common/date-range-picker"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/components/ui/use-toast"
@@ -171,6 +171,8 @@ const defaultFormState = defaultOsceFormState
 export function Exam() {
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
   const { toast } = useToast()
   const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence, toggleActive } = useExamOccurrences()
   const [selectedLocations, setSelectedLocations] = useState<any[]>([])
@@ -306,6 +308,7 @@ export function Exam() {
   }
 
   const onSubmit = async (data: any) => {
+    setIsSubmitting(true)
     if (editMode && editId !== null) {
       try {
         let examSlots;
@@ -368,6 +371,8 @@ export function Exam() {
         setEditId(null)
       } catch (err: unknown) {
         toast({ title: "Update failed", description: err instanceof Error ? err.message : "Unable to update exam", variant: "destructive" })
+      } finally {
+        setIsSubmitting(false)
       }
     } else {
       try {
@@ -443,6 +448,8 @@ export function Exam() {
         toast({ title: "Exam created", description: `${data.name} saved to server` })
       } catch (err: unknown) {
         toast({ title: "Create failed", description: err instanceof Error ? err.message : "Unable to create exam", variant: "destructive" })
+      } finally {
+        setIsSubmitting(false)
       }
     }
 
@@ -450,11 +457,18 @@ export function Exam() {
   }
 
   const toggleBlock = async (id: string, current: boolean) => {
+    setTogglingIds(prev => new Set(prev).add(id))
     try {
       await toggleActive(id, !current)
       await reloadOccurrences()
     } catch (err) {
       toast({ title: "Toggle failed", description: err instanceof Error ? err.message : "Unable to toggle", variant: "destructive" })
+    } finally {
+      setTogglingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
     }
   }
 
@@ -769,16 +783,25 @@ export function Exam() {
                 <div className="flex space-x-2">
                   <Button
                     type="submit"
-                    className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
+                    disabled={isSubmitting}
+                    className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    {editMode ? "Update Exam" : "Submit"}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {editMode ? "Updating..." : "Submitting..."}
+                      </>
+                    ) : (
+                      editMode ? "Update Exam" : "Submit"
+                    )}
                   </Button>
                   {editMode && (
                     <Button
                       type="button"
                       variant="outline"
                       onClick={cancelEdit}
-                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      disabled={isSubmitting}
+                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </Button>
@@ -931,16 +954,25 @@ export function Exam() {
                 <div className="flex space-x-2">
                   <Button
                     type="submit"
-                    className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105"
+                    disabled={isSubmitting}
+                    className="bg-[#5c347d] hover:bg-[#4b2c5f] text-white dark:bg-[#3b1f52] dark:hover:bg-[#4b2c5f] transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    {editMode ? "Update Exam" : "Submit"}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {editMode ? "Updating..." : "Submitting..."}
+                      </>
+                    ) : (
+                      editMode ? "Update Exam" : "Submit"
+                    )}
                   </Button>
                   {editMode && (
                     <Button
                       type="button"
                       variant="outline"
                       onClick={cancelEdit}
-                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      disabled={isSubmitting}
+                      className="dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </Button>
@@ -977,7 +1009,8 @@ export function Exam() {
                       <Switch
                         checked={!!exam.isActive}
                         onCheckedChange={() => toggleBlock(exam.id, !!exam.isActive)}
-                        className="data-[state=checked]:bg-[#5c347d]"
+                        disabled={togglingIds.has(exam.id)}
+                        className="data-[state=checked]:bg-[#5c347d] disabled:opacity-50"
                       />
                     </div>
                   </div>

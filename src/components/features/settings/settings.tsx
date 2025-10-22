@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SidebarNav } from "@/components/layout/SidebarNav";
-import { Menu, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users, ChevronUp, ChevronDown } from "lucide-react";
+import { Menu, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "@/components/theme/SimpleAnimatedThemeToggle";
@@ -121,6 +121,7 @@ export function Settings() {
   const [userConfirmOpen, setUserConfirmOpen] = useState(false);
   const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
   const [pendingDeleteUserName, setPendingDeleteUserName] = useState<string>("");
+  const [updatingUserIds, setUpdatingUserIds] = useState<Set<string>>(new Set());
 
   // Users hook
   const {
@@ -1145,6 +1146,7 @@ export function Settings() {
                                       <div className="flex gap-2 justify-end">
                                         <Button
                                           size="sm"
+                                          disabled={updatingUserIds.has(user.id)}
                                           onClick={async () => {
                                             // Validate phone number
                                             if (!editUserData.phone || !isValidPhoneNumber(editUserData.phone)) {
@@ -1156,6 +1158,7 @@ export function Settings() {
                                               return;
                                             }
 
+                                            setUpdatingUserIds(prev => new Set(prev).add(user.id));
                                             try {
                                               // Remove email from update data to prevent changing it
                                               const { email, ...updateData } = editUserData;
@@ -1169,10 +1172,23 @@ export function Settings() {
                                                 description: err instanceof Error ? err.message : "Failed to update user",
                                                 variant: "destructive",
                                               });
+                                            } finally {
+                                              setUpdatingUserIds(prev => {
+                                                const newSet = new Set(prev);
+                                                newSet.delete(user.id);
+                                                return newSet;
+                                              });
                                             }
                                           }}
                                         >
-                                          Save
+                                          {updatingUserIds.has(user.id) ? (
+                                            <>
+                                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                              Saving...
+                                            </>
+                                          ) : (
+                                            "Save"
+                                          )}
                                         </Button>
                                         <Button
                                           size="sm"

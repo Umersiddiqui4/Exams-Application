@@ -65,6 +65,7 @@ export default function ApplicationTable() {
   const [isExporting, setIsExporting] = useState(false)
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set())
+  const [reviewingIds, setReviewingIds] = useState<Set<string>>(new Set())
   const [isFieldSelectionOpen, setIsFieldSelectionOpen] = useState(false)
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false)
   const [selectedApplicationData, setSelectedApplicationData] = useState<any>(null)
@@ -127,20 +128,40 @@ export default function ApplicationTable() {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 border-green-200 dark:border-green-800"
+                disabled={reviewingIds.has(id)}
+                className="bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 border-green-200 dark:border-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleStatusChange(id, "approved")}
               >
-                <Check className="h-4 w-4 mr-1" />
-                Approve
+                {reviewingIds.has(id) ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-1" />
+                    Approve
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 border-red-200 dark:border-red-800"
+                disabled={reviewingIds.has(id)}
+                className="bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 border-red-200 dark:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleStatusChange(id, "rejected")}
               >
-                <XIcon className="h-4 w-4 mr-1" />
-                Reject
+                {reviewingIds.has(id) ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Rejecting...
+                  </>
+                ) : (
+                  <>
+                    <XIcon className="h-4 w-4 mr-1" />
+                    Reject
+                  </>
+                )}
               </Button>
             </>
           )}
@@ -150,79 +171,88 @@ export default function ApplicationTable() {
   }
 
   const handleStatusChange = async (id: string, status: "approved" | "rejected") => {
-    if (status === "approved") {
-      // Show approval confirmation dialog with optional notes
-      const result = await Swal.fire({
-        title: "Are you sure you want to approve?",
-        imageUrl: "/icon.png", // Replace with your actual icon path
-        imageWidth: 150,
-        imageHeight: 150,
-        input: "textarea",
-        inputPlaceholder: "Optional admin notes...",
-        inputAttributes: {
-          "aria-label": "Admin notes",
-        },
-        showCancelButton: true,
-        confirmButtonText: "Yes, approve",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#4ade80",
-        cancelButtonColor: "#ef4444",
-        customClass: {
-          popup: "rounded-lg",
-          confirmButton: "rounded-lg px-4 py-2",
-          cancelButton: "rounded-lg px-4 py-2",
-        },
-      })
-
-      if (result.isConfirmed) {
-        // Call the review API with APPROVED status
-        await review(id, "APPROVED", result.value || undefined)
-
-        // Show success message
-        await Swal.fire({
-          title: "Application Approved Successfully!",
+    setReviewingIds(prev => new Set(prev).add(id))
+    try {
+      if (status === "approved") {
+        // Show approval confirmation dialog with optional notes
+        const result = await Swal.fire({
+          title: "Are you sure you want to approve?",
           imageUrl: "/icon.png", // Replace with your actual icon path
           imageWidth: 150,
           imageHeight: 150,
-          confirmButtonText: "OK",
-          confirmButtonColor: "#3b82f6",
+          input: "textarea",
+          inputPlaceholder: "Optional admin notes...",
+          inputAttributes: {
+            "aria-label": "Admin notes",
+          },
+          showCancelButton: true,
+          confirmButtonText: "Yes, approve",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#4ade80",
+          cancelButtonColor: "#ef4444",
           customClass: {
             popup: "rounded-lg",
             confirmButton: "rounded-lg px-4 py-2",
+            cancelButton: "rounded-lg px-4 py-2",
           },
         })
-      }
-    } else if (status === "rejected") {
-      // Show rejection confirmation dialog with mandatory reason
-      const result = await Swal.fire({
-        title: "Are you sure you want to reject?",
-        imageUrl: "/icon.png", // Replace with your actual logo path
-        imageWidth: 150,
-        imageHeight: 150,
-        input: "textarea",
-        inputPlaceholder: "Enter reason for rejection (required)...",
-        inputValidator: (value) => {
-          if (!value) {
-            return "You need to provide a reason for rejection!"
-          }
-        },
-        showCancelButton: true,
-        confirmButtonText: "Yes, reject",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#ef4444",
-        cancelButtonColor: "#6b7280",
-        customClass: {
-          popup: "rounded-lg",
-          input: "border rounded-lg p-2 w-auto",
-          confirmButton: "rounded-lg px-4 py-2",
-          cancelButton: "rounded-lg px-4 py-2",
-        },
-      })
 
-      if (result.isConfirmed && result.value) {
-        // Call the review API with REJECTED status and reason as adminNotes
-        await review(id, "REJECTED", result.value)
+        if (result.isConfirmed) {
+          // Call the review API with APPROVED status
+          await review(id, "APPROVED", result.value || undefined)
+
+          // Show success message
+          await Swal.fire({
+            title: "Application Approved Successfully!",
+            imageUrl: "/icon.png", // Replace with your actual icon path
+            imageWidth: 150,
+            imageHeight: 150,
+            confirmButtonText: "OK",
+            confirmButtonColor: "#3b82f6",
+            customClass: {
+              popup: "rounded-lg",
+              confirmButton: "rounded-lg px-4 py-2",
+            },
+          })
+        }
+      } else if (status === "rejected") {
+        // Show rejection confirmation dialog with mandatory reason
+        const result = await Swal.fire({
+          title: "Are you sure you want to reject?",
+          imageUrl: "/icon.png", // Replace with your actual logo path
+          imageWidth: 150,
+          imageHeight: 150,
+          input: "textarea",
+          inputPlaceholder: "Enter reason for rejection (required)...",
+          inputValidator: (value) => {
+            if (!value) {
+              return "You need to provide a reason for rejection!"
+            }
+          },
+          showCancelButton: true,
+          confirmButtonText: "Yes, reject",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#ef4444",
+          cancelButtonColor: "#6b7280",
+          customClass: {
+            popup: "rounded-lg",
+            input: "border rounded-lg p-2 w-auto",
+            confirmButton: "rounded-lg px-4 py-2",
+            cancelButton: "rounded-lg px-4 py-2",
+          },
+        })
+
+        if (result.isConfirmed && result.value) {
+          // Call the review API with REJECTED status and reason as adminNotes
+          await review(id, "REJECTED", result.value)
+        }
       }
+    } finally {
+      setReviewingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
     }
   }
 
