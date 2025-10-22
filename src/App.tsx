@@ -4,7 +4,8 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react'
 import { store, persistor } from './redux/store';  // Import the Redux store
 import { ThemeProvider } from './components/theme/theme-provider';
-import { Toaster } from './components/ui/toaster';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Dashboard } from './components/features/dashboard/dashboard';
 import { ApplicationForm } from './components/features/applications/application-form';
 import ExamComponent from './components/features/exams/examComponent';
@@ -87,7 +88,27 @@ function App() {
               }
             />
           </Routes>
-          <Toaster />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            toastStyle={{
+              backgroundColor: '#5c347d',
+              color: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            }}
+            progressStyle={{
+              background: 'linear-gradient(to right, #8b5fbf, #a855f7)',
+            }}
+          />
         </ThemeProvider>
       </PersistGate>
     </Provider>

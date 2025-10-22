@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { FileText, Edit, Calendar, MapPin, Users, Clock, BookOpen, Loader2 } from "lucide-react"
 import { DatePickerWithRange } from "@/components/common/date-range-picker"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from 'react-toastify';
 import { createExamOccurrence } from "@/api/examOccurrencesApi"
 import { useExamOccurrences } from "@/hooks/useExamOccurrences"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -173,7 +173,6 @@ export function Exam() {
   const [editId, setEditId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
-  const { toast } = useToast()
   const { items: occurrences, reload: reloadOccurrences, update: updateOccurrence, toggleActive } = useExamOccurrences()
   const [selectedLocations, setSelectedLocations] = useState<any[]>([])
   const [examType, setExamType] = useState<"OSCE" | "AKTs">("OSCE")
@@ -366,11 +365,25 @@ export function Exam() {
           waitingListLimit: Number.parseInt(data.waitingLimit) || 0,
         })
         await reloadOccurrences()
-        toast({ title: "Exam updated", description: data.name })
+        toast.success(`Exam updated: ${data.name}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
         setEditMode(false)
         setEditId(null)
       } catch (err: unknown) {
-        toast({ title: "Update failed", description: err instanceof Error ? err.message : "Unable to update exam", variant: "destructive" })
+        toast.error(`Update failed: ${err instanceof Error ? err.message : "Unable to update exam"}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } finally {
         setIsSubmitting(false)
       }
@@ -382,7 +395,14 @@ export function Exam() {
           : `${data.slot1DateRange.from}T09:00:00Z`
 
         if (new Date(regEnd) >= new Date(examStart)) {
-          toast({ title: "Invalid dates", description: "Exam date must be after applications end date", variant: "destructive" })
+          toast.error("Invalid dates: Exam date must be after applications end date", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
           return
         }
 
@@ -445,9 +465,23 @@ export function Exam() {
           instructions: "Please bring a valid ID and arrive 30 minutes early",
         })
         await reloadOccurrences()
-        toast({ title: "Exam created", description: `${data.name} saved to server` })
+        toast.success(`Exam created: ${data.name} saved to server`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } catch (err: unknown) {
-        toast({ title: "Create failed", description: err instanceof Error ? err.message : "Unable to create exam", variant: "destructive" })
+        toast.error(`Create failed: ${err instanceof Error ? err.message : "Unable to create exam"}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } finally {
         setIsSubmitting(false)
       }
@@ -462,7 +496,14 @@ export function Exam() {
       await toggleActive(id, !current)
       await reloadOccurrences()
     } catch (err) {
-      toast({ title: "Toggle failed", description: err instanceof Error ? err.message : "Unable to toggle", variant: "destructive" })
+      toast.error(`Toggle failed: ${err instanceof Error ? err.message : "Unable to toggle"}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setTogglingIds(prev => {
         const newSet = new Set(prev)
