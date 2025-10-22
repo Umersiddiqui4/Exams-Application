@@ -99,10 +99,10 @@ export function SidebarNav({ sidebarOpen, onClose }: SidebarNavProps) {
                 <div className="ml-8 mt-1 space-y-1">
                   <Button variant="ghost" className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50" onClick={() => {
                     nav("/settings#candidates");
-                  }}>Candidates</Button>
+                  }}>Email Templates</Button>
                   <Button variant="ghost" className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50" onClick={() => {
                     nav("/settings#exam-dates");
-                  }}>Exam Dates</Button>
+                  }}>Past AKT Exams</Button>
                   <Button variant="ghost" className="w-full justify-start text-slate-100 hover:bg-slate-700/50 dark:hover:bg-slate-800/50" onClick={() => {
                     nav("/settings#exams");
                   }}>Exams</Button>

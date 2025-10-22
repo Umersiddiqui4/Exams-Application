@@ -332,6 +332,7 @@ export function Settings() {
               <CardContent>
                 {(activeSection === "candidates" || activeSection === "waiting") && (
                   <>
+                   <h3 className="text-xl md:text-2xl mt-8 space-y-4 mb-4 font-semibold">Email Templates</h3>
                     <Tabs defaultValue={activeSection}>
                       <TabsList>
                         <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
@@ -437,7 +438,7 @@ export function Settings() {
 
                 {activeSection === "exam-dates" && (
                   <div className="mt-8 space-y-4" id="exam-dates">
-                    <h3 className="text-xl md:text-2xl font-semibold">Exam Dates</h3>
+                    <h3 className="text-xl md:text-2xl font-semibold">Past AKT Exams</h3>
                     <div className="flex gap-2 items-center">
                       <Input
                         placeholder="e.g., AKT - November 2019"
@@ -459,7 +460,7 @@ export function Settings() {
                     </div>
 
                     {loadState === "loading" && (
-                      <div className="text-sm text-muted-foreground">Loading exam dates…</div>
+                      <div className="text-sm text-muted-foreground">Loading Past AKT Exams…</div>
                     )}
                     {error && (
                       <div className="text-sm text-red-600">{error}</div>
@@ -495,7 +496,7 @@ export function Settings() {
                           {examDates.length === 0 && loadState === "success" && (
                             <TableRow>
                               <TableCell colSpan={2} className="text-center text-sm text-muted-foreground">
-                                No exam dates yet. Add one above.
+                                No Past AKT Exams yet. Add one above.
                               </TableCell>
                             </TableRow>
                           )}
