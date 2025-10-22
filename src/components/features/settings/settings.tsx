@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SidebarNav } from "@/components/layout/SidebarNav";
-import { Menu, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { Menu, Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Users, ChevronUp, ChevronDown } from "lucide-react";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { SimpleAnimatedThemeToggle } from "@/components/theme/SimpleAnimatedThemeToggle";
@@ -332,7 +332,7 @@ export function Settings() {
               <CardContent>
                 {(activeSection === "candidates" || activeSection === "waiting") && (
                   <>
-                   <h3 className="text-xl md:text-2xl mt-8 space-y-4 mb-4 font-semibold">Email Templates</h3>
+                    <h3 className="text-xl md:text-2xl mt-8 space-y-4 mb-4 font-semibold">Email Templates</h3>
                     <Tabs defaultValue={activeSection}>
                       <TabsList>
                         <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
@@ -740,29 +740,6 @@ export function Settings() {
                             <SelectItem value="GUEST">Guest</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Select value={sortBy} onValueChange={setSortBy}>
-                          <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Sort by" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No sorting</SelectItem>
-                            <SelectItem value="firstName">First Name</SelectItem>
-                            <SelectItem value="lastName">Last Name</SelectItem>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="createdAt">Created Date</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {sortBy && (
-                          <Select value={sortOrder} onValueChange={setSortOrder}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Order" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="asc">Ascending</SelectItem>
-                              <SelectItem value="desc">Descending</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
                       </div>
                     </div>
 
@@ -932,7 +909,8 @@ export function Settings() {
                     <Card>
                       <CardContent className="p-0">
                         {usersLoadState === "loading" && (
-                          <div className="text-sm text-muted-foreground p-4">Loading users…</div>
+                          // <div className="text-sm text-muted-foreground p-4">Loading users…</div>
+                          <></>
                         )}
                         {usersError && (
                           <div className="text-sm text-red-600 p-4">Error: {usersError}</div>
@@ -945,11 +923,65 @@ export function Settings() {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Email</TableHead>
+                                <TableHead>
+                                  <button
+                                    onClick={() => {
+                                      if (sortBy !== "firstName") {
+                                        setSortBy("firstName");
+                                        setSortOrder("asc");
+                                      } else {
+                                        setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                                      }
+                                    }}
+                                    className="inline-flex items-center gap-1 select-none"
+                                  >
+                                    <span>Name</span>
+                                    <span className="flex flex-col leading-[0]">
+                                      <ChevronUp className={`h-3 w-3 ${sortBy === "firstName" && sortOrder === "asc" ? "text-foreground" : "text-muted-foreground"}`} />
+                                      <ChevronDown className={`h-3 w-3 -mt-1 ${sortBy === "firstName" && sortOrder === "desc" ? "text-foreground" : "text-muted-foreground"}`} />
+                                    </span>
+                                  </button>
+                                </TableHead>
+                                <TableHead>
+                                  <button
+                                    onClick={() => {
+                                      if (sortBy !== "email") {
+                                        setSortBy("email");
+                                        setSortOrder("asc");
+                                      } else {
+                                        setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                                      }
+                                    }}
+                                    className="inline-flex items-center gap-1 select-none"
+                                  >
+                                    <span>Email</span>
+                                    <span className="flex flex-col leading-[0]">
+                                      <ChevronUp className={`h-3 w-3 ${sortBy === "email" && sortOrder === "asc" ? "text-foreground" : "text-muted-foreground"}`} />
+                                      <ChevronDown className={`h-3 w-3 -mt-1 ${sortBy === "email" && sortOrder === "desc" ? "text-foreground" : "text-muted-foreground"}`} />
+                                    </span>
+                                  </button>
+                                </TableHead>
                                 <TableHead>Phone</TableHead>
                                 <TableHead>Role</TableHead>
-                                <TableHead>Created</TableHead>
+                                <TableHead>
+                                  <button
+                                    onClick={() => {
+                                      if (sortBy !== "createdAt") {
+                                        setSortBy("createdAt");
+                                        setSortOrder("asc");
+                                      } else {
+                                        setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                                      }
+                                    }}
+                                    className="inline-flex items-center gap-1 select-none"
+                                  >
+                                    <span>Created</span>
+                                    <span className="flex flex-col leading-[0]">
+                                      <ChevronUp className={`h-3 w-3 ${sortBy === "createdAt" && sortOrder === "asc" ? "text-foreground" : "text-muted-foreground"}`} />
+                                      <ChevronDown className={`h-3 w-3 -mt-1 ${sortBy === "createdAt" && sortOrder === "desc" ? "text-foreground" : "text-muted-foreground"}`} />
+                                    </span>
+                                  </button>
+                                </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
