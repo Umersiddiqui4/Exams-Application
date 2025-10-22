@@ -717,89 +717,7 @@ console.log("applicationData", applicationData);
               </Card>
             </div>
 
-            {/* Exam Occurrence Details */}
-            {applicationData?.examOccurrence && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <GraduationCap className="h-5 w-5 mr-2" />
-                    Exam Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Type</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        <Badge variant="outline" className="mt-1">
-                          {applicationData.examOccurrence.type}
-                        </Badge>
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Title</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.title || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Location</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.location?.join(', ') || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Start</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.registrationStartDate
-                          ? format(new Date(applicationData.examOccurrence.registrationStartDate), 'PPP')
-                          : 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration End</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.registrationEndDate
-                          ? format(new Date(applicationData.examOccurrence.registrationEndDate), 'PPP')
-                          : 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Application Limit</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.examOccurrence.applicationLimit || 'N/A'}
-                      </p>
-                    </div>
-                    {applicationData.examOccurrence.waitingListLimit !== undefined && (
-                      <div>
-                        <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Waiting List Limit</label>
-                        <p className="text-slate-900 dark:text-slate-100">
-                          {applicationData.examOccurrence.waitingListLimit}
-                        </p>
-                      </div>
-                    )}
-                    {applicationData.examOccurrence.isActive !== undefined && (
-                      <div>
-                        <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Status</label>
-                        <p className="text-slate-900 dark:text-slate-100">
-                          <Badge variant="outline" className={applicationData.examOccurrence.isActive ? 'bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-900/30 dark:text-gray-400'}>
-                            {applicationData.examOccurrence.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </p>
-                      </div>
-                    )}
-                    {applicationData.examOccurrence.instructions && (
-                      <div className="col-span-full">
-                        <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Instructions</label>
-                        <p className="text-slate-900 dark:text-slate-100 text-sm mt-1">
-                          {applicationData.examOccurrence.instructions}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            
 
             {/* Exam-Specific Details */}
             <Card>
@@ -1108,6 +1026,89 @@ console.log("applicationData", applicationData);
               </Card>
             )}
 
+{/* Exam Occurrence Details */}
+{applicationData?.examOccurrence && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <GraduationCap className="h-5 w-5 mr-2" />
+                    Exam Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Type</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        <Badge variant="outline" className="mt-1">
+                          {applicationData.examOccurrence.type}
+                        </Badge>
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Title</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.examOccurrence.title || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Location</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.examOccurrence.location?.join(', ') || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Start</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.examOccurrence.registrationStartDate
+                          ? format(new Date(applicationData.examOccurrence.registrationStartDate), 'PPP')
+                          : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration End</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.examOccurrence.registrationEndDate
+                          ? format(new Date(applicationData.examOccurrence.registrationEndDate), 'PPP')
+                          : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Application Limit</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.examOccurrence.applicationLimit || 'N/A'}
+                      </p>
+                    </div>
+                    {applicationData.examOccurrence.waitingListLimit !== undefined && (
+                      <div>
+                        <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Waiting List Limit</label>
+                        <p className="text-slate-900 dark:text-slate-100">
+                          {applicationData.examOccurrence.waitingListLimit}
+                        </p>
+                      </div>
+                    )}
+                    {applicationData.examOccurrence.isActive !== undefined && (
+                      <div>
+                        <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Exam Status</label>
+                        <p className="text-slate-900 dark:text-slate-100">
+                          <Badge variant="outline" className={applicationData.examOccurrence.isActive ? 'bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-900/30 dark:text-gray-400'}>
+                            {applicationData.examOccurrence.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </p>
+                      </div>
+                    )}
+                    {applicationData.examOccurrence.instructions && (
+                      <div className="col-span-full">
+                        <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Instructions</label>
+                        <p className="text-slate-900 dark:text-slate-100 text-sm mt-1">
+                          {applicationData.examOccurrence.instructions}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
           </div>
 
