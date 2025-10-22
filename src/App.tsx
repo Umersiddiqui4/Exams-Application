@@ -72,6 +72,14 @@ function App() {
               }
             />
             <Route
+              path="/draft-applications/:examId"
+              element={
+                <ProtectedRoute>
+                  <DraftApplications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/applications/:id/details"
               element={
                 <ProtectedRoute>

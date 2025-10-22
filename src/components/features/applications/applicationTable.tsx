@@ -121,8 +121,6 @@ export default function ApplicationTable({ initialExamId }: ApplicationTableProp
       const examExists = examOccurrences.some((exam: any) => exam.id.toString() === examIdToUse);
       if (examExists) {
         setSelectedExamOccurrence(examIdToUse);
-        // Update URL to include exam parameter
-        updateURLParams({ exam: examIdToUse });
       } else {
         // If exam ID doesn't exist, fall back to first exam
         const currentExamOccurrence: any = examOccurrences[0];
@@ -317,43 +315,33 @@ export default function ApplicationTable({ initialExamId }: ApplicationTableProp
     } else {
       navigate(`/applications/${value}`);
     }
-    // Update URL parameters
-    updateURLParams({ exam: value });
   }
-
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    updateURLParams({ search: value });
-    // Reset to first page when searching
     setCurrentPage(0);
     setPageIndex(0);
-    updateURLParams({ page: 0 });
   }
 
   const handleFilterChange = (value: string) => {
     setActiveFilter(value);
-    updateURLParams({ filter: value });
-    // Reset to first page when filtering
     setCurrentPage(0);
     setPageIndex(0);
-    updateURLParams({ page: 0 });
+    updateURLParams({ page: 0, filter: value });
   }
 
   const handlePageSizeChange = (value: string) => {
     const newSize = parseInt(value);
     setPageSize(newSize);
     updatePageSize(newSize);
-    updateURLParams({ pageSize: newSize });
-    // Reset to first page when page size changes
     setCurrentPage(0);
     setPageIndex(0);
-    updateURLParams({ page: 0 });
+    updateURLParams({ page: 0, pageSize: newSize });
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setPageIndex(page);
-    updateURLParams({ page: page });
+    updateURLParams({ page: page, filter: activeFilter, pageSize: pageSize, search: searchQuery });
   }
 
   const handlePdfGenerate = async (row: any) => {
