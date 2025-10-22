@@ -20,6 +20,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GraduationCap } from "lucide-react"
 import CreatableSelect from "react-select/creatable"
 import { useExams } from "@/hooks/useExam"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover"
+import { CalendarIcon } from "lucide-react"
 interface DateRange {
   from: Date | undefined
   to?: Date | undefined
@@ -871,20 +878,47 @@ export function Exam() {
                       <Calendar className="h-4 w-4 mr-2 text-slate-500 dark:text-slate-400" />
                       Exam Date (Single Day) <span className="text-red-500 ml-1">*</span>
                     </Label>
-                    <Input
-                      id="examDate"
-                      type="date"
-                      {...form.register("examDate")}
-                      min={
-                        form.watch("applicationsDateRange")?.to
-                          ? format(addDays(parseISO(form.watch("applicationsDateRange").to), 1), "yyyy-MM-dd")
-                          : undefined
-                      }
-                      className={cn(
-                        "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#5c347d] dark:focus:ring-[#8b5fbf]",
-                        (errors as any).examDate && "border-red-500 focus:ring-red-500",
-                      )}
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700",
+                            !form.watch("examDate") && "text-muted-foreground",
+                            (errors as any).examDate && "border-red-500 focus:ring-red-500",
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {form.watch("examDate") ? (
+                            format(parseISO(form.watch("examDate")), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0 dark:bg-slate-800 dark:border-slate-700"
+                        align="start"
+                      >
+                        <CalendarComponent
+                          mode="single"
+                          selected={form.watch("examDate") ? parseISO(form.watch("examDate")) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              form.setValue("examDate", format(date, "yyyy-MM-dd"))
+                            }
+                          }}
+                          disabled={(date) => {
+                            const minDate = form.watch("applicationsDateRange")?.to
+                              ? addDays(parseISO(form.watch("applicationsDateRange").to), 1)
+                              : undefined
+                            return minDate ? date < minDate : false
+                          }}
+                          initialFocus
+                          className="dark:bg-slate-800"
+                        />
+                      </PopoverContent>
+                    </Popover>
                     {(errors as any).examDate && (
                       <p className="text-sm text-red-500">{(errors as any).examDate.message}</p>
                     )}
