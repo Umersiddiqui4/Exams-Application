@@ -687,6 +687,8 @@ console.log("applicationData", applicationData);
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  
+                  <div className="grid grid-cols-2 gap-3">
                   {applicationData?.streetAddress && (
                     <div>
                       <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Street Address</label>
@@ -695,7 +697,19 @@ console.log("applicationData", applicationData);
                       </p>
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">District</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.district || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Province</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.province || 'N/A'}
+                    </p>
+                  </div>
+                 
                     {applicationData?.city && (
                       <div>
                         <label className="text-sm font-medium text-slate-600 dark:text-slate-400">City</label>
@@ -877,24 +891,7 @@ console.log("applicationData", applicationData);
                       {applicationData?.email || 'N/A'}
                     </p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">District</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.district || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Province</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.province || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Country</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.country || 'N/A'}
-                    </p>
-                  </div>
+                  
                   <div>
                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Origin Country</label>
                     <p className="text-slate-900 dark:text-slate-100">
