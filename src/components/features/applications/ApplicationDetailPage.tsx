@@ -651,203 +651,7 @@ export function ApplicationDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content - 2 columns */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Personal Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Full Name</label>
-                    <p className="text-slate-900 dark:text-slate-100 font-medium">
-                      {applicationData?.fullName || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Usual Forename</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.aktDetails?.usualForename || applicationData?.osceDetails?.usualForename || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Last Name</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.aktDetails?.lastName || applicationData?.osceDetails?.lastName || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Candidate ID</label>
-                    <p className="text-slate-900 dark:text-slate-100 font-mono">
-                      {applicationData?.candidateId || 'N/A'}
-                    </p>
-                  </div>
-                  {applicationData?.poBox && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">P.O. Box</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.poBox}
-                      </p>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</label>
-                    <div className="mt-1">
-                      <Badge className={getStatusColor(applicationData?.status)}>
-                        {formatStatus(applicationData?.status)}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Waiting List</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.isWaiting ? (
-                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400">
-                          On Waiting List
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400">
-                          Not Waiting
-                        </Badge>
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Email</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.email || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">District</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.district || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Province</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.province || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Country</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.country || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Origin Country</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.originCountry || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Clinical Experience Country</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.clinicalExperienceCountry || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Authority</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.registrationAuthority || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Number</label>
-                    <p className="text-slate-900 dark:text-slate-100 font-mono">
-                      {applicationData?.registrationNumber || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Date</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.registrationDate
-                        ? format(new Date(applicationData.registrationDate), 'PPP')
-                        : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Applied Date</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.createdAt
-                        ? format(new Date(applicationData.createdAt), 'PPP')
-                        : 'N/A'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Updated Date</label>
-                    <p className="text-slate-900 dark:text-slate-100">
-                      {applicationData?.updatedAt
-                        ? format(new Date(applicationData.updatedAt), 'PPP')
-                        : 'N/A'
-                      }
-                    </p>
-                  </div>
-                  {applicationData?.reviewedAt && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Reviewed Date</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {format(new Date(applicationData.reviewedAt), 'PPP')}
-                      </p>
-                    </div>
-                  )}
-                  {applicationData?.reviewedBy && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Reviewed By</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.reviewedBy.firstName} {applicationData.reviewedBy.lastName}
-                      </p>
-                    </div>
-                  )}
-                  {applicationData?.candidateStatement !== undefined && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Candidate Statement</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.candidateStatement ? 'Agreed' : 'Not Agreed'}
-                      </p>
-                    </div>
-                  )}
-                  {applicationData?.termsAgreed !== undefined && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Terms Agreed</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.termsAgreed ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400">
-                            Agreed
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400">
-                            Not Agreed
-                          </Badge>
-                        )}
-                      </p>
-                    </div>
-                  )}
-                  {applicationData?.agreementName && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Agreement Name</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {applicationData.agreementName}
-                      </p>
-                    </div>
-                  )}
-                  {applicationData?.agreementDate && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Agreement Date</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {format(new Date(applicationData.agreementDate), 'PPP')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            
 
             {/* Contact & Address Information */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1100,6 +904,181 @@ export function ApplicationDetailPage() {
                         </div>
                       )}
                     </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Personal Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <User className="h-5 w-5 mr-2" />
+                  Personal Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Full Name</label>
+                    <p className="text-slate-900 dark:text-slate-100 font-medium">
+                      {applicationData?.fullName || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Usual Forename</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.aktDetails?.usualForename || applicationData?.osceDetails?.usualForename || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Last Name</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.aktDetails?.lastName || applicationData?.osceDetails?.lastName || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Candidate ID</label>
+                    <p className="text-slate-900 dark:text-slate-100 font-mono">
+                      {applicationData?.candidateId || 'N/A'}
+                    </p>
+                  </div>
+                  {applicationData?.poBox && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">P.O. Box</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.poBox}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Email</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.email || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">District</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.district || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Province</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.province || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Country</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.country || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Origin Country</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.originCountry || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Clinical Experience Country</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.clinicalExperienceCountry || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Authority</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.registrationAuthority || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Number</label>
+                    <p className="text-slate-900 dark:text-slate-100 font-mono">
+                      {applicationData?.registrationNumber || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Registration Date</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.registrationDate
+                        ? format(new Date(applicationData.registrationDate), 'PPP')
+                        : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Applied Date</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.createdAt
+                        ? format(new Date(applicationData.createdAt), 'PPP')
+                        : 'N/A'
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</label>
+                    <div className="mt-1">
+                      <Badge className={getStatusColor(applicationData?.status)}>
+                        {formatStatus(applicationData?.status)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Waiting List</label>
+                    <p className="text-slate-900 dark:text-slate-100">
+                      {applicationData?.isWaiting ? (
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          On Waiting List
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400">
+                          Not Waiting
+                        </Badge>
+                      )}
+                    </p>
+                  </div>
+                  
+                  {applicationData?.candidateStatement !== undefined && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Candidate Statement</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.candidateStatement ? 'Agreed' : 'Not Agreed'}
+                      </p>
+                    </div>
+                  )}
+                  {applicationData?.termsAgreed !== undefined && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Terms Agreed</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.termsAgreed ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400">
+                            Agreed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400">
+                            Not Agreed
+                          </Badge>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  {applicationData?.agreementName && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Agreement Name</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {applicationData.agreementName}
+                      </p>
+                    </div>
+                  )}
+                  {applicationData?.agreementDate && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Agreement Date</label>
+                      <p className="text-slate-900 dark:text-slate-100">
+                        {format(new Date(applicationData.agreementDate), 'PPP')}
+                      </p>
+                    </div>
                   )}
                 </div>
               </CardContent>
