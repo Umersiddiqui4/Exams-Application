@@ -18,7 +18,6 @@ import DraftApplications from './components/features/applications/DraftApplicati
 import { ApplicationDetailPage } from './components/features/applications/ApplicationDetailPage';
 import Settings from './components/features/settings/settings';
 import ResetPassword from './components/features/auth/ResetPassword';
-
 function App() {
 
 
