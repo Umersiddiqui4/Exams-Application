@@ -45,30 +45,50 @@ type CandidateTemplate = {
   description: string;
 };
 
-const defaultWaitingTemplate: CandidateTemplate = {
-  type: "APPLICATION_WAITING_LIST",
+const defaultOsceWaitingCandidateTemplate: CandidateTemplate = {
+  type: "OSCE_APPLICATION_WAITING_LIST",
   subject: "Waiting List - {examName}",
   content:
     "<h2>Dear tester,</h2>\n<p>This is an automated message to confirm that we have received your application for the upcoming <strong>OSCE examination</strong> scheduled in <em>test at London, England</em>.</p>\n\n\n<p>As published on the website at the time of registration opening, we have limited slots for the OSCE, and the slots are allotted on a <strong>first come, first serve</strong> basis.</p>\n\n\n<p><strong>Please note:</strong> your application will be on the <strong>WAITING LIST</strong> and will be accommodated only in case there is a dropout.</p>\n\n\n<p>You will be notified in <strong>4 to 6 weeks</strong> on your registered email ID in case of any drop out; otherwise you will have to apply again for the next subsequent OSCE.</p>\n\n\n<p>We wish you the best of luck.</p>\n\n\n<p>Sincerely,<br>\n<strong>Owais Iqbal</strong><br>\nAdministrative Officer<br>\nMRCGP [INT] South Asia</p>\n\n\n<p style=\"color:#d00;font-size:0.9em\"><strong>Note:</strong> This is an auto generated email — please do not reply.</p>",
   isActive: true,
-  description: "Template sent when candidate is placed on the waiting list",
+  description: "Template sent when OSCE candidate is placed on the waiting list",
 };
 
-const defaultCandidateTemplate: CandidateTemplate = {
-  type: "APPLICATION_ACKNOWLEDGMENT",
+const defaultOsceCandidateTemplate: CandidateTemplate = {
+  type: "OSCE_APPLICATION_ACKNOWLEDGMENT",
   subject: "Application Received - {examName}",
   content:
     "<h1>Application Received</h1><p>Dear {userName}, your application for {examName} has been received.</p>",
   isActive: true,
-  description: "Template sent when an application is received",
+  description: "Template sent when an OSCE application is received",
+};
+
+const defaultAktWaitingCandidateTemplate: CandidateTemplate = {
+  type: "AKT_APPLICATION_WAITING_LIST",
+  subject: "Waiting List - {examName}",
+  content:
+    "<h2>Dear tester,</h2>\n<p>This is an automated message to confirm that we have received your application for the upcoming <strong>AKT examination</strong> scheduled in <em>test at London, England</em>.</p>\n\n\n<p>As published on the website at the time of registration opening, we have limited slots for the AKT, and the slots are allotted on a <strong>first come, first serve</strong> basis.</p>\n\n\n<p><strong>Please note:</strong> your application will be on the <strong>WAITING LIST</strong> and will be accommodated only in case there is a dropout.</p>\n\n\n<p>You will be notified in <strong>4 to 6 weeks</strong> on your registered email ID in case of any drop out; otherwise you will have to apply again for the next subsequent AKT.</p>\n\n\n<p>We wish you the best of luck.</p>\n\n\n<p>Sincerely,<br>\n<strong>Owais Iqbal</strong><br>\nAdministrative Officer<br>\nMRCGP [INT] South Asia</p>\n\n\n<p style=\"color:#d00;font-size:0.9em\"><strong>Note:</strong> This is an auto generated email — please do not reply.</p>",
+  isActive: true,
+  description: "Template sent when AKT candidate is placed on the waiting list",
+};
+
+const defaultAktCandidateTemplate: CandidateTemplate = {
+  type: "AKT_APPLICATION_ACKNOWLEDGMENT",
+  subject: "Application Received - {examName}",
+  content:
+    "<h1>Application Received</h1><p>Dear {userName}, your application for {examName} has been received.</p>",
+  isActive: true,
+  description: "Template sent when an AKT application is received",
 };
 
 export function Settings() {
   const { toast } = useToast();
   const location = useLocation();
 
-  const [candidateTemplate, setCandidateTemplate] = useState<CandidateTemplate>(defaultCandidateTemplate);
-  const [waitingTemplate, setWaitingTemplate] = useState<CandidateTemplate>(defaultWaitingTemplate);
+  const [osceCandidateTemplate, setOsceCandidateTemplate] = useState<CandidateTemplate>(defaultOsceCandidateTemplate);
+  const [osceWaitingTemplate, setOsceWaitingTemplate] = useState<CandidateTemplate>(defaultOsceWaitingCandidateTemplate);
+  const [aktCandidateTemplate, setAktCandidateTemplate] = useState<CandidateTemplate>(defaultAktCandidateTemplate);
+  const [aktWaitingTemplate, setAktWaitingTemplate] = useState<CandidateTemplate>(defaultAktWaitingCandidateTemplate);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useMobile();
   const { items: examDates, loadState, error, create, remove } = useAktPastExams();
@@ -146,40 +166,64 @@ export function Settings() {
 
   // Determine which section to show based on URL hash
   const activeSection = useMemo(() => {
-    const raw = (location.hash || "#candidates").replace("#", "");
-    if (["candidates", "waiting", "exam-dates", "exams", "users", "change-password"].includes(raw)) {
-      return raw as "candidates" | "waiting" | "exam-dates" | "exams" | "users" | "change-password";
+    const raw = (location.hash || "#osce-candidates").replace("#", "");
+    if (["osce-candidates", "osce-waiting", "akt-candidates", "akt-waiting", "exam-dates", "exams", "users", "change-password"].includes(raw)) {
+      return raw as "osce-candidates" | "osce-waiting" | "akt-candidates" | "akt-waiting" | "exam-dates" | "exams" | "users" | "change-password";
     }
-    return "candidates";
+    return "osce-candidates";
   }, [location.hash]);
 
   // Email templates (API-backed)
   const { items: emailTemplates, update: updateEmailTemplate, reload: reloadEmailTemplates } = useEmailTemplates();
-  const [candidateTemplateId, setCandidateTemplateId] = useState<string | null>(null);
-  const [waitingTemplateId, setWaitingTemplateId] = useState<string | null>(null);
+  const [osceCandidateTemplateId, setOsceCandidateTemplateId] = useState<string | null>(null);
+  const [osceWaitingTemplateId, setOsceWaitingTemplateId] = useState<string | null>(null);
+  const [aktCandidateTemplateId, setAktCandidateTemplateId] = useState<string | null>(null);
+  const [aktWaitingTemplateId, setAktWaitingTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!Array.isArray(emailTemplates)) return;
-    const cand = emailTemplates.find((t) => t.type === defaultCandidateTemplate.type);
-    const wait = emailTemplates.find((t) => t.type === defaultWaitingTemplate.type);
-    if (cand) {
-      setCandidateTemplateId(cand.id);
-      setCandidateTemplate({
-        type: cand.type,
-        subject: cand.subject,
-        content: cand.content,
-        isActive: cand.isActive,
-        description: cand.description,
+    const osceCand = emailTemplates.find((t) => t.type === defaultOsceCandidateTemplate.type);
+    const osceWait = emailTemplates.find((t) => t.type === defaultOsceWaitingCandidateTemplate.type);
+    const aktCand = emailTemplates.find((t) => t.type === defaultAktCandidateTemplate.type);
+    const aktWait = emailTemplates.find((t) => t.type === defaultAktWaitingCandidateTemplate.type);
+    if (osceCand) {
+      setOsceCandidateTemplateId(osceCand.id);
+      setOsceCandidateTemplate({
+        type: osceCand.type,
+        subject: osceCand.subject,
+        content: osceCand.content,
+        isActive: osceCand.isActive,
+        description: osceCand.description,
       });
     }
-    if (wait) {
-      setWaitingTemplateId(wait.id);
-      setWaitingTemplate({
-        type: wait.type,
-        subject: wait.subject,
-        content: wait.content,
-        isActive: wait.isActive,
-        description: wait.description,
+    if (osceWait) {
+      setOsceWaitingTemplateId(osceWait.id);
+      setOsceWaitingTemplate({
+        type: osceWait.type,
+        subject: osceWait.subject,
+        content: osceWait.content,
+        isActive: osceWait.isActive,
+        description: osceWait.description,
+      });
+    }
+    if (aktCand) {
+      setAktCandidateTemplateId(aktCand.id);
+      setAktCandidateTemplate({
+        type: aktCand.type,
+        subject: aktCand.subject,
+        content: aktCand.content,
+        isActive: aktCand.isActive,
+        description: aktCand.description,
+      });
+    }
+    if (aktWait) {
+      setAktWaitingTemplateId(aktWait.id);
+      setAktWaitingTemplate({
+        type: aktWait.type,
+        subject: aktWait.subject,
+        content: aktWait.content,
+        isActive: aktWait.isActive,
+        description: aktWait.description,
       });
     }
   }, [emailTemplates]);
@@ -220,68 +264,126 @@ export function Settings() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("settings-candidate-template");
-      if (raw) {
-        const parsed = JSON.parse(raw) as CandidateTemplate;
-        setCandidateTemplate({ ...defaultCandidateTemplate, ...parsed });
+      const rawOsceCand = localStorage.getItem("settings-osce-candidate-template");
+      if (rawOsceCand) {
+        const parsed = JSON.parse(rawOsceCand) as CandidateTemplate;
+        setOsceCandidateTemplate({ ...defaultOsceCandidateTemplate, ...parsed });
       } else {
-        setCandidateTemplate(defaultCandidateTemplate);
+        setOsceCandidateTemplate(defaultOsceCandidateTemplate);
       }
     } catch {
-      setCandidateTemplate(defaultCandidateTemplate);
+      setOsceCandidateTemplate(defaultOsceCandidateTemplate);
     }
     try {
-      const rawWaiting = localStorage.getItem("settings-waiting-template");
-      if (rawWaiting) {
-        const parsedW = JSON.parse(rawWaiting) as CandidateTemplate;
-        setWaitingTemplate({ ...defaultWaitingTemplate, ...parsedW });
+      const rawOsceWait = localStorage.getItem("settings-osce-waiting-template");
+      if (rawOsceWait) {
+        const parsedW = JSON.parse(rawOsceWait) as CandidateTemplate;
+        setOsceWaitingTemplate({ ...defaultOsceWaitingCandidateTemplate, ...parsedW });
       } else {
-        setWaitingTemplate(defaultWaitingTemplate);
+        setOsceWaitingTemplate(defaultOsceWaitingCandidateTemplate);
       }
     } catch {
-      setWaitingTemplate(defaultWaitingTemplate);
+      setOsceWaitingTemplate(defaultOsceWaitingCandidateTemplate);
+    }
+    try {
+      const rawAktCand = localStorage.getItem("settings-akt-candidate-template");
+      if (rawAktCand) {
+        const parsed = JSON.parse(rawAktCand) as CandidateTemplate;
+        setAktCandidateTemplate({ ...defaultAktCandidateTemplate, ...parsed });
+      } else {
+        setAktCandidateTemplate(defaultAktCandidateTemplate);
+      }
+    } catch {
+      setAktCandidateTemplate(defaultAktCandidateTemplate);
+    }
+    try {
+      const rawAktWait = localStorage.getItem("settings-akt-waiting-template");
+      if (rawAktWait) {
+        const parsedW = JSON.parse(rawAktWait) as CandidateTemplate;
+        setAktWaitingTemplate({ ...defaultAktWaitingCandidateTemplate, ...parsedW });
+      } else {
+        setAktWaitingTemplate(defaultAktWaitingCandidateTemplate);
+      }
+    } catch {
+      setAktWaitingTemplate(defaultAktWaitingCandidateTemplate);
     }
   }, []);
 
-  const saveTemplates = async (type: "candidates" | "waiting") => {
+  const saveTemplates = async (type: "osce-candidates" | "osce-waiting" | "akt-candidates" | "akt-waiting") => {
     try {
-      if (type === "candidates") {
+      if (type === "osce-candidates") {
         // Attempt to recover ID from fetched list if missing
-        let id = candidateTemplateId;
+        let id = osceCandidateTemplateId;
         if (!id && Array.isArray(emailTemplates)) {
-          const found = emailTemplates.find((t) => t.type === candidateTemplate.type);
+          const found = emailTemplates.find((t) => t.type === osceCandidateTemplate.type);
           if (found) {
             id = found.id;
-            setCandidateTemplateId(found.id);
+            setOsceCandidateTemplateId(found.id);
           }
         }
         if (!id) {
-          toast({ title: "Not found", description: "Candidate template does not exist on server.", variant: "destructive" });
+          toast({ title: "Not found", description: "OSCE Candidate template does not exist on server.", variant: "destructive" });
           return;
         }
-        const updated = await updateEmailTemplate(id, candidateTemplate);
-        setCandidateTemplateId(updated.id);
-        localStorage.setItem("settings-candidate-template", JSON.stringify(candidateTemplate));
+        const updated = await updateEmailTemplate(id, osceCandidateTemplate);
+        setOsceCandidateTemplateId(updated.id);
+        localStorage.setItem("settings-osce-candidate-template", JSON.stringify(osceCandidateTemplate));
         await reloadEmailTemplates();
-        toast({ title: "Saved", description: "Candidate template updated." });
-      } else {
-        let id = waitingTemplateId;
+        toast({ title: "Saved", description: "OSCE Candidate template updated." });
+      } else if (type === "osce-waiting") {
+        let id = osceWaitingTemplateId;
         if (!id && Array.isArray(emailTemplates)) {
-          const found = emailTemplates.find((t) => t.type === waitingTemplate.type);
+          const found = emailTemplates.find((t) => t.type === osceWaitingTemplate.type);
           if (found) {
             id = found.id;
-            setWaitingTemplateId(found.id);
+            setOsceWaitingTemplateId(found.id);
           }
         }
         if (!id) {
-          toast({ title: "Not found", description: "Waiting template does not exist on server.", variant: "destructive" });
+          toast({ title: "Not found", description: "OSCE Waiting template does not exist on server.", variant: "destructive" });
           return;
         }
-        const updated = await updateEmailTemplate(id, waitingTemplate);
-        setWaitingTemplateId(updated.id);
-        localStorage.setItem("settings-waiting-template", JSON.stringify(waitingTemplate));
+        const updated = await updateEmailTemplate(id, osceWaitingTemplate);
+        setOsceWaitingTemplateId(updated.id);
+        localStorage.setItem("settings-osce-waiting-template", JSON.stringify(osceWaitingTemplate));
         await reloadEmailTemplates();
-        toast({ title: "Saved", description: "Waiting candidate template updated." });
+        toast({ title: "Saved", description: "OSCE Waiting candidate template updated." });
+      } else if (type === "akt-candidates") {
+        let id = aktCandidateTemplateId;
+        if (!id && Array.isArray(emailTemplates)) {
+          const found = emailTemplates.find((t) => t.type === aktCandidateTemplate.type);
+          if (found) {
+            id = found.id;
+            setAktCandidateTemplateId(found.id);
+          }
+        }
+        if (!id) {
+          toast({ title: "Not found", description: "AKT Candidate template does not exist on server.", variant: "destructive" });
+          return;
+        }
+        const updated = await updateEmailTemplate(id, aktCandidateTemplate);
+        setAktCandidateTemplateId(updated.id);
+        localStorage.setItem("settings-akt-candidate-template", JSON.stringify(aktCandidateTemplate));
+        await reloadEmailTemplates();
+        toast({ title: "Saved", description: "AKT Candidate template updated." });
+      } else if (type === "akt-waiting") {
+        let id = aktWaitingTemplateId;
+        if (!id && Array.isArray(emailTemplates)) {
+          const found = emailTemplates.find((t) => t.type === aktWaitingTemplate.type);
+          if (found) {
+            id = found.id;
+            setAktWaitingTemplateId(found.id);
+          }
+        }
+        if (!id) {
+          toast({ title: "Not found", description: "AKT Waiting template does not exist on server.", variant: "destructive" });
+          return;
+        }
+        const updated = await updateEmailTemplate(id, aktWaitingTemplate);
+        setAktWaitingTemplateId(updated.id);
+        localStorage.setItem("settings-akt-waiting-template", JSON.stringify(aktWaitingTemplate));
+        await reloadEmailTemplates();
+        toast({ title: "Saved", description: "AKT Waiting candidate template updated." });
       }
     } catch (err: unknown) {
       toast({ title: "Failed", description: err instanceof Error ? err.message : "Unable to save template", variant: "destructive" });
@@ -335,38 +437,41 @@ export function Settings() {
                 <CardTitle className="text-2xl md:text-3xl">Settings</CardTitle>
               </CardHeader>
               <CardContent>
-                {(activeSection === "candidates" || activeSection === "waiting") && (
+                {(activeSection === "osce-candidates" || activeSection === "osce-waiting" || activeSection === "akt-candidates" || activeSection === "akt-waiting") && (
                   <>
                     <h3 className="text-xl md:text-2xl mt-8 space-y-4 mb-4 font-semibold">Email Templates</h3>
                     <Tabs defaultValue={activeSection}>
                       <TabsList>
-                        <TabsTrigger value="candidates" id="candidates">Candidates</TabsTrigger>
-                        <TabsTrigger value="waiting" id="waiting">Waiting Candidates</TabsTrigger>
+                        <TabsTrigger value="osce-candidates" id="osce-candidates">OSCE Candidates</TabsTrigger>
+                        <TabsTrigger value="osce-waiting" id="osce-waiting">OSCE Waiting Candidates</TabsTrigger>
+                        <TabsTrigger value="akt-candidates" id="akt-candidates">AKT Candidates</TabsTrigger>
+                        <TabsTrigger value="akt-waiting" id="akt-waiting">AKT Waiting Candidates</TabsTrigger>
                       </TabsList>
-                      <TabsContent value="candidates" className="mt-4">
+                      <TabsContent value="osce-candidates" className="mt-4">
                         <div className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium mb-1">Type</label>
                               <Input
-                                value={candidateTemplate.type}
-                                onChange={(e) => setCandidateTemplate({ ...candidateTemplate, type: e.target.value })}
+                                value={osceCandidateTemplate.type}
+                                onChange={(e) => setOsceCandidateTemplate({ ...osceCandidateTemplate, type: e.target.value })}
+                                readOnly
                               />
                             </div>
                             <div>
                               <label className="block text-sm font-medium mb-1">Subject</label>
                               <Input
-                                value={candidateTemplate.subject}
-                                onChange={(e) => setCandidateTemplate({ ...candidateTemplate, subject: e.target.value })}
+                                value={osceCandidateTemplate.subject}
+                                onChange={(e) => setOsceCandidateTemplate({ ...osceCandidateTemplate, subject: e.target.value })}
                               />
                             </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium mb-1">Content</label>
                             <RichTextEditor
-                              key={candidateTemplateId || candidateTemplate.type}
-                              value={candidateTemplate.content}
-                              onChange={(html) => setCandidateTemplate({ ...candidateTemplate, content: html })}
+                              key={osceCandidateTemplateId || osceCandidateTemplate.type}
+                              value={osceCandidateTemplate.content}
+                              onChange={(html) => setOsceCandidateTemplate({ ...osceCandidateTemplate, content: html })}
                               className="bg-white dark:bg-slate-900 rounded-md"
                               placeholder="Write email content..."
                             />
@@ -374,46 +479,40 @@ export function Settings() {
                           <div>
                             <label className="block text-sm font-medium mb-1">Description</label>
                             <Textarea
-                              value={candidateTemplate.description}
-                              onChange={(e) => setCandidateTemplate({ ...candidateTemplate, description: e.target.value })}
+                              value={osceCandidateTemplate.description}
+                              onChange={(e) => setOsceCandidateTemplate({ ...osceCandidateTemplate, description: e.target.value })}
                             />
                           </div>
-                          {/* <div className="flex items-center gap-3">
-                            <Switch
-                              checked={candidateTemplate.isActive}
-                              onCheckedChange={(v) => setCandidateTemplate({ ...candidateTemplate, isActive: Boolean(v) })}
-                            />
-                            <span className="text-sm">Active</span>
-                          </div> */}
                           <div className="flex justify-end">
-                            <Button onClick={() => saveTemplates("candidates")}>Save</Button>
+                            <Button onClick={() => saveTemplates("osce-candidates")}>Save</Button>
                           </div>
                         </div>
                       </TabsContent>
-                      <TabsContent value="waiting" className="mt-4">
+                      <TabsContent value="osce-waiting" className="mt-4">
                         <div className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium mb-1">Type</label>
                               <Input
-                                value={waitingTemplate.type}
-                                onChange={(e) => setWaitingTemplate({ ...waitingTemplate, type: e.target.value })}
+                                value={osceWaitingTemplate.type}
+                                onChange={(e) => setOsceWaitingTemplate({ ...osceWaitingTemplate, type: e.target.value })}
+                                readOnly
                               />
                             </div>
                             <div>
                               <label className="block text-sm font-medium mb-1">Subject</label>
                               <Input
-                                value={waitingTemplate.subject}
-                                onChange={(e) => setWaitingTemplate({ ...waitingTemplate, subject: e.target.value })}
+                                value={osceWaitingTemplate.subject}
+                                onChange={(e) => setOsceWaitingTemplate({ ...osceWaitingTemplate, subject: e.target.value })}
                               />
                             </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium mb-1">Content</label>
                             <RichTextEditor
-                              key={waitingTemplateId || waitingTemplate.type}
-                              value={waitingTemplate.content}
-                              onChange={(html) => setWaitingTemplate({ ...waitingTemplate, content: html })}
+                              key={osceWaitingTemplateId || osceWaitingTemplate.type}
+                              value={osceWaitingTemplate.content}
+                              onChange={(html) => setOsceWaitingTemplate({ ...osceWaitingTemplate, content: html })}
                               className="bg-white dark:bg-slate-900 rounded-md"
                               placeholder="Write email content..."
                             />
@@ -421,19 +520,94 @@ export function Settings() {
                           <div>
                             <label className="block text-sm font-medium mb-1">Description</label>
                             <Textarea
-                              value={waitingTemplate.description}
-                              onChange={(e) => setWaitingTemplate({ ...waitingTemplate, description: e.target.value })}
+                              value={osceWaitingTemplate.description}
+                              onChange={(e) => setOsceWaitingTemplate({ ...osceWaitingTemplate, description: e.target.value })}
                             />
                           </div>
-                          {/* <div className="flex items-center gap-3">
-                            <Switch
-                              checked={waitingTemplate.isActive}
-                              onCheckedChange={(v) => setWaitingTemplate({ ...waitingTemplate, isActive: Boolean(v) })}
-                            />
-                            <span className="text-sm">Active</span>
-                          </div> */}
                           <div className="flex justify-end">
-                            <Button onClick={() => saveTemplates("waiting")}>Save</Button>
+                            <Button onClick={() => saveTemplates("osce-waiting")}>Save</Button>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="akt-candidates" className="mt-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Type</label>
+                              <Input
+                                value={aktCandidateTemplate.type}
+                                onChange={(e) => setAktCandidateTemplate({ ...aktCandidateTemplate, type: e.target.value })}
+                                readOnly
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Subject</label>
+                              <Input
+                                value={aktCandidateTemplate.subject}
+                                onChange={(e) => setAktCandidateTemplate({ ...aktCandidateTemplate, subject: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Content</label>
+                            <RichTextEditor
+                              key={aktCandidateTemplateId || aktCandidateTemplate.type}
+                              value={aktCandidateTemplate.content}
+                              onChange={(html) => setAktCandidateTemplate({ ...aktCandidateTemplate, content: html })}
+                              className="bg-white dark:bg-slate-900 rounded-md"
+                              placeholder="Write email content..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Description</label>
+                            <Textarea
+                              value={aktCandidateTemplate.description}
+                              onChange={(e) => setAktCandidateTemplate({ ...aktCandidateTemplate, description: e.target.value })}
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <Button onClick={() => saveTemplates("akt-candidates")}>Save</Button>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="akt-waiting" className="mt-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Type</label>
+                              <Input
+                                value={aktWaitingTemplate.type}
+                                onChange={(e) => setAktWaitingTemplate({ ...aktWaitingTemplate, type: e.target.value })}
+                                readOnly
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Subject</label>
+                              <Input
+                                value={aktWaitingTemplate.subject}
+                                onChange={(e) => setAktWaitingTemplate({ ...aktWaitingTemplate, subject: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Content</label>
+                            <RichTextEditor
+                              key={aktWaitingTemplateId || aktWaitingTemplate.type}
+                              value={aktWaitingTemplate.content}
+                              onChange={(html) => setAktWaitingTemplate({ ...aktWaitingTemplate, content: html })}
+                              className="bg-white dark:bg-slate-900 rounded-md"
+                              placeholder="Write email content..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Description</label>
+                            <Textarea
+                              value={aktWaitingTemplate.description}
+                              onChange={(e) => setAktWaitingTemplate({ ...aktWaitingTemplate, description: e.target.value })}
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <Button onClick={() => saveTemplates("akt-waiting")}>Save</Button>
                           </div>
                         </div>
                       </TabsContent>
@@ -878,6 +1052,7 @@ export function Settings() {
                                 type="email"
                                 value={newUser.email}
                                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                                readOnly
                               />
                             </div>
                             <div>
