@@ -570,6 +570,10 @@ export default function ApplicationTable({ initialExamId }: ApplicationTableProp
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
+        style: {
+          backgroundColor: 'white',
+          color: '#5c347d',
+        },
       });
     } catch (error) {
       logger.error("Export error", error)
